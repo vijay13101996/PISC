@@ -10,22 +10,22 @@ class Simulation(object):
 		self.t = 0.0
 		self.nstep = 0
 
-	def bind(self,ens,motion,prng,rp,pes,propa,therm):
+	def bind(self,ens,motion,rng,rp,pes,propa,therm):
 		self.ens = ens
-        self.motion = motion
-        self.prng = prng
-        self.rp = rp
-        self.pes = pes
-        self.propa = propa
-        self.therm = therm
+		self.motion = motion
+		self.rng = rng
+		self.rp = rp
+		self.pes = pes
+		self.propa = propa
+		self.therm = therm
         # Bind the components
-        self.rp.bind(self.ens, self.motion, self.prng)
-        self.pes.bind(self.ens, self.rp)
-        self.pes.update()
-        self.propa.bind(self.ens, self.motion, self.rp,
-                        self.pes, self.prng, therm)
-        self.dt = self.motion.dt
-        self.order = self.motion.order
+		self.rp.bind(self.ens, self.motion, self.rng)
+		self.pes.bind(self.ens, self.rp)
+		self.pes.update()
+		self.propa.bind(self.ens, self.motion, self.rp,
+                        self.pes, self.rng, therm)
+		self.dt = self.motion.dt
+		self.order = self.motion.order
 
 	def NVE_pqstep(self):
 		self.propa.pqstep()
@@ -39,8 +39,8 @@ class Simulation(object):
 		
 	def NVT_pqstep(self,pmats):
 		self.propa.O(pmats)
-		self.propa.pqstep()
-		self.propa.O(mats)
+		self.propa.pq_step()
+		self.propa.O(pmats)
 		self.rp.mats2cart()
 
 	def NVT_Monodromystep(self,pmats):
@@ -50,20 +50,19 @@ class Simulation(object):
 		self.rp.mats2cart()
 
 	def step(self, ndt=1, mode="nvt",var='pq',pmats=None):
-
-        if mode == "nve":
+		if mode == "nve":
 			if(var=='pq'):
 				for i in range(ndt):
 					self.NVE_pqstep()
-			else:
+			elif(var=='monodromy'):
 				for i in range(ndt):
 					self.NVE_Monodromystep()
-        elif mode == "nvt":
+		elif mode == "nvt":
 			if(var=='pq'):
 				for i in range(ndt):
 					self.NVT_pqstep(pmats)
-			else:
+			elif(var=='monodromy'):
 				for i in range(ndt):
 					self.NVT_Monodromystep(pmats)
-        self.t += ndt*self.dt
-        self.nstep += ndt
+		self.t += ndt*self.dt
+		self.nstep += ndt

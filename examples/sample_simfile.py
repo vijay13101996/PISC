@@ -1,4 +1,4 @@
-import numpy as np#
+import numpy as np
 
 """
 (Pseudo-)code for a trial run of MF Matsubara simulation of OTOC.

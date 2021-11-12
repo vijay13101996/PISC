@@ -9,7 +9,7 @@ import numpy as np
 
 class Ensemble(object):
     
-    def __init__(self, beta, ndim=3, nsys=1, eens=None):
+    def __init__(self, beta, ndim=3):
         self.beta = 1.0*beta
         self.ndim = ndim
         
