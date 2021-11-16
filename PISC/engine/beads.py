@@ -163,7 +163,7 @@ class RingPolymer(object):
 				self.ddpot[:,d,d] = np.eye(self.nmodes,self.nmodes)
 
 			self.ddpot*=(self.dynm3*self.dynfreq2)[:,:,None,:,None]
-		
+			
 			self.ddpot_cart = np.zeros((self.nsys,self.ndim,self.ndim,self.nbeads,self.nbeads))
 			for d in range(self.ndim):
 				for k in range(self.nbeads-1):
