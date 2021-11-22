@@ -28,7 +28,7 @@ class Simulation(object):
 		self.order = self.motion.order
 
 	def NVE_pqstep(self):
-		self.propa.pqstep()
+		self.propa.pq_step()
 		self.rp.mats2cart()	
 		# q has already been converted at the A update step. 
 		# So, p and M needs to be converted

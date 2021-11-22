@@ -38,10 +38,16 @@ class Symplectic_order_II(Integrator):
 		self.force_update()	
 
 	def B(self):
-		self.rp.p-=self.pes.dpot*self.motion.pdt
+		if(0):
+			self.rp.p-=self.pes.dpot*self.motion.pdt
+		else:
+			self.rp.p[...,1:]-=self.pes.dpot[...,1:]*self.motion.pdt
 
 	def b(self):
-		self.rp.p-=self.rp.dpot*self.motion.pdt
+		if(0):
+			self.rp.p-=self.rp.dpot*self.motion.pdt
+		else:
+			self.rp.p[...,1:]-=self.rp.dpot[...,1:]*self.motion.pdt
 
 	def M1(self):
 		self.rp.Mpp-=(self.pes.ddpot+self.rp.ddpot)*self.motion.pdt*self.rp.Mqp
@@ -59,8 +65,9 @@ class Symplectic_order_II(Integrator):
 		self.B()
 		self.b()
 		self.A()
-		self.B()
 		self.b()
+		self.B()
+		
 
 	def pq_step_RSP(self):
 		self.B()
@@ -97,10 +104,16 @@ class Symplectic_order_IV(Integrator):
 		self.force_update()
 	
 	def B(self,k):
-		self.rp.p-=self.pes.dpot*self.motion.pdt[k]
+		if(1):
+			self.rp.p-=self.pes.dpot*self.motion.pdt[k]
+		else:
+			self.rp.p[...,1:]-=self.pes.dpot[...,1:]*self.motion.pdt[k]
 
 	def b(self,k):	
-		self.rp.p-=self.rp.dpot*self.motion.pdt[k]
+		if(1):
+			self.rp.p-=self.rp.dpot*self.motion.pdt[k]
+		else:
+			self.rp.p[...,1:]-=self.pes.dpot[...,1:]*self.motion.pdt[k]
 
 	def M1(self,k):
 		self.rp.Mpp-=(self.pes.ddpot+self.rp.ddpot)*self.motion.pdt[k]*self.rp.Mqp

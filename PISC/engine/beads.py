@@ -94,6 +94,8 @@ class RingPolymer(object):
 			self.scaling="none"
 			self._sgamma = None
 			self._sfreq = None
+			if nmats is not None:
+				self.nmats = nmats
 		elif (scaling=='MFmats'):
 			self.nmats = nmats
 			self.scaling = scaling
@@ -177,11 +179,16 @@ class RingPolymer(object):
 			#print('omegan',self.omegan)	
 			self.ddpot_cart*=(self.dynm3*self.omegan**2)[:,:,None,:,None]
 			
-		if self.p is None:
+		if self.p is None and self.pcart is None:
 			sp = self.rng.normal(size=self.q.shape,scale=1/np.sqrt(self.ens.beta))
 			self.p = self.sqdynm3*sp
-			self.pcart = self.nmtrans.mats2cart(self.p, self.pcart)	
-		
+			self.pcart = self.nmtrans.mats2cart(self.p, self.pcart)		
+		elif(self.pcart is None):
+			self.pcart = self.nmtrans.mats2cart(self.p)
+		else:
+			self.p = self.nmtrans.cart2mats(self.pcart)
+
+
 		# Variables specific to Matsubara dynamics may need to be defined as well.
 
 	def get_dyn_scale(self):
@@ -274,15 +281,19 @@ class RingPolymer(object):
 
 	@property
 	def kin(self):
-		return np.sum(0.5*(self.p/self.sqdynm3)**2)		
+		return np.sum(0.5*(self.p/self.sqm3)**2)		
+
+	@property
+	def dynkin(self):
+		return np.sum(0.5*(self.p/self.sqdynm3)**2)
 
 	@property
 	def pot(self):
-		return np.sum(0.5*self.dynm3*self.freqs2*self.q**2)
+		return np.sum(0.5*self.dynm3*self.dynfreq2*self.q**2)
 	
 	@property	
 	def dpot(self):
-		return self.dynm3*self.freqs2*self.q
+		return self.dynm3*self.dynfreq2*self.q
 
 	@property
 	def dpot_cart(self):

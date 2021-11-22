@@ -26,14 +26,13 @@ class PILE_L(Thermostat):
 	def get_propa_coeffs(self):
 		self.friction = 2.0*self.pile_lambda*np.abs(self.rp.dynfreqs)
 		self.friction[0] = 1.0/self.tau0
-		self.c1 = np.exp(-self.dt*self.friction)
-		self.c2 = np.sqrt((1.0 - self.c1**2)/self.ens.beta)
+		self.c1 = np.exp(-self.dt*self.friction/2.0)
+		self.c2 = np.sqrt(self.rp.nbeads*(1.0 - self.c1**2)/self.ens.beta)
 
 	def thalfstep(self,pmats):
 		p = np.reshape(self.rp.p, (-1, self.rp.ndim, self.rp.nmodes))
 		sm3 = np.reshape(self.rp.sqdynm3, p.shape)
 		sp = p/sm3
-		#self.ethermo += 0.5*np.sum(sp**2, axis=(-1,-2))
 		sp *= self.c1
 		sp += self.c2*self.rng.normal(size=sp.shape)
 		if pmats is not None:
@@ -41,3 +40,4 @@ class PILE_L(Thermostat):
 				p[:] = sp*sm3
 			else:
 				p[...,self.rp.nmats:] = sp[...,self.rp.nmats:]*sm3[...,self.rp.nmats:]
+		#print('p',self.rp.p,p.shape)
