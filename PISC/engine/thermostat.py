@@ -27,8 +27,8 @@ class PILE_L(Thermostat):
 		self.friction = 2.0*self.pile_lambda*np.abs(self.rp.dynfreqs)
 		self.friction[0] = 1.0/self.tau0
 		self.c1 = np.exp(-self.dt*self.friction/2.0)
-		self.c2 = np.sqrt(self.rp.nbeads*(1.0 - self.c1**2)/self.ens.beta)
-
+		self.c2 = np.sqrt(self.rp.nbeads*(1.0 - self.c1**2)/self.ens.beta)	
+	
 	def thalfstep(self,pmats):
 		p = np.reshape(self.rp.p, (-1, self.rp.ndim, self.rp.nmodes))
 		sm3 = np.reshape(self.rp.sqdynm3, p.shape)

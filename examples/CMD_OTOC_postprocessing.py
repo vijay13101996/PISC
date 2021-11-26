@@ -55,7 +55,8 @@ gamma = 32
 
 dt = dt/gamma
 
-if(1):	
+
+if(0):	
 	tfinal = 10.0
 	#f =  open("/home/vgs23/Pickle_files/OTOC_{}_beta_0.2_basis_{}_n_eigen_{}_tfinal_{}.dat".format('inv_harmonic',50,50,4.0),'rb+')
 	f =  open("/home/vgs23/Pickle_files/OTOC_{}_lambda_{}_1Tc_basis_{}_n_eigen_{}_tfinal_{}.dat".format('inv_harmonic',lamda,50,50,tfinal),'rb+')
@@ -66,7 +67,7 @@ if(1):
 	#plt.show()
 
 
-if(1):	
+if(0):	
 	for nbeads in [1,4,8]:#,8,16]:#[1,4,8,32]:#,16,32]:# in range(1,6):
 		fname = '/home/vgs23/Pickle_files/Test_CMD_OTOC_{}_T_{}_N_{}_nbeads_{}_gamma_{}_dt_{}_thermtime_{}_seed_{}.txt'.format(potkey,T,N,nbeads,gamma,dt,time_therm,rngSeed)
 		data = read_1D_plotdata(fname)

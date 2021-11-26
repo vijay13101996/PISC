@@ -62,18 +62,24 @@ class Symplectic_order_II(Integrator):
 		self.rp.Mqq+=self.motion.qdt*self.rp.Mpq/self.rp.dynm3[:,:,None,:,None]
 		
 	def pq_step(self):
+		#print('before B', self.rp.p[0,0,1],self.rp.q[0,0,1])
 		self.B()
+		#print('after B', self.rp.p[0,0,1],self.rp.q[0,0,1])
 		self.b()
 		self.A()
 		self.b()
+		#print('after bAb',self.rp.p[0,0,1],self.rp.q[0,0,1])
 		self.B()
 		
-
 	def pq_step_RSP(self):
+		#print('before B', self.rp.p[0,0,1],self.rp.q[0,0,1])	
 		self.B()
+		#print('after B', self.rp.p[0,0,1],self.rp.q[0,0,1])
 		self.rp.RSP_step()
+		#print('after RSP', self.rp.p[0,0,1],self.rp.q[0,0,1])
+		self.force_update()
 		self.B()
-	
+			
 	def Monodromy_step(self):
 		self.B()
 		self.b()

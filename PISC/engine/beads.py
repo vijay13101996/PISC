@@ -29,6 +29,11 @@ from PISC.utils import nmtrans
 #	 (Not possible to do both simultaneously: Preferable to 
 #	  propagate M in Matsubara coordinates)
 
+# Ensure that the nmats, mode and scaling argument passed at 
+# initialization is consistently defined. Any potential conflict 
+# should be resolved and instructions to use the class object should
+# be well-documented.  
+
 class RingPolymer(object):
 
 	def __init__(self,p=None,q=None,pcart=None,qcart=None,
@@ -159,7 +164,6 @@ class RingPolymer(object):
 			self.dynfreq2 = self.dynfreqs**2
 			
 			self.get_RSP_coeffs()	
-			
 			self.ddpot = np.zeros((self.nsys,self.ndim,self.ndim,self.nmodes,self.nmodes))
 			for d in range(self.ndim):
 				self.ddpot[:,d,d] = np.eye(self.nmodes,self.nmodes)
@@ -188,7 +192,6 @@ class RingPolymer(object):
 		else:
 			self.p = self.nmtrans.cart2mats(self.pcart)
 
-
 		# Variables specific to Matsubara dynamics may need to be defined as well.
 
 	def get_dyn_scale(self):
@@ -204,13 +207,15 @@ class RingPolymer(object):
 			return scale
 
 	def RSP_step(self):
-		qpvector = np.zeros((self.nmodes,2,len(self.q)))
-		qpvector[:,0,:] = (self.p/self.sdynm3).T
-		qpvector[:,1,:] = (self.q*self.sdynm3).T
+		qpvector = np.empty((self.nmodes,2,self.ndim,len(self.q)))
+		qpvector[:,0] = (self.p/self.sqdynm3).T
+		qpvector[:,1] = (self.q*self.sqdynm3).T
 
-		qpvector[:] = np.matmul(self.RSP_coeffs,qpvector)
-		self.p[:] = qpvector[:,0,:].T*self.dynm3
-		self.q[:] = qpvector[:,1,:].T/self.dynm3 
+		qpvector[:] = np.einsum('ijk,ik...->ij...',self.RSP_coeffs,qpvector)#np.matmul(self.RSP_coeffs,qpvector)#
+		#np.einsum is working perfectly, no issue there.		
+		
+		self.p[:] = qpvector[:,0].T*self.sqdynm3
+		self.q[:] = qpvector[:,1].T/self.sqdynm3 
 
 	def get_rp_freqs(self):
 		n = [0]
@@ -245,7 +250,7 @@ class RingPolymer(object):
 			mat[0,1] = -self.dynfreqs[n]*np.sin(self.dynfreqs[n]*self.dt)		
 			mat[1,0] = np.sinc(self.dynfreqs[n]*self.dt/np.pi)*self.dt
 			self.RSP_coeffs[n] = mat
-	
+				
 	def nm_matrix(self):
 			narr = [0]
 			for i in range(1,self.nmodes//2+1):

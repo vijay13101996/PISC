@@ -30,12 +30,11 @@ def thermalize_rp(ens,rp,pes,time_therm,dt,potkey,rngSeed):
 
 	nthermsteps = int(time_therm/motion.dt)
 	pmats = np.array([True for i in range(rp.nbeads)])
-	
-	
+		
 	#tarr = []
 	#kinarr = []
 	for i in range(nthermsteps):
-		sim.step(mode="nvt",var='pq',pmats=pmats)
+		sim.step(mode="nvt",var='pq',RSP=True,pmats=pmats)
 		#tarr.append(i*dt)
 		#kinarr.append((rp.pcart**2).sum())#kin.sum())
 
@@ -43,7 +42,6 @@ def thermalize_rp(ens,rp,pes,time_therm,dt,potkey,rngSeed):
 	#plt.show()
 
 	print('kin',rp.kin.sum(),rp.pcart[0],rp.qcart[0])	
-
 
 	store_arr(rp.qcart,'Thermalized_rp_qcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(rp.nsys,rp.nbeads,ens.beta,potkey,rngSeed))
 	store_arr(rp.pcart,'Thermalized_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(rp.nsys,rp.nbeads,ens.beta,potkey,rngSeed)) 
