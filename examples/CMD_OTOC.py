@@ -16,25 +16,20 @@ import thermalize_PILE_L
 from thermalize_PILE_L import thermalize_rp
 import pickle
 
-def main(seed,beads,gamma):
+def main(filename,nrun,lamda,g,times,m,N,nbeads,dt_therm,dt,rngSeed,time_therm,gamma,time_total):
 	dim = 1
-	lamda = 0.8#1.5
-	g = 1/50.0
 	Tc = lamda*(0.5/np.pi)#5.0
-	T = 1*Tc
-	print('T',T)
-	print('nbeads', beads)
-	m = 0.5
-	N = 1000
-
-	nbeads = beads#32 
+	T = times*Tc
+	print('T, nbeads',T,nbeads)
+	
+	nbeads = beads
 	rng = np.random.RandomState(1)
 	qcart = rng.normal(size=(N,dim,nbeads))
 	q = np.random.normal(size=(N,dim,nbeads))
 	M = np.random.normal(size=(N,dim,nbeads))
 
 	pcart = None
-	dt = 0.01
+	dt = dt_therm
 	beta = 1/T
 	
 	rngSeed = seed
@@ -45,11 +40,10 @@ def main(seed,beads,gamma):
 
 	rp.bind(ens,motion,rng)
 
-	potkey = 'inv_harmonic_lambda_{}'.format(lamda)	
-	pes = double_well(lamda,g)#harmonic(2.0*np.pi)# Harmonic(2*np.pi)#harmonic(2.0)#Harmonic(2*np.pi)#
+	pes = double_well(lamda,g)
 	pes.bind(ens,rp)
 
-	time_therm = 20.0
+	time_therm = time_therm
 	thermalize_rp(ens,rp,pes,time_therm,dt,potkey,rngSeed)
 	
 	tarr=[]
@@ -58,7 +52,7 @@ def main(seed,beads,gamma):
 	Mqqarr = []
 	Mqqarrfull = []
 	Earr = []
-	dt = 0.001
+	dt = dt
 	gamma = gamma
 
 	dt = dt/gamma
@@ -67,12 +61,9 @@ def main(seed,beads,gamma):
 	pcart = read_arr('Thermalized_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(rp.nsys,rp.nbeads,ens.beta,potkey,rngSeed))
 	
 	rp = RingPolymer(qcart=qcart,pcart=pcart,m=m,scaling='MFmats',mode='MFmats',nmats=1,sgamma=gamma)
-	#rp = RingPolymer(qcart=rp.qcart,m=m,mode='MFmats',nmats=1)		
 	motion = Motion(dt = dt,symporder=4) 
 	rp.bind(ens,motion,rng)
 	pes.bind(ens,rp)
-
-	print('kin',rp.kin.sum(), 0.5*rp.ndim*rp.nsys*rp.nbeads**2/beta,rp.pcart[0],rp.qcart[0] )
 
 	therm = PILE_L(tau0=0.1,pile_lambda=1000.0) 
 	therm.bind(rp,motion,rng,ens)
@@ -83,7 +74,7 @@ def main(seed,beads,gamma):
 	sim = Simulation()
 	sim.bind(ens,motion,rng,rp,pes,propa,therm)
 
-	time_total = 10.0
+	time_total = time_total
 	nsteps = int(time_total/dt)
 	pmats = np.array([True for i in range(rp.nbeads)])
 	pmats[:rp.nmats] = False
@@ -102,19 +93,36 @@ def main(seed,beads,gamma):
 			Mqqarr.append(Mqq)
 			#Earr.append(np.sum(pes.pot)+np.sum(rp.pot)+rp.kin)
 
-	if(1):
-		fname = 'CMD_OTOC_{}_T_{}_N_{}_nbeads_{}_gamma_{}_dt_{}_thermtime_{}_seed_{}'.format(potkey,T,N,nbeads,gamma,dt,time_therm,rngSeed)
-		store_1D_plotdata(tarr,Mqqarr,fname)
+	with h5py.File(filename, 'a') as f:
+		group = f['Run#{}'.format(nrun)]
+		group.attrs['lambda'] = lamda
+		group.attrs['g'] = g
+		group.attrs['T'] = T
+		group.attrs['xTc'] = times
+		group.attrs['m'] = m
+		group.attrs['N'] = N
+		group.attrs['nbeads'] = nbeads
+		group.attrs['dt_therm'] = dt	
+		group.attrs['therm_time'] = time_therm
+		group.attrs['total_OTOC_time'] = time_total
+		group.attrs['gamma'] = gamma
+		group.attrs['seed'] = rngSeed
+		group.create_dataset('tarr',data=tarr)
+		group.create_dataset('Mqqarr',data=Mqqarr)
 
-if __name__ == '__main__':
-    import argparse
+	fname = 'CMD_OTOC_inv_harmonic_run_{}_T_{}_N_{}_nbeads_{}_gamma_{}_dt_{}_seed_{}'.format(nrun,T,N,nbeads,gamma,dt,rngSeed)
+	store_1D_plotdata(tarr,Mqqarr,fname,'./examples/Datafiles')
 
-    parser = argparse.ArgumentParser(description='Adiabatic CMD OTOC simulation for the double well potential')
-    parser.add_argument('--seed',type=int, required=True)
-    parser.add_argument('--beads',type=int, required=True)
-    parser.add_argument('--gamma',type=int, required=True)
-    args = parser.parse_args()
-    main(seed=args.seed, beads=args.beads, gamma=args.gamma)
+if(0):
+	if __name__ == '__main__':
+		import argparse
+
+		parser = argparse.ArgumentParser(description='Adiabatic CMD OTOC simulation for the double well potential')
+		parser.add_argument('--seed',type=int, required=True)
+		parser.add_argument('--beads',type=int, required=True)
+		parser.add_argument('--gamma',type=int, required=True)
+		args = parser.parse_args()
+		main(seed=args.seed, beads=args.beads, gamma=args.gamma)
 
 if(0):	
 	f =  open("/home/vgs23/Pickle_files/OTOC_{}_beta_0.2_basis_{}_n_eigen_{}_tfinal_{}.dat".format('inv_harmonic',50,50,4.0),'rb+')
