@@ -85,6 +85,7 @@ def main(filename,nrun,lamda,g,times,m,N,nbeads,dt,rngSeed,time_therm,time_relax
 		group.attrs['relax_time'] = time_relax
 		group.attrs['nsample'] = nsample
 		group.attrs['seed'] = rngSeed
+		group.attrs['pile_lamda'] = 100.0
 		qg = group.create_dataset('qgrid',data=qgrid)
 		qg.attrs['extent'] = qgrid[len(qgrid)-1]
 		qg.attrs['ngrid'] = len(qgrid)	
