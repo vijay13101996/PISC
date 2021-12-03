@@ -19,7 +19,8 @@ def get_var_value(filename="./examples/CMD_PMF_simulation_count.dat"):
         return val
 
 potkey = 'inv_harmonic'
-			
+sysname = 'Selene'
+	
 lamda = 0.8
 g = 1/50.0
 times = 1
@@ -35,13 +36,13 @@ def begin_simulation(nbeads,rngSeed):
 	print("This Simulation has been run {} times.".format(counter))
 
 	qgrid = np.linspace(0.0,8.0,11)
-	with h5py.File('./examples/CMD_PMF_{}.hdf5'.format(potkey), 'a') as f:
+	with h5py.File('./examples/CMD_PMF_{}_{}.hdf5'.format(sysname,potkey), 'a') as f:
 		try:
 			group = f.create_group('Run#{}'.format(counter))		
 		except:
 			pass
 				
-	CMD_PMF.main('./examples/CMD_PMF_{}.hdf5'.format(potkey),counter,lamda,g,times,m,N,nbeads,dt,rngSeed,time_therm,time_relax,qgrid,nsample)
+	CMD_PMF.main('./examples/CMD_PMF_{}_{}.hdf5'.format(sysname,potkey),counter,lamda,g,times,m,N,nbeads,dt,rngSeed,time_therm,time_relax,qgrid,nsample)
 
 
 # 12 cores for 32 beads, 8 cores for 16 beads, 6 cores for 8 beads and 2 cores for 4 beads.
