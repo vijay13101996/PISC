@@ -15,14 +15,15 @@ import time
 import thermalize_PILE_L
 from thermalize_PILE_L import thermalize_rp
 import pickle
+import h5py
 
-def main(filename,nrun,lamda,g,times,m,N,nbeads,dt_therm,dt,rngSeed,time_therm,gamma,time_total):
+def main(filename,sysname,potkey,nrun,lamda,g,times,m,N,nbeads,dt_therm,dt,rngSeed,time_therm,gamma,time_total):
 	dim = 1
 	Tc = lamda*(0.5/np.pi)#5.0
 	T = times*Tc
 	print('T, nbeads',T,nbeads)
 	
-	nbeads = beads
+	nbeads = nbeads
 	rng = np.random.RandomState(1)
 	qcart = rng.normal(size=(N,dim,nbeads))
 	q = np.random.normal(size=(N,dim,nbeads))
@@ -32,7 +33,7 @@ def main(filename,nrun,lamda,g,times,m,N,nbeads,dt_therm,dt,rngSeed,time_therm,g
 	dt = dt_therm
 	beta = 1/T
 	
-	rngSeed = seed
+	rngSeed = rngSeed
 	rp = RingPolymer(qcart=qcart,m=m) 
 	ens = Ensemble(beta=beta,ndim=dim)
 	motion = Motion(dt = dt,symporder=2) 
@@ -110,7 +111,7 @@ def main(filename,nrun,lamda,g,times,m,N,nbeads,dt_therm,dt,rngSeed,time_therm,g
 		group.create_dataset('tarr',data=tarr)
 		group.create_dataset('Mqqarr',data=Mqqarr)
 
-	fname = 'CMD_OTOC_inv_harmonic_run_{}_T_{}_N_{}_nbeads_{}_gamma_{}_dt_{}_seed_{}'.format(nrun,T,N,nbeads,gamma,dt,rngSeed)
+	fname = 'CMD_OTOC_{}_inv_harmonic_run_{}_T_{}_N_{}_nbeads_{}_gamma_{}_dt_{}_seed_{}'.format(sysname,nrun,T,N,nbeads,gamma,dt,rngSeed)
 	store_1D_plotdata(tarr,Mqqarr,fname,'./examples/Datafiles')
 
 if(0):

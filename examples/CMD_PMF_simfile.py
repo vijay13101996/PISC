@@ -42,7 +42,7 @@ def begin_simulation(nbeads,rngSeed):
 		except:
 			pass
 				
-	CMD_PMF.main('./examples/CMD_PMF_{}_{}.hdf5'.format(sysname,potkey),counter,lamda,g,times,m,N,nbeads,dt,rngSeed,time_therm,time_relax,qgrid,nsample)
+	CMD_PMF.main('./examples/CMD_PMF_{}_{}.hdf5'.format(sysname,potkey),sysname,counter,lamda,g,times,m,N,nbeads,dt,rngSeed,time_therm,time_relax,qgrid,nsample)
 
 
 # 12 cores for 32 beads, 8 cores for 16 beads, 6 cores for 8 beads and 2 cores for 4 beads.

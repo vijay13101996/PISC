@@ -5,7 +5,9 @@ import pickle
 import scipy
 from scipy import interpolate
 import h5py
-import CMD_PMF
+import CMD_OTOC
+from functools import partial
+from PISC.utils.mptools import chunks, batching
 
 def get_var_value(filename="./examples/CMD_OTOC_simulation_count.dat"):
     with open(filename, "a+") as f:
@@ -23,7 +25,7 @@ lamda = 0.8
 g = 1/50.0
 times = 1
 m = 0.5
-N = 1000
+N = 10
 dt_therm = 0.01
 dt = 0.005
 time_therm = 20.0
@@ -39,13 +41,13 @@ def begin_simulation(nbeads,gamma,rngSeed):
 		except:
 			pass
 				
-	CMD_OTOC.main('./examples/CMD_OTOC_{}_{}.hdf5'.format(sysname,potkey),counter,lamda,g,times,m,N,nbeads,dt_therm,dt,rngSeed,time_therm,gamma,time_total)
+	CMD_OTOC.main('./examples/CMD_OTOC_{}_{}.hdf5'.format(sysname,potkey),sysname,potkey,counter,lamda,g,times,m,N,nbeads,dt_therm,dt,rngSeed,time_therm,gamma,time_total)
 
 # 12 cores for 32 beads, 8 cores for 16 beads, 6 cores for 8 beads and 2 cores for 4 beads.
-gamma = 16
+gamma = 1
 nbeads = 1
 
 func = partial(begin_simulation, nbeads,gamma)
-seeds = np.range(0,24)
+seeds = range(0,2)
 seed_split = chunks(seeds,12)
 batching(func,seed_split,max_time=1e6)
