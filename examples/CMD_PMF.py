@@ -22,7 +22,7 @@ import h5py
 def main(filename,nrun,lamda,g,times,m,N,nbeads,dt,rngSeed,time_therm,time_relax,qgrid,nsample):
 	dim = 1
 	Tc = lamda*(0.5/np.pi)#5.0
-	T = times*Tc
+	T = times*Tc	
 	
 	rng = np.random.RandomState(1)
 	qcart = rng.normal(size=(N,dim,nbeads))#np.ones((N,dim,nbeads))#np.random.normal(size=(N,dim,nbeads))#np.zeros((N,dim,nbeads))#

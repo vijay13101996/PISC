@@ -45,7 +45,9 @@ def begin_simulation(nbeads,rngSeed):
 
 
 # 12 cores for 32 beads, 8 cores for 16 beads, 6 cores for 8 beads and 2 cores for 4 beads.
+
+nbeads = 4
 func = partial(begin_simulation, nbeads)
-seeds = np.range(0,100)
-seed_split = chunks(seeds,12)
-batching(func,seed_split,max_time=1e7)
+seeds = range(0,100)
+seed_split = chunks(seeds,2)
+batching(func,seed_split,max_time=1e6)
