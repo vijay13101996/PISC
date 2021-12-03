@@ -23,9 +23,12 @@ def store_arr(arr,fname,fpath=None):
 		f = open('{}/{}.dat'.format(fpath,fname),'wb')
 	pickle.dump(arr,f)	
                         
-def read_arr(fname):
-	f = open('/home/vgs23/Pickle_files/{}.dat'.format(fname),'rb')
-	arr = pickle.load(f)
-
+def read_arr(fname,fpath=None):
+	if fpath is None:
+		f = open('/home/vgs23/Pickle_files/{}.dat'.format(fname),'rb')
+		arr = pickle.load(f)
+	else:
+		f = open('{}/{}.dat'.format(fpath,fname),'rb')
+		arr = pickle.load(f)
 	return arr	
      
