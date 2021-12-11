@@ -28,9 +28,9 @@ lamda = 0.8
 g = 1/50.0
 T = lamda*(0.5/np.pi)#5.0
 m = 0.5
-N = 100
+N = 1
 
-nbeads = 10#32 
+nbeads = 32#32 
 rng = np.random.RandomState(1)
 qcart = rng.normal(size=(N,dim,nbeads))#np.ones((N,dim,nbeads))#np.random.normal(size=(N,dim,nbeads))#np.zeros((N,dim,nbeads))#
 q = np.random.normal(size=(N,dim,nbeads))
@@ -60,7 +60,7 @@ propa.bind(ens, motion, rp, pes, rng, therm)
 sim = Simulation()
 sim.bind(ens,motion,rng,rp,pes,propa,therm)
 start_time = time.time()
-if(1):
+if(0):
 	time_therm = 50.0
 	nthermsteps = int(time_therm/dt)
 	pmats = np.array([True for i in range(rp.nbeads)])
@@ -100,7 +100,7 @@ gamma = 16
 
 dt = dt/gamma
 
-if(1):	
+if(0):	
 	sim.t =0.0	
 	rp = RingPolymer(qcart=rp.qcart,m=m,scaling='MFmats',mode='MFmats',nmats=1,sgamma=gamma)
 	#rp = RingPolymer(qcart=rp.qcart,m=m,mode='MFmats',nmats=1)	
@@ -129,4 +129,4 @@ if(1):
 
 	Mqqarr = np.array(Mqqarr)
 	print('time',time.time()-start_time)
-		
+	

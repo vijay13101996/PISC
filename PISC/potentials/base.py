@@ -48,3 +48,5 @@ class PES(object):
 		self.compute_hessian()
 		self.dpot = self.nmtrans.cart2mats(self.dpot_cart)
 		self.ddpot = self.nmtrans.cart2mats_hessian(self.ddpot_cart)
+
+		# pes update needs to change for MF Matsubara and Matsubara	

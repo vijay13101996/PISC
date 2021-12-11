@@ -37,18 +37,18 @@ class Symplectic_order_II(Integrator):
 		self.rp.q+=self.rp.p*self.motion.qdt/self.rp.dynm3
 		self.force_update()	
 
-	def B(self):
-		if(0):
+	def B(self,centmove=True):
+		if(centmove):
 			self.rp.p-=self.pes.dpot*self.motion.pdt
 		else:
 			self.rp.p[...,1:]-=self.pes.dpot[...,1:]*self.motion.pdt
 
 	def b(self):
-		if(0):
+		if self.rp.nmats is None:
 			self.rp.p-=self.rp.dpot*self.motion.pdt
 		else:
-			self.rp.p[...,1:]-=self.rp.dpot[...,1:]*self.motion.pdt
-
+			self.rp.p[...,self.rp.nmats:]-=self.rp.dpot[...,self.rp.nmats:]*self.motion.pdt
+		
 	def M1(self):
 		self.rp.Mpp-=(self.pes.ddpot+self.rp.ddpot)*self.motion.pdt*self.rp.Mqp
 	
@@ -61,24 +61,24 @@ class Symplectic_order_II(Integrator):
 	def M4(self):
 		self.rp.Mqq+=self.motion.qdt*self.rp.Mpq/self.rp.dynm3[:,:,None,:,None]
 		
-	def pq_step(self):
+	def pq_step(self,centmove=True):
 		#print('before B', self.rp.p[0,0,1],self.rp.q[0,0,1])
-		self.B()
+		self.B(centmove)
 		#print('after B', self.rp.p[0,0,1],self.rp.q[0,0,1])
 		self.b()
 		self.A()
 		self.b()
 		#print('after bAb',self.rp.p[0,0,1],self.rp.q[0,0,1])
-		self.B()
+		self.B(centmove)
 		
-	def pq_step_RSP(self):
+	def pq_step_RSP(self,centmove=True):
 		#print('before B', self.rp.p[0,0,1],self.rp.q[0,0,1])	
-		self.B()
+		self.B(centmove)
 		#print('after B', self.rp.p[0,0,1],self.rp.q[0,0,1])
 		self.rp.RSP_step()
 		#print('after RSP', self.rp.p[0,0,1],self.rp.q[0,0,1])
 		self.force_update()
-		self.B()
+		self.B(centmove)
 			
 	def Monodromy_step(self):
 		self.B()
@@ -109,18 +109,18 @@ class Symplectic_order_IV(Integrator):
 		self.rp.q+=self.motion.qdt[k]*self.rp.p/self.rp.dynm3
 		self.force_update()
 	
-	def B(self,k):
-		if(1):
+	def B(self,k,centmove=True):
+		if centmove:
 			self.rp.p-=self.pes.dpot*self.motion.pdt[k]
 		else:
 			self.rp.p[...,1:]-=self.pes.dpot[...,1:]*self.motion.pdt[k]
 
 	def b(self,k):	
-		if(1):
+		if self.rp.nmats is None:
 			self.rp.p-=self.rp.dpot*self.motion.pdt[k]
 		else:
-			self.rp.p[...,1:]-=self.pes.dpot[...,1:]*self.motion.pdt[k]
-
+			self.rp.p[...,self.rp.nmats:]-=self.pes.dpot[...,self.rp.nmats:]*self.motion.pdt[k]
+		
 	def M1(self,k):
 		self.rp.Mpp-=(self.pes.ddpot+self.rp.ddpot)*self.motion.pdt[k]*self.rp.Mqp
 			

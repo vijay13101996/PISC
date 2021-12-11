@@ -4,7 +4,7 @@ discretized imaginary time path-integrals.
 """
 
 import numpy as np
-from PISC.utils import nmtrans
+from PISC.utils import nmtrans,misc
 
 ### Work left:
 # 1. Display error messages on input errors.
@@ -110,10 +110,14 @@ class RingPolymer(object):
 			self.scaling=scaling
 			self._sgamma=sgamma
 			self._sfreq=sfreq
-		
-		if (mode=='mats' or mode=='MFmats'):	
-			self.nmats = nmats #Add error statement here.
 
+		if(mode =='rp'):
+			self.nmats = None
+		elif (mode=='mats' or mode=='MFmats'):	
+			if nmats is None:
+				raise ValueError('Number of Matsubara modes needs to be specified')	
+			else:
+				self.nmats = nmats
 		self.freqs = freqs
 		
 	def bind(self, ens, motion, rng):
@@ -284,6 +288,14 @@ class RingPolymer(object):
 		self.q = self.nmtrans.cart2mats(self.qcart)
 		self.p = self.nmtrans.cart2mats(self.pcart)
 
+	@property
+	def theta(self): # Change for more than 1D
+		ret = self.matsfreqs*misc.pairwise_swap(self.q[...,:self.nmats],self.nmats)*self.p[...,:self.nmats]
+		#print('ret', ret.shape)
+		#print('freq', self.matsfreqs)
+		#print('q',self.q[...,:self.nmats], misc.pairwise_swap(self.q[...,:self.nmats],self.nmats))
+		return np.sum(ret,axis=2)
+		
 	@property
 	def kin(self):
 		return np.sum(0.5*(self.p/self.sqm3)**2)		

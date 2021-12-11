@@ -42,15 +42,15 @@ class Simulation(object):
 		self.propa.Monodromy_step()
 		self.rp.mats2cart()
 		
-	def NVT_pqstep(self,pmats):
+	def NVT_pqstep(self,pmats,centmove=True):
 		self.propa.O(pmats)
-		self.propa.pq_step()
+		self.propa.pq_step(centmove)
 		self.propa.O(pmats)
 		self.rp.mats2cart()
 
-	def NVT_pqstep_RSP(self,pmats):
+	def NVT_pqstep_RSP(self,pmats,centmove=True):
 		self.propa.O(pmats)
-		self.propa.pq_step_RSP()
+		self.propa.pq_step_RSP(centmove)
 		self.propa.O(pmats)
 		self.rp.mats2cart()
 
@@ -60,7 +60,7 @@ class Simulation(object):
 		self.propa.O(pmats)
 		self.rp.mats2cart()
 
-	def step(self, ndt=1, mode="nvt",var='pq',RSP=False,pmats=None):
+	def step(self, ndt=1, mode="nvt",var='pq',RSP=False,pmats=None,centmove=True):
 		if mode == "nve":
 			if(var=='pq'):
 				if RSP is False:
@@ -76,12 +76,14 @@ class Simulation(object):
 			if(var=='pq'):
 				if RSP is False:
 					for i in range(ndt):
-						self.NVT_pqstep(pmats)
+						self.NVT_pqstep(pmats,centmove)
 				else:
 					for i in range(ndt):
-						self.NVT_pqstep_RSP(pmats)
+						self.NVT_pqstep_RSP(pmats,centmove)
 			elif(var=='monodromy'):
 				for i in range(ndt):
 					self.NVT_Monodromystep(pmats)
 		self.t += ndt*self.dt
 		self.nstep += ndt
+
+## Need 2 different simulation classes for MF Matsubara and Matsubara
