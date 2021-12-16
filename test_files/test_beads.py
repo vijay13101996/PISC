@@ -54,6 +54,8 @@ dpot = rp.dpot
 dpot_cart = rp.dpot_cart
 
 # Verifying whether the normal mode transformation functions and matrices are working alright.
+print('q',rp.q,rp.nmtrans.cart2mats(rp.qcart),np.einsum('ij,...j',rp.nm_matrix.T,rp.qcart))
+
 print('dpot', dpot[1], rp.nmtrans.cart2mats(dpot_cart)[1])
 print('dpot_cart', dpot_cart[1], rp.nmtrans.mats2cart(dpot)[1]) 
 

@@ -8,7 +8,7 @@ from PISC.potentials.harmonic_2D import Harmonic
 from PISC.potentials.double_well_potential import double_well
 from PISC.potentials.harmonic_1D import harmonic
 from PISC.engine.thermostat import PILE_L
-from PISC.engine.simulation import Simulation
+from PISC.engine.simulation import RP_Simulation
 from matplotlib import pyplot as plt
 from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr, read_arr
 import time
@@ -72,7 +72,7 @@ def main(filename,sysname,potkey,nrun,lamda,g,times,m,N,nbeads,dt_therm,dt,rngSe
 	propa = Symplectic_order_IV()
 	propa.bind(ens, motion, rp, pes, rng, therm)
 	
-	sim = Simulation()
+	sim = RP_Simulation()
 	sim.bind(ens,motion,rng,rp,pes,propa,therm)
 
 	time_total = time_total

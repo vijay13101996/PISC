@@ -1,14 +1,10 @@
 import numpy as np
 import PISC
-from PISC.engine.integrators import Symplectic_order_II, Symplectic_order_IV, Runge_Kutta_order_VIII
+from PISC.engine.integrators import Symplectic_order_II
 from PISC.engine.beads import RingPolymer
-from PISC.engine.ensemble import Ensemble
 from PISC.engine.motion import Motion
-from PISC.potentials.harmonic_2D import Harmonic
-from PISC.potentials.double_well_potential import double_well
-from PISC.potentials.harmonic_1D import harmonic
 from PISC.engine.thermostat import PILE_L
-from PISC.engine.simulation import Simulation
+from PISC.engine.simulation import RP_Simulation
 from matplotlib import pyplot as plt
 from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr, read_arr
 import time
@@ -24,7 +20,7 @@ def thermalize_rp(ens,rp,pes,time_therm,dt,potkey,rngSeed):
 	propa = Symplectic_order_II()
 	propa.bind(ens, motion, rp, pes, rng, therm)
 
-	sim = Simulation()
+	sim = RP_Simulation()
 	sim.bind(ens,motion,rng,rp,pes,propa,therm)
 	start_time = time.time()
 

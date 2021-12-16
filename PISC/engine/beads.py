@@ -5,7 +5,6 @@ discretized imaginary time path-integrals.
 
 import numpy as np
 from PISC.utils import nmtrans,misc
-
 ### Work left:
 # 1. Display error messages on input errors.
 # 2. Augment code to simulate molecules: 
@@ -98,9 +97,7 @@ class RingPolymer(object):
 		if scaling is None:
 			self.scaling="none"
 			self._sgamma = None
-			self._sfreq = None
-			if nmats is not None:
-				self.nmats = nmats
+			self._sfreq = None	
 		elif (scaling=='MFmats'):
 			self.nmats = nmats
 			self.scaling = scaling
@@ -113,7 +110,7 @@ class RingPolymer(object):
 
 		if(mode =='rp'):
 			self.nmats = None
-		elif (mode=='mats' or mode=='MFmats'):	
+		elif (mode=='rp/mats' or mode=='mats'):	
 			if nmats is None:
 				raise ValueError('Number of Matsubara modes needs to be specified')	
 			else:
@@ -132,9 +129,7 @@ class RingPolymer(object):
 		self.nmtrans.compute_nm_matrix()
 		self.nm_matrix = self.nmtrans.nm_matrix
 
-		if(self.mode =='mats'):
-			self.freqs = self.get_mats_freqs()
-		elif(self.mode == 'MFmats'):
+		if(self.mode =='mats' or self.mode=='rp/mats'):
 			self.freqs = self.get_rp_freqs()
 			self.matsfreqs = self.get_mats_freqs()
 		elif(self.mode == 'rp' or self.freqs is None):
@@ -150,8 +145,9 @@ class RingPolymer(object):
 		
 		if self.Mpp is None and self.Mqq is None:
 			self.Mpp = np.zeros((self.nsys,self.ndim,self.ndim,self.nmodes,self.nmodes))
-			for d in range(self.ndim):
-				self.Mpp[:,d,d] = np.eye(self.nmodes,self.nmodes)
+			for d1 in range(self.ndim):
+				for d2 in range(self.ndim):
+					self.Mpp[:,d1,d2] = np.eye(self.nmodes,self.nmodes)
 			self.Mqq = self.Mpp.copy()
 		if self.Mqp is None and self.Mpq is None:
 			self.Mqp = np.zeros_like(self.Mqq)
@@ -159,48 +155,45 @@ class RingPolymer(object):
 		
 		# The above definition is not foolproof, but works for now.
 	
-		if(self.mode == 'rp' or self.mode == 'MFmats'):	
-			self.freqs2 = self.freqs**2
-			self.nmscale = self.get_dyn_scale()
-			self.dynm3 = self.m3*self.nmscale
-			self.sqdynm3 = np.sqrt(self.dynm3)
-			self.dynfreqs = self.freqs/np.sqrt(self.nmscale)
-			self.dynfreq2 = self.dynfreqs**2
-			
-			self.get_RSP_coeffs()	
-			self.ddpot = np.zeros((self.nsys,self.ndim,self.ndim,self.nmodes,self.nmodes))
-			for d in range(self.ndim):
-				self.ddpot[:,d,d] = np.eye(self.nmodes,self.nmodes)
-
-			self.ddpot*=(self.dynm3*self.dynfreq2)[:,:,None,:,None]
-			
-			self.ddpot_cart = np.zeros((self.nsys,self.ndim,self.ndim,self.nbeads,self.nbeads))
-			for d in range(self.ndim):
-				for k in range(self.nbeads-1):
-					self.ddpot_cart[:,d,d,k,k] = 2
-					self.ddpot_cart[:,d,d,k,k+1] = -1
-					self.ddpot_cart[:,d,d,k,k-1] = -1
-				self.ddpot_cart[:,d,d,self.nbeads-1,0] = -1
-				self.ddpot_cart[:,d,d,self.nbeads-1,self.nbeads-1] = 2
-				self.ddpot_cart[:,d,d,self.nbeads-1,self.nbeads-2] = -1
+		self.freqs2 = self.freqs**2
+		self.nmscale = self.get_dyn_scale()
+		self.dynm3 = self.m3*self.nmscale
+		self.sqdynm3 = np.sqrt(self.dynm3)
+		self.dynfreqs = self.freqs/np.sqrt(self.nmscale)
+		self.dynfreq2 = self.dynfreqs**2
 		
-			#print('omegan',self.omegan)	
-			self.ddpot_cart*=(self.dynm3*self.omegan**2)[:,:,None,:,None]
-			
+		self.get_RSP_coeffs()	
+		self.ddpot = np.zeros((self.nsys,self.ndim,self.ndim,self.nmodes,self.nmodes))
+		for d1 in range(self.ndim):
+			for d2 in range(self.ndim):
+				self.ddpot[:,d1,d2] = np.eye(self.nmodes,self.nmodes)
+
+		self.ddpot*=(self.dynm3*self.dynfreq2)[:,:,None,:,None]
+		
+		self.ddpot_cart = np.zeros((self.nsys,self.ndim,self.ndim,self.nbeads,self.nbeads))
+		for d1 in range(self.ndim):
+			for d2 in range(self.ndim):
+				for k in range(self.nbeads-1):
+					self.ddpot_cart[:,d1,d2,k,k] = 2
+					self.ddpot_cart[:,d1,d2,k,k+1] = -1
+					self.ddpot_cart[:,d1,d2,k,k-1] = -1
+				self.ddpot_cart[:,d1,d2,self.nbeads-1,0] = -1
+				self.ddpot_cart[:,d1,d2,self.nbeads-1,self.nbeads-1] = 2
+				self.ddpot_cart[:,d1,d2,self.nbeads-1,self.nbeads-2] = -1
+	
+		self.ddpot_cart*=(self.dynm3*self.omegan**2)[:,:,None,:,None]	
+	
 		if self.p is None and self.pcart is None:
-			sp = self.rng.normal(size=self.q.shape,scale=1/np.sqrt(self.ens.beta))
-			self.p = self.sqdynm3*sp
-			self.pcart = self.nmtrans.mats2cart(self.p, self.pcart)		
+			self.p = self.rng.normal(size=self.q.shape,scale=1/np.sqrt(self.ens.beta))
+			self.pcart = self.nmtrans.mats2cart(self.p)		
 		elif(self.pcart is None):
 			self.pcart = self.nmtrans.mats2cart(self.p)
 		else:
 			self.p = self.nmtrans.cart2mats(self.pcart)
-
-		# Variables specific to Matsubara dynamics may need to be defined as well.
-
+	
 	def get_dyn_scale(self):
 		scale = np.ones(self.nmodes)
-		if (self.scaling=="none" or self.scaling=="mats"):
+		if (self.scaling=="none"):
 			return scale
 		elif (self.scaling=="MFmats"):
 			if(self._sgamma is None):
@@ -208,6 +201,13 @@ class RingPolymer(object):
 			elif(self._sfreq is None):
 				scale = (self.freqs/(self._sgamma*self.omegan))**2 
 			scale[:self.nmats] = 1.0
+			return scale
+		elif (self.scaling=='cmd'):
+			if(self._sgamma is None):
+				scale = (self.freqs/self._sfreq)**2
+			elif(self._sfreq is None):
+				scale = (self.freqs/(self._sgamma*self.omegan))**2 
+			scale[0] = 1.0
 			return scale
 
 	def RSP_step(self):
@@ -232,7 +232,6 @@ class RingPolymer(object):
 		return freqs
 
 	def get_mats_freqs(self):
-		# Modify this for mean-field Matsubara
 		n = [0]
 		if(self.mode=='mats'):
 			for i in range(1,self.nmodes//2+1):
@@ -240,7 +239,7 @@ class RingPolymer(object):
 				n.append(i)
 			freqs = 2*np.pi*np.array(n)/(self.ens.beta)
 			return freqs			
-		elif(self.mode=='MFmats'):
+		elif(self.mode=='rp/mats'):
 			for i in range(1,self.nmats//2+1):
 				n.append(-i)
 				n.append(i)
@@ -255,7 +254,7 @@ class RingPolymer(object):
 			mat[1,0] = np.sinc(self.dynfreqs[n]*self.dt/np.pi)*self.dt
 			self.RSP_coeffs[n] = mat
 				
-	def nm_matrix(self):
+	def nm_matrix(self): # Delete this. It is redundant.
 			narr = [0]
 			for i in range(1,self.nmodes//2+1):
 				narr.append(-i)
@@ -279,7 +278,14 @@ class RingPolymer(object):
 				if(self.nmodes%2==0):
 					self.nm_matrix[l,self.nmodes-1] =(-1)**l/np.sqrt(self.nmodes)
 			#self.nm_matrix = self.nm_matrix.T	
-				
+		
+	def mats_beads(self):
+		if self.nmats is None: 
+			return self.qcart
+		else:
+			ret= np.einsum('ij,...j',(self.nmtrans.nm_matrix)[:,:self.nmats],self.q[...,:self.nmats]) #Check this!
+			return ret
+	
 	def mats2cart(self):
 		self.qcart = self.nmtrans.mats2cart(self.q)
 		self.pcart = self.nmtrans.mats2cart(self.p)
@@ -291,6 +297,7 @@ class RingPolymer(object):
 	@property
 	def theta(self): # Change for more than 1D
 		ret = self.matsfreqs*misc.pairwise_swap(self.q[...,:self.nmats],self.nmats)*self.p[...,:self.nmats]
+		#print(self.q[...,1]*self.p[...,2],self.q[...,2]*self.p[...,1])
 		#print('ret', ret.shape)
 		#print('freq', self.matsfreqs)
 		#print('q',self.q[...,:self.nmats], misc.pairwise_swap(self.q[...,:self.nmats],self.nmats))
