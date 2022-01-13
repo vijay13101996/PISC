@@ -49,7 +49,6 @@ pes.bind(ens,rp)
 therm = PILE_L(tau0=100.0,pile_lambda=1.0) 
 therm.bind(rp,motion,rng,ens)
 
-### Scipy odeint integrator
 propa = Symplectic_order_II()
 propa.bind(ens, motion, rp, pes, rng, therm)
 

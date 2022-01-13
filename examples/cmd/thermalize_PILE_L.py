@@ -30,7 +30,7 @@ def thermalize_rp(ens,rp,pes,time_therm,dt,potkey,rngSeed):
 	#tarr = []
 	#kinarr = []
 	for i in range(nthermsteps):
-		sim.step(mode="nvt",var='pq',RSP=True,pmats=pmats)
+		sim.step(mode="nvt",var='pq',RSP=True,pc=True)
 		#tarr.append(i*dt)
 		#kinarr.append((rp.pcart**2).sum())#kin.sum())
 
@@ -39,6 +39,6 @@ def thermalize_rp(ens,rp,pes,time_therm,dt,potkey,rngSeed):
 
 	print('kin',rp.kin.sum(),0.5*rp.ndim*rp.nsys*rp.nbeads**2/ens.beta)	
 
-	store_arr(rp.qcart,'Thermalized_rp_qcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(rp.nsys,rp.nbeads,ens.beta,potkey,rngSeed),"./examples/Datafiles/")
-	store_arr(rp.pcart,'Thermalized_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(rp.nsys,rp.nbeads,ens.beta,potkey,rngSeed),"./examples/Datafiles/") 
+	store_arr(rp.qcart,'Thermalized_rp_qcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(rp.nsys,rp.nbeads,ens.beta,potkey,rngSeed),"./examples/cmd/Datafiles/")
+	store_arr(rp.pcart,'Thermalized_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(rp.nsys,rp.nbeads,ens.beta,potkey,rngSeed),"./examples/cmd/Datafiles/") 
 	

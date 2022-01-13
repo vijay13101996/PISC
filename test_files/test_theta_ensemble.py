@@ -20,7 +20,7 @@ lamda = 0.8
 g = 1/50.0
 T = lamda*(0.5/np.pi)#5.0
 m = 0.5
-N = 1
+N = 10
 
 nbeads = 16#32
 nmats = 3 

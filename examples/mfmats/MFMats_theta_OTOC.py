@@ -8,7 +8,7 @@ from PISC.potentials.harmonic_2D import Harmonic
 from PISC.potentials.double_well_potential import double_well
 from PISC.potentials.harmonic_1D import harmonic
 from PISC.engine.thermostat import PILE_L
-from PISC.engine.simulation import Simulation
+from PISC.engine.simulation import RP_Simulation
 from matplotlib import pyplot as plt
 from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr, read_arr
 import time
@@ -17,7 +17,7 @@ from thermalizer import constrained_theta_thermalize
 import pickle
 import h5py
 
-def main(filename,sysname,potkey,nrun,lamda,g,times,m,N,nbeads,nmats,dt_therm,dt,time_therm,gamma,time_total,theta,rngSeed):
+def main(filename,pathname,sysname,potkey,nrun,lamda,g,times,m,N,nbeads,nmats,dt_therm,dt,time_therm,gamma,time_total,theta,rngSeed):
 	dim = 1
 	Tc = lamda*(0.5/np.pi)#5.0
 	T = times*Tc
@@ -34,7 +34,7 @@ def main(filename,sysname,potkey,nrun,lamda,g,times,m,N,nbeads,nmats,dt_therm,dt
 	beta = 1/T
 	
 	rngSeed = rngSeed
-	rp = RingPolymer(qcart=qcart,m=m) 
+	rp = RingPolymer(qcart=qcart,m=m,nmats=nmats,mode='rp/mats') 
 	ens = Ensemble(beta=beta,theta=theta,ndim=dim)
 	motion = Motion(dt = dt,symporder=2) 
 	rng = np.random.default_rng(rngSeed) 
@@ -44,8 +44,8 @@ def main(filename,sysname,potkey,nrun,lamda,g,times,m,N,nbeads,nmats,dt_therm,dt
 	pes = double_well(lamda,g)
 	pes.bind(ens,rp)
 
-	time_therm = time_therm
-	constrained_theta_thermalize(ens,rp,pes,time_therm,time_relax,dt,potkey,rngSeed)
+	time_relax = time_therm
+	constrained_theta_thermalize(theta,ens,rp,pes,time_therm,time_relax,dt,potkey,rngSeed)
 	
 	tarr=[]
 	qarr=[]
@@ -58,8 +58,8 @@ def main(filename,sysname,potkey,nrun,lamda,g,times,m,N,nbeads,nmats,dt_therm,dt
 
 	dt = dt/gamma
 		
-	q = read_arr('Theta_{}_thermalized_rp_qcart_N_{}_nbeads_{}_nmats_{}_beta_{}_{}_seed_{}'.format(theta,rp.nsys,rp.nbeads,rp.nmats,ens.beta,potkey,rngSeed),"./examples/mfmats/Datafiles/")
-	p = read_arr('Theta_{}_thermalized_rp_pcart_N_{}_nbeads_{}_nmats_{}_beta_{}_{}_seed_{}'.format(theta,rp.nsys,rp.nbeads,rp.nmats,ens.beta,potkey,rngSeed),"./examples/mfmats/Datafiles/")
+	q = read_arr('Theta_{}_thermalized_rp_qcart_N_{}_nbeads_{}_nmats_{}_beta_{}_{}_seed_{}'.format(theta,rp.nsys,rp.nbeads,rp.nmats,ens.beta,potkey,rngSeed),"./examples/mfmats/Datafiles")
+	p = read_arr('Theta_{}_thermalized_rp_pcart_N_{}_nbeads_{}_nmats_{}_beta_{}_{}_seed_{}'.format(theta,rp.nsys,rp.nbeads,rp.nmats,ens.beta,potkey,rngSeed),"./examples/mfmats/Datafiles")
 	
 	rp = RingPolymer(q=q,p=p,m=m,scaling='MFmats',mode='rp/mats',nmats=nmats,sgamma=gamma)
 	motion = Motion(dt = dt,symporder=4) 
@@ -72,7 +72,7 @@ def main(filename,sysname,potkey,nrun,lamda,g,times,m,N,nbeads,nmats,dt_therm,dt
 	propa = Symplectic_order_IV()
 	propa.bind(ens, motion, rp, pes, rng, therm)
 	
-	sim = Simulation()
+	sim = RP_Simulation()
 	sim.bind(ens,motion,rng,rp,pes,propa,therm)
 
 	time_total = time_total
@@ -92,8 +92,8 @@ def main(filename,sysname,potkey,nrun,lamda,g,times,m,N,nbeads,nmats,dt_therm,dt
 			Mqqarr.append(Mqq)
 			#Earr.append(np.sum(pes.pot)+np.sum(rp.pot)+rp.kin)
 
-	fname = 'MFMats_OTOC_{}_theta_{}_{}_inv_harmonic_T_{}_N_{}_nbeads_{}_gamma_{}_dt_{}_seed_{}'.format(sysname,theta,T,N,nbeads,gamma,dt,rngSeed)
-	store_1D_plotdata(tarr,Mqqarr,fname,'./examples/Datafiles')
+	fname = 'MFMats_OTOC_{}_theta_{}_inv_harmonic_T_{}_N_{}_nbeads_{}_gamma_{}_dt_{}_seed_{}'.format(sysname,theta,T,N,nbeads,gamma,dt,rngSeed)
+	store_1D_plotdata(tarr,Mqqarr,fname,'{}/Datafiles'.format(pathname))
 
 	if(0):
 		with h5py.File(filename, 'a') as f:

@@ -9,8 +9,9 @@ import CMD_OTOC
 from functools import partial
 from PISC.utils.mptools import chunks, batching
 
-def get_var_value(filename="./examples/CMD_OTOC_simulation_count.dat"):
-    with open(filename, "a+") as f:
+def get_var_value(path):
+    filename="{}/CMD_OTOC_simulation_count.dat".format(path)
+	with open(filename, "a+") as f:
         f.seek(0)
         val = int(f.read() or 0) + 1
         f.seek(0)
@@ -31,21 +32,23 @@ dt = 0.005
 time_therm = 20.0
 time_total = 10.0
 
+path = os.path.dirname(os.path.abspath(__file__))
+
 def begin_simulation(nbeads,gamma,rngSeed):
 	counter = get_var_value()
 	print("This simulation has been run {} times.".format(counter))
 
-	with h5py.File('./examples/CMD_OTOC_{}_{}.hdf5'.format(sysname,potkey), 'a') as f:
+	with h5py.File('{}/CMD_OTOC_{}_{}.hdf5'.format(path,sysname,potkey), 'a') as f:
 		try:
 			group = f.create_group('Run#{}'.format(counter))		
 		except:
 			pass
 				
-	CMD_OTOC.main('./examples/CMD_OTOC_{}_{}.hdf5'.format(sysname,potkey),sysname,potkey,counter,lamda,g,times,m,N,nbeads,dt_therm,dt,rngSeed,time_therm,gamma,time_total)
+	CMD_OTOC.main('{}/CMD_OTOC_{}_{}.hdf5'.format(path,sysname,potkey),path,sysname,potkey,counter,lamda,g,times,m,N,nbeads,dt_therm,dt,rngSeed,time_therm,gamma,time_total)
 
 # 12 cores for 32 beads, 8 cores for 16 beads, 6 cores for 8 beads and 2 cores for 4 beads.
-gamma = 1
-nbeads = 1
+gamma = 16
+nbeads = 4
 
 func = partial(begin_simulation, nbeads,gamma)
 seeds = range(0,2)

@@ -63,8 +63,8 @@ class Constrain_theta(Thermostat): #Need to be upgraded for 2D simulations
      
     def theta_constrained_randomize(self,dim_ind=0): 
         # Scaling factor for Pi_0 
-        R = np.sum(self.rp.matsfreqs**2*pairwise_swap(self.rp.q[:,dim_ind,:self.M],self.M)**2,axis=1)**0.5 
-
+        R = (np.sum(self.rp.matsfreqs**2*pairwise_swap(self.rp.q[:,dim_ind,:self.M],self.M)**2,axis=1)**0.5)[:,None] 
+        
         # First column of the unitary transformation matrix
         T0 = self.rp.matsfreqs*pairwise_swap(self.rp.q[:,dim_ind,:self.M],self.M)/R   
         T = self.rng.uniform(size=(self.rp.nsys,self.M,self.M))   
@@ -77,7 +77,7 @@ class Constrain_theta(Thermostat): #Need to be upgraded for 2D simulations
         Pi = self.rng.normal(0,(self.rp.m/self.ens.beta)**0.5,(N,self.M))
         
         # Setting Pi_0 to theta/R, so that the resultant distribution has the required theta
-        Pi[:,0] = self.theta/R
+        Pi[:,0] = self.theta/R[:,0]
 
         # Solving for the momentum distribution
         self.rp.p[:,dim_ind,:self.M] =np.einsum('ijk,ik->ij', T,Pi)

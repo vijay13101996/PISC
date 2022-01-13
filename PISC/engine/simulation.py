@@ -32,6 +32,7 @@ class Simulation(object):
 		self.order = self.motion.order
 
 class RP_Simulation(Simulation):
+	# Base class for simulations using ring polymers 
 	def __init__(self):
 		super(RP_Simulation,self).__init__()
 	

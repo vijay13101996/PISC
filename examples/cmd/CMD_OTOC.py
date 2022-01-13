@@ -17,7 +17,7 @@ from thermalize_PILE_L import thermalize_rp
 import pickle
 import h5py
 
-def main(filename,sysname,potkey,nrun,lamda,g,times,m,N,nbeads,dt_therm,dt,rngSeed,time_therm,gamma,time_total):
+def main(filename,pathname,sysname,potkey,nrun,lamda,g,times,m,N,nbeads,dt_therm,dt,rngSeed,time_therm,gamma,time_total):
 	dim = 1
 	Tc = lamda*(0.5/np.pi)#5.0
 	T = times*Tc
@@ -58,8 +58,8 @@ def main(filename,sysname,potkey,nrun,lamda,g,times,m,N,nbeads,dt_therm,dt,rngSe
 
 	dt = dt/gamma
 		
-	qcart = read_arr('Thermalized_rp_qcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(rp.nsys,rp.nbeads,ens.beta,potkey,rngSeed),"./examples/Datafiles/")
-	pcart = read_arr('Thermalized_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(rp.nsys,rp.nbeads,ens.beta,potkey,rngSeed),"./examples/Datafiles/")
+	qcart = read_arr('Thermalized_rp_qcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(rp.nsys,rp.nbeads,ens.beta,potkey,rngSeed),"./examples/cmd/Datafiles")
+	pcart = read_arr('Thermalized_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(rp.nsys,rp.nbeads,ens.beta,potkey,rngSeed),"./examples/cmd/Datafiles")
 	
 	rp = RingPolymer(qcart=qcart,pcart=pcart,m=m,scaling='MFmats',mode='MFmats',nmats=1,sgamma=gamma)
 	motion = Motion(dt = dt,symporder=4) 
@@ -76,14 +76,12 @@ def main(filename,sysname,potkey,nrun,lamda,g,times,m,N,nbeads,dt_therm,dt,rngSe
 	sim.bind(ens,motion,rng,rp,pes,propa,therm)
 
 	time_total = time_total
-	nsteps = int(time_total/dt)
-	pmats = np.array([True for i in range(rp.nbeads)])
-	pmats[:rp.nmats] = False
+	nsteps = int(time_total/dt)	
 
 	start_time = time.time()
 	stride = gamma	
 	for i in range(nsteps):
-		sim.step(mode="nvt",var='monodromy',pmats=pmats)
+		sim.step(mode="nvt",var='monodromy',pc=False)
 		if(i%stride == 0):
 			Mqq = np.mean(abs(rp.Mqq[:,0,0,0,0]**2)) #rp.Mqq[0,0,0,0,0]#
 			tarr.append(sim.t)
@@ -94,26 +92,27 @@ def main(filename,sysname,potkey,nrun,lamda,g,times,m,N,nbeads,dt_therm,dt,rngSe
 			Mqqarr.append(Mqq)
 			#Earr.append(np.sum(pes.pot)+np.sum(rp.pot)+rp.kin)
 
-	with h5py.File(filename, 'a') as f:
-		group = f['Run#{}'.format(nrun)]
-		group.attrs['lambda'] = lamda
-		group.attrs['g'] = g
-		group.attrs['T'] = T
-		group.attrs['xTc'] = times
-		group.attrs['m'] = m
-		group.attrs['N'] = N
-		group.attrs['nbeads'] = nbeads
-		group.attrs['dt_therm'] = dt	
-		group.attrs['therm_time'] = time_therm
-		group.attrs['total_OTOC_time'] = time_total
-		group.attrs['gamma'] = gamma
-		group.attrs['seed'] = rngSeed
-		group.create_dataset('tarr',data=tarr)
-		group.create_dataset('Mqqarr',data=Mqqarr)
+	if(0):
+		with h5py.File(filename, 'a') as f:
+			group = f['Run#{}'.format(nrun)]
+			group.attrs['lambda'] = lamda
+			group.attrs['g'] = g
+			group.attrs['T'] = T
+			group.attrs['xTc'] = times
+			group.attrs['m'] = m
+			group.attrs['N'] = N
+			group.attrs['nbeads'] = nbeads
+			group.attrs['dt_therm'] = dt	
+			group.attrs['therm_time'] = time_therm
+			group.attrs['total_OTOC_time'] = time_total
+			group.attrs['gamma'] = gamma
+			group.attrs['seed'] = rngSeed
+			group.create_dataset('tarr',data=tarr)
+			group.create_dataset('Mqqarr',data=Mqqarr)
 
 	fname = 'CMD_OTOC_{}_inv_harmonic_run_{}_T_{}_N_{}_nbeads_{}_gamma_{}_dt_{}_seed_{}'.format(sysname,nrun,T,N,nbeads,gamma,dt,rngSeed)
-	store_1D_plotdata(tarr,Mqqarr,fname,'./examples/Datafiles')
-
+	store_1D_plotdata(tarr,Mqqarr,fname,'{}/Datafiles'.format(pathname))
+	
 if(0):
 	if __name__ == '__main__':
 		import argparse

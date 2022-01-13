@@ -68,7 +68,7 @@ class PES(object):
 		return self.dpot_cart
 
 	def compute_mats_hessian(self):
-		self.ddpot_cart = self.ddpotmat*self.ddpotential(self.rp.mats_beads())[:,:,None,:np.newaxis]
+		self.ddpot_cart = self.ddpotmat*self.ddpotential(self.rp.mats_beads())[:,:,None,:,np.newaxis]
 		return self.dpot_cart
 
 	def centrifugal_term(self):
