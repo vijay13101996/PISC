@@ -1,6 +1,7 @@
 """
-This module defines the main class for treating 
-discretized imaginary time path-integrals.
+This module defines the main 'RingPolymer' class for treating 
+discretized imaginary time path-integrals. This class can be used
+to run CMD, RPMD, Matsubara and mean-field Matsubara simulations
 """
 
 import numpy as np
@@ -13,27 +14,23 @@ from PISC.utils import nmtrans,misc
 #	 b. When molecular labels are passed, ensure 
 #		that the masses are appropriately obtained
 #		from the utils module.
-# 3. Take care of the case with even number of 
-#	 Matsubara modes: Not worth doing this.
-# 4. Define momenta by default at class object 
-#	 definition (Not necessary)
-# 5. Figure out what happens to the free ring polymer
-#	 propagator when you use fourth order symplectic 
-#	 integrator (RSP cannot be done in 4th order code)
-# 6. Comment out the code. 
-# 7. Take care of the Matsubara mode ordering: It should
-#	 be [0,-1,1,-2,2...] (Done)
-# 8. Define M matrix as one of the Ring polymer dynamical
-#	 variables in both cartesian and Matsubara coordinates
-#	 (Not possible to do both simultaneously: Preferable to 
-#	  propagate M in Matsubara coordinates)
-
-# Ensure that the nmats, mode and scaling argument passed at 
-# initialization is consistently defined. Any potential conflict 
-# should be resolved and instructions to use the class object should
-# be well-documented.  
-
+# 3. Comment out the code. 
+  
 class RingPolymer(object):
+	"""
+	Attributes:
+	nbeads : Number of imaginary time points or 'beads'
+	nmodes : Number of ring-polymer normal modes (Usually same as nbeads)
+	nsys   : Number of parallel ring-polymer units 
+	nmats  : Number of Matsubara modes (Differs from nbeads for Matsubara simulations)
+
+	q/qcart 		: Ring-polymer bead positions in Cartesian/Matsubara coordinates
+	p/pcart 		: Ring-polymer bead momenta in Cartesian/Matsubara coordinates
+	Mpp,Mpq,Mqp,Mqq : Monodromy matrix elements of the ring-polymer beads in Matsubara coordinates
+	
+	m3	 : Vectorized ring-polymer bead masses
+	sqm3 : Square root of m3
+	"""
 
 	def __init__(self,p=None,q=None,pcart=None,qcart=None,
 		  Mpp=None,Mpq=None,Mqp=None,Mqq=None,
@@ -42,8 +39,7 @@ class RingPolymer(object):
 
 		if qcart is None:
 			if p is not None:
-				self.p = p
-				#self.pcart = nmtrans.mats2cart(p)
+				self.p = p	
 			else:
 				self.p = None
 			self.pcart = None
@@ -53,13 +49,11 @@ class RingPolymer(object):
 			self.qcart = None
 			self.nbeads = nmodes
 			self.nmodes = nmodes
-			self.nsys = len(self.q)
-			#self.qcart = nmtrans.mats2cart(q)
+			self.nsys = len(self.q)	
 			
 		if q is None:
 			if pcart is not None:
-				self.pcart = pcart
-				#self.p = nmtrans.FFT.cart2mats(pcart)
+				self.pcart = pcart	
 			else: 
 				self.pcart = None
 			self.p=None
@@ -69,8 +63,7 @@ class RingPolymer(object):
 			self.q = None	
 			self.nmodes = nbeads
 			self.nbeads = nbeads
-			self.nsys = len(self.qcart)	 
-			#self.q = nmtrans.FFT.cart2mats(qcart)
+			self.nsys = len(self.qcart)	 	
 			
 		self.m = m	
 		self.mode = mode 	
@@ -151,9 +144,7 @@ class RingPolymer(object):
 			self.Mqq = self.Mpp.copy()
 		if self.Mqp is None and self.Mpq is None:
 			self.Mqp = np.zeros_like(self.Mqq)
-			self.Mpq = np.zeros_like(self.Mqq)		
-		
-		# The above definition is not foolproof, but works for now.
+			self.Mpq = np.zeros_like(self.Mqq)			
 	
 		self.freqs2 = self.freqs**2
 		self.nmscale = self.get_dyn_scale()

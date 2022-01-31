@@ -9,7 +9,7 @@ from matplotlib import pyplot as plt
 from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr
 import time
 
-def constrained_theta_thermalize(theta,ens,rp,pes,time_therm,time_relax,dt,potkey,rngSeed):
+def constrained_theta_thermalize(pathname,theta,ens,rp,pes,time_therm,time_relax,dt,potkey,rngSeed):
 	motion = Motion(dt = dt,symporder=2)
 	rng = np.random.default_rng(rngSeed)  
 	therm = PILE_L(tau0=100.0,pile_lambda=1.0)
@@ -41,6 +41,6 @@ def constrained_theta_thermalize(theta,ens,rp,pes,time_therm,time_relax,dt,potke
 	sim.step(ndt = nrelaxsteps,mode="nve",var='pq')
 	#print('theta',rp.theta,theta)
 	
-	store_arr(rp.qcart,'Theta_{}_thermalized_rp_qcart_N_{}_nbeads_{}_nmats_{}_beta_{}_{}_seed_{}'.format(theta,rp.nsys,rp.nbeads,rp.nmats,ens.beta,potkey,rngSeed),"./examples/mfmats/Datafiles/")
-	store_arr(rp.pcart,'Theta_{}_thermalized_rp_pcart_N_{}_nbeads_{}_nmats_{}_beta_{}_{}_seed_{}'.format(theta,rp.nsys,rp.nbeads,rp.nmats,ens.beta,potkey,rngSeed),"./examples/mfmats/Datafiles/") 
+	store_arr(rp.qcart,'Theta_{}_thermalized_rp_qcart_N_{}_nbeads_{}_nmats_{}_beta_{}_{}_seed_{}'.format(theta,rp.nsys,rp.nbeads,rp.nmats,ens.beta,potkey,rngSeed),"{}/Datafiles/".format(pathname))
+	store_arr(rp.pcart,'Theta_{}_thermalized_rp_pcart_N_{}_nbeads_{}_nmats_{}_beta_{}_{}_seed_{}'.format(theta,rp.nsys,rp.nbeads,rp.nmats,ens.beta,potkey,rngSeed),"{}/Datafiles/".format(pathname)) 
 	

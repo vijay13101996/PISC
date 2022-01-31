@@ -56,7 +56,10 @@ class PES(object):
 		return self.dpot_cart
 
 	def compute_hessian(self):
-		self.ddpot_cart = self.ddpotmat*self.ddpotential(self.rp.qcart)[:,:,None,:,np.newaxis]
+		if(self.ndim==1):
+			self.ddpot_cart = self.ddpotmat*self.ddpotential(self.rp.qcart)[:,:,None,:,np.newaxis]
+		else:
+			self.ddpot_cart = self.ddpotmat*self.ddpotential(self.rp.qcart)[...,np.newaxis]
 		return self.ddpot_cart
 
 	def compute_mats_potential(self):

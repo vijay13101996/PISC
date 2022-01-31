@@ -22,25 +22,23 @@ def get_var_value(path):
 
 potkey = 'inv_harmonic'
 sysname = 'Selene'
-	
+path = os.path.dirname(os.path.abspath(__file__))
+
 lamda = 0.8
 g = 1/50.0
 times = 1
 m = 0.5
-N = 10
+N = 1000
 dt = 0.01
 time_therm = 20.0
 time_relax = 5.0
 nsample = 5
 
-path = os.path.dirname(os.path.abspath(__file__))
-print('path',path)
-
 def begin_simulation(nbeads,rngSeed):
 	counter = get_var_value(path)
 	print("This Simulation has been run {} times.".format(counter))
 
-	qgrid = np.linspace(0.0,8.0,11)
+	qgrid = np.linspace(0.0,8.0,101)
 	with h5py.File('{}/CMD_PMF_{}_{}.hdf5'.format(path,sysname,potkey), 'a') as f:
 		try:
 			group = f.create_group('Run#{}'.format(counter))		
@@ -49,10 +47,10 @@ def begin_simulation(nbeads,rngSeed):
 				
 	CMD_PMF.main('{}/CMD_PMF_{}_{}.hdf5'.format(path,sysname,potkey),path,sysname,counter,lamda,g,times,m,N,nbeads,dt,rngSeed,time_therm,time_relax,qgrid,nsample)
 
-# 12 cores for 32 beads, 8 cores for 16 beads, 6 cores for 8 beads and 2 cores for 4 beads.
+# 12 cores for 32 beads, 10 cores for 16 beads, 4 cores for 8 beads and 2 cores for 4 beads.
 
-nbeads = 8
+nbeads = 32
 func = partial(begin_simulation, nbeads)
-seeds = [1]#range(0,100)
-seed_split = chunks(seeds,2)
+seeds = range(0,100)
+seed_split = chunks(seeds,12)
 batching(func,seed_split,max_time=1e6)

@@ -92,7 +92,7 @@ def main(filename,pathname,sysname,nrun,lamda,g,times,m,N,nbeads,dt,rngSeed,time
 			qg.attrs['ngrid'] = len(qgrid)	
 			group.create_dataset('fgrid',data=fgrid)
 
-	fname = 'CMD_PMF_{}_inv_harmonic_run_{}_T_{}_N_{}_nbeads_{}_dt_{}_thermtime_{}_relaxtime_{}_nsample_{}_seed_{}'.format(sysname,nrun,T,N,nbeads,dt,time_therm,time_relax,nsample,rngSeed)
+	fname = 'CMD_PMF_{}_inv_harmonic_T_{}Tc_N_{}_nbeads_{}_dt_{}_thermtime_{}_relaxtime_{}_nsample_{}_seed_{}'.format(sysname,times,N,nbeads,dt,time_therm,time_relax,nsample,rngSeed)
 	store_1D_plotdata(qgrid,fgrid,fname,"{}/Datafiles".format(pathname))
 			
 ###-----------------Stray code-----------------------------------------------------
