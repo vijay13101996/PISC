@@ -206,6 +206,13 @@ class Symplectic_order_IV(Integrator):
 		for k in range(4):
 			self.Monodromy_kstep_nosprings(k)
 
+class Symplectic_order_IV_multidim(Symplectic_order_IV):	
+	def M1(self,k):
+		self.rp.Mpp-=self.motion.pdt[k]*np.einsum('ijk...,ikl...->ijl...',self.pes.ddpot,self.rp.Mqp)
+		
+	def M2(self,k):
+		self.rp.Mpq-=self.motion.pdt[k]*np.einsum('ijk...,ikl...->ijl...',self.pes.ddpot,self.rp.Mqq)
+			
 class Runge_Kutta_order_VIII(Integrator):
 	def int_func(self,y,t):		
 		N = self.rp.nsys*self.rp.nbeads*self.rp.ndim

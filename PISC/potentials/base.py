@@ -86,7 +86,7 @@ class PES(object):
 			self.compute_force()
 			self.compute_hessian()
 			self.dpot = self.nmtrans.cart2mats(self.dpot_cart)
-			self.ddpot = self.nmtrans.cart2mats_hessian(self.ddpot_cart)
+			self.ddpot = self.nmtrans.cart2mats_hessian(self.ddpot_cart)	
 		elif(self.rp.mode=='rp/mats'):
 			self.compute_mats_potential()
 			self.compute_mats_force()

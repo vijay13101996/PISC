@@ -138,9 +138,8 @@ class RingPolymer(object):
 		
 		if self.Mpp is None and self.Mqq is None:
 			self.Mpp = np.zeros((self.nsys,self.ndim,self.ndim,self.nmodes,self.nmodes))
-			for d1 in range(self.ndim):
-				for d2 in range(self.ndim):
-					self.Mpp[:,d1,d2] = np.eye(self.nmodes,self.nmodes)
+			for d in range(self.ndim):
+				self.Mpp[:,d,d] = np.eye(self.nmodes,self.nmodes)
 			self.Mqq = self.Mpp.copy()
 		if self.Mqp is None and self.Mpq is None:
 			self.Mqp = np.zeros_like(self.Mqq)
@@ -155,7 +154,7 @@ class RingPolymer(object):
 		
 		self.get_RSP_coeffs()	
 		self.ddpot = np.zeros((self.nsys,self.ndim,self.ndim,self.nmodes,self.nmodes))
-		for d1 in range(self.ndim):
+		for d1 in range(self.ndim):  ##Check here when doing multi-D simulation with beads!!!
 			for d2 in range(self.ndim):
 				self.ddpot[:,d1,d2] = np.eye(self.nmodes,self.nmodes)
 
