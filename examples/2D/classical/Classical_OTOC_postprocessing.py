@@ -14,20 +14,20 @@ import pickle
 import os
 
 m = 0.5
-omega = 1.0
+omega = 0.5
 g0 = 0.1#3e-3#0.0#1/100.0
-T_au = 1.0
+T_au = 1.5
 beta = 1.0/T_au 
 print('T in au',T_au)
 
-potkey = 'coupled_harmonic'#_w_{}_g_{}'.format(omega,g0)
+potkey = 'coupled_harmonic_w_{}_g_{}'.format(omega,g0)
 sysname = 'Selene'		
 
 N = 1000
 dt_therm = 0.01
 dt = 0.005
 time_therm = 40.0
-time_total = 15.0
+time_total = 10.0
 
 tarr = np.arange(0.0,time_total,dt)
 OTOCarr = np.zeros_like(tarr) +0j
@@ -36,12 +36,13 @@ path = os.path.dirname(os.path.abspath(__file__))
 datapath = '{}/Datafiles'.format(path)
 
 if(1):
-	keyword1 = 'Classical_OTOC_Selene_{}_T'.format(potkey)
+	keyword1 = 'correctedClassical_OTOC_Selene_{}'.format(potkey)
 	keyword2 = 'T_{}'.format(T_au)
+	keyword3 = 'dt_{}'.format(dt)
 	flist = []
 	
 	for fname in os.listdir(datapath):
-		if keyword1 in fname and keyword2 in fname:
+		if keyword1 in fname and keyword2 in fname and keyword3 in fname:
 			#print('fname',fname)
 			flist.append(fname)
 
@@ -60,9 +61,9 @@ if(1):
 	OTOCarr/=count
 	#plt.plot(tarr,np.log(abs(OTOCarr)))
 	#plt.show()
-	store_1D_plotdata(tarr,OTOCarr,'Classical_OTOC_{}_T_{}_dt_{}'.format(potkey,T_au,dt),datapath)
+	store_1D_plotdata(tarr,OTOCarr,'correctedClassical_OTOC_{}_T_{}_dt_{}'.format(potkey,T_au,dt),datapath)
 
-if(1): # Beads
+if(0): # Beads
 	#fig = plt.figure()
 	plt.suptitle(r'Classical OTOC at $T={}$'.format(T_au))
 	data = read_1D_plotdata('{}/Classical_OTOC_{}_T_{}_dt_{}.txt'.format(datapath,potkey,T_au,dt))

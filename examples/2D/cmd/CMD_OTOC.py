@@ -73,7 +73,7 @@ def main(filename,pathname,sysname,potkey,nrun,omega,g0,T_au,m,N,nbeads,dt_therm
 	start_time = time.time()
 		
 	for i in range(nsteps):
-		sim.step(mode="nve",var='monodromy',pc=False)	
+		sim.step(mode="nvt",var='monodromy',pc=False)	
 		Mqq = np.mean(abs(rp.Mqq[:,0,0,0,0]**2)) #rp.Mqq[0,0,0,0,0]#
 		tarr.append(sim.t)
 		#print('mqq,ddpot',pes.ddpot[0,:,:,0,0],rp.Mqq[0,:,:,0,0])
@@ -103,5 +103,5 @@ def main(filename,pathname,sysname,potkey,nrun,omega,g0,T_au,m,N,nbeads,dt_therm
 			group.create_dataset('tarr',data=tarr)
 			group.create_dataset('Mqqarr',data=Mqqarr)
 
-	fname = 'CMD_OTOC_{}_{}_T_{}_N_{}_nbeads_{}_gamma_{}_dt_{}_seed_{}'.format(sysname,potkey,T,N,nbeads,gamma,dt,rngSeed)	
+	fname = 'corrected_CMD_OTOC_{}_{}_T_{}_N_{}_nbeads_{}_gamma_{}_dt_{}_seed_{}'.format(sysname,potkey,T,N,nbeads,gamma,dt,rngSeed)	
 	store_1D_plotdata(tarr,Mqqarr,fname,'{}/Datafiles'.format(pathname))	

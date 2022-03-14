@@ -21,20 +21,20 @@ def get_var_value(path):
 		return val
 
 m = 0.5
-omega = 1.0
+omega = 0.5
 g0 = 0.1
-T_au = 3.0
+T_au = 1.5
 beta = 1.0/T_au 
 print('T in au',T_au)
 
-potkey = 'coupled_harmonic'#_w_{}_g_{}'.format(omega,g0)
+potkey = 'coupled_harmonic_w_{}_g_{}'.format(omega,g0)
 sysname = 'Selene'		
 
 N = 1000
 dt_therm = 0.01
 dt = 0.005
 time_therm = 40.0
-time_total = 6.0#15.0
+time_total = 10.0#15.0
 
 path = os.path.dirname(os.path.abspath(__file__))
 
@@ -51,14 +51,14 @@ def begin_simulation(rngSeed):
 	
 	CMD_OTOC.main('{}/CMD_OTOC_{}_{}.hdf5'.format(path,sysname,potkey),path,sysname,potkey,counter,omega,g0,T_au,m,N,nbeads,dt_therm,dt,rngSeed,time_therm,gamma,time_total)
 
-nbeads=16
+nbeads=4
 gamma=16
 
 start_time = time.time()
 
 func = partial(begin_simulation)
-seeds = range(0,10)
-seed_split = chunks(seeds,10)
+seeds = range(0,100)
+seed_split = chunks(seeds,5)
 batching(func,seed_split,max_time=1e6)
 
 print('time', time.time()-start_time)

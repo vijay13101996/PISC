@@ -6,6 +6,7 @@ import scipy
 from scipy import interpolate
 import h5py
 import Classical_OTOC
+import Classical_TCF
 from functools import partial
 from PISC.utils.mptools import chunks, batching
 import os 
@@ -21,20 +22,20 @@ def get_var_value(path):
 		return val
 
 m = 0.5
-omega = 1.0#0.5
+omega = 0.5#0.5
 g0 = 0.1#1/100.0
-T_au = 0.5
+T_au = 1.5#0.5
 beta = 1.0/T_au 
 print('T in au',T_au)
 
-potkey = 'coupled_harmonic'#_w_{}_g_{}'.format(omega,g0)
+potkey = 'coupled_harmonic_w_{}_g_{}'.format(omega,g0)
 sysname = 'Selene'		
 
 N = 1000
 dt_therm = 0.01
 dt = 0.005
 time_therm = 40.0
-time_total = 15.0
+time_total = 10.0
 
 path = os.path.dirname(os.path.abspath(__file__))
 
@@ -50,8 +51,9 @@ def begin_simulation(rngSeed):
 				pass
 	
 	Classical_OTOC.main('{}/Classical_OTOC_{}_{}.hdf5'.format(path,sysname,potkey),path,sysname,potkey,counter,omega,g0,T_au,m,N,dt_therm,dt,rngSeed,time_therm,time_total)
+	#Classical_TCF.main('{}/Classical_TCF_{}_{}.hdf5'.format(path,sysname,potkey),path,sysname,potkey,counter,omega,g0,T_au,m,N,dt_therm,dt,rngSeed,time_therm,time_total)
 
 func = partial(begin_simulation)
-seeds = range(0,100)
+seeds = range(0,1)
 seed_split = chunks(seeds,10)
 batching(func,seed_split,max_time=1e6)

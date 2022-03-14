@@ -17,20 +17,20 @@ import os
 
 dim=2
 m = 0.5
-omega = 1.0
+omega = 0.5
 g0 = 0.1
 T_au = 3.0
 beta = 1.0/T_au 
 print('T in au',T_au)
 
-potkey = 'coupled_harmonic'#_w_{}_g_{}'.format(omega,g0)
+potkey = 'coupled_harmonic_w_{}_g_{}'.format(omega,g0)
 sysname = 'Selene'		
 
 N = 1000
 dt_therm = 0.01
 dt = 0.005
 time_therm = 40.0
-time_total = 6.0#15.0
+time_total = 10.0#15.0
 
 nbeads = 4
 rng = np.random.RandomState(1)
@@ -53,8 +53,6 @@ rp.bind(ens,motion,rng)
 pes = coupled_harmonic(omega,g0)#harmonic(2.0*np.pi)# Harmonic(2*np.pi)#harmonic(2.0)#Harmonic(2*np.pi)#
 pes.bind(ens,rp)
 
-time_therm = 40.0
-
 dt = 0.005
 gamma = 16
 
@@ -62,13 +60,12 @@ dtg = dt/gamma
 
 tarr = np.arange(0.0,time_total,dtg)
 OTOCarr = np.zeros_like(tarr) +0j
-potkey = 'coupled_harmonic'
 
 path = os.path.dirname(os.path.abspath(__file__))
 datapath = '{}/Datafiles'.format(path)
 
 if(1):
-	keyword1 = 'CMD_OTOC_Selene'
+	keyword1 = 'corrected_CMD_OTOC_Selene_{}_T_{}'.format(potkey,T_au)
 	keyword2 = 'nbeads_{}_'.format(nbeads)
 	keyword3 = 'gamma_{}'.format(gamma)
 	flist = []
@@ -79,6 +76,8 @@ if(1):
 			flist.append(fname)
 
 	count=0
+	
+	#flist = flist[:10]
 
 	for f in flist:
 		data = read_1D_plotdata('{}/{}'.format(datapath,f))
@@ -92,19 +91,37 @@ if(1):
 	OTOCarr/=count
 	#plt.plot(tarr,np.log(abs(OTOCarr)))
 	#plt.show()
-	store_1D_plotdata(tarr,OTOCarr,'CMD_OTOC_{}_T_{}_N_{}_nbeads_{}_gamma_{}_dt_{}'.format(potkey,T_au,N,nbeads,gamma,dt), datapath)
+	store_1D_plotdata(tarr,OTOCarr,'corrected_CMD_OTOC_{}_T_{}_N_{}_nbeads_{}_gamma_{}_dt_{}'.format(potkey,T_au,N,nbeads,gamma,dt), datapath)
 
-if(1): # Beads
+if(0):
+	for i in range(0,200):
+		fname = 'testCMD_OTOC_{}_{}_T_{}_N_{}_nbeads_{}_gamma_{}_dt_{}_seed_{}.txt'.format(sysname,potkey,T_au,N,nbeads,gamma,dt,i)
+		data = read_1D_plotdata('{}/{}'.format(datapath,fname))
+		tarr = data[:,0]
+		OTOCarr += data[:,1]
+	
+	OTOCarr/=200	
+	store_1D_plotdata(tarr,OTOCarr,'testCMD_OTOC_{}_T_{}_N_{}_nbeads_{}_gamma_{}_dt_{}_2'.format(potkey,T_au,N,nbeads,gamma,dt), datapath)
+
+if(0): # Beads
 	#fig = plt.figure()
 	plt.suptitle(r'CMD OTOC at $T=3$, $\gamma={}$'.format(gamma))
 	for i in [4]:#[4,8,16,32]:
-		data = read_1D_plotdata('{}/CMD_OTOC_{}_T_{}_N_{}_nbeads_{}_gamma_{}_dt_{}.txt'.format(datapath,potkey,T_au,N,nbeads,gamma,dt))
+		data = read_1D_plotdata('{}/corrected_CMD_OTOC_{}_T_{}_N_{}_nbeads_{}_gamma_{}_dt_{}.txt'.format(datapath,potkey,T_au,N,nbeads,gamma,dt))
 		tarr = data[:,0]
 		OTOCarr = data[:,1]
-		plt.plot(tarr,np.log(abs(OTOCarr)),label=r'$N_b$ = {}'.format(i),linewidth=3)#,color='k')
+		plt.plot(tarr,np.log(abs(OTOCarr)),label=r'$N_b$ = {}'.format(i),linewidth=3,color='k')
 
 	plt.legend()
-	plt.show()	
+	#plt.show()
+
+	fname = 'Classical_OTOC_{}_T_{}_dt_{}'.format(potkey,T_au,0.005)
+	data = read_1D_plotdata('/home/vgs23/PISC/examples/2D/classical/Datafiles/{}.txt'.format(fname))
+	t_arr = data[:,0]
+	OTOC_arr = data[:,1]
+	plt.plot(t_arr,np.log(OTOC_arr),linewidth=3,color='m')
+
+	
 
 if(0): # gamma
 	#fig = plt.figure()

@@ -30,4 +30,5 @@ class coupled_harmonic(PES):
 
 		def potential_xy(self,x,y):
 			return np.array((self.omega**2/4.0)*(x**2+y**2) + self.g0*x**2*y**2)
-			#return np.array((self.omega**2/4.0)*(x**2+y**2) + self.g0*x*y) 
+			#return np.array((self.omega**2/4.0)*(x**2+y**2) + self.g0*x*y)
+			#return np.array((self.omega**2/4.0)*(x**2+y**2) + self.g0*(x**2*y)) 

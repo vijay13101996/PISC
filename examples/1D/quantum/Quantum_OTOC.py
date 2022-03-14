@@ -4,26 +4,34 @@ from PISC.potentials.double_well_potential import double_well
 from PISC.potentials.eckart import eckart
 from PISC.potentials.razavy import razavy
 from PISC.potentials.trunc_harmonic import trunc_harmonic
+from PISC.potentials.Morse_1D import morse
 from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr, read_arr
-import OTOC_f_1D
-import OTOC_f_2D
+#import OTOC_f_1D
+#import OTOC_f_2D
 from matplotlib import pyplot as plt
 import os 
 
-L = 10.0
-lb = -L
+L = 60.0
+lb = -L//2
 ub = L
 m = 0.5
 ngrid = 400
 
 if(1):
+	w = 0.1
+	D = 5.0
+	alpha = (0.5*m*w**2/D)**0.5
+	pes = morse(D,alpha)
+	Tc = 1.0
+
+if(0):
 	lamda = 0.8
 	g = 1/50.0
 	Tc = lamda*(0.5/np.pi)    
 	pes = double_well(lamda,g)
 	#potkey = 'inv_harmonic'
 
-if(1):
+if(0):
 	D = 0.32
 	k = 0.4
 	w = 5.0#0.005
@@ -55,17 +63,19 @@ beta = 1.0/T_au
 DVR = DVR1D(ngrid,lb,ub,m,pes.potential)
 vals,vecs = DVR.Diagonalize() 
 
+print('vals',vals[:20])
+
 if(1):
-	qgrid = np.linspace(-L,L,2000)
+	qgrid = np.linspace(lb,ub,2000)
 	potgrid = pes.potential(qgrid)
 	#potgrid =np.vectorize(pes.potential)(qgrid)
-	potgrid1 = pes1.potential(qgrid)
+	#potgrid1 = pes1.potential(qgrid)
 	fig = plt.figure()
 	ax = plt.gca()
 	ax.set_ylim([0,10])
 	plt.plot(qgrid,potgrid)	
-	plt.plot(qgrid,potgrid1,color='k')
-	plt.plot(qgrid,-0.16*qgrid**2 + 0.32)
+	#plt.plot(qgrid,potgrid1,color='k')
+	#plt.plot(qgrid,-0.16*qgrid**2 + 0.32)
 	for i in range(10):
 			plt.axhline(y=vals[i])
 	plt.show()

@@ -105,7 +105,7 @@ class DVR2D(DVR1D):
 				iy = tuple_arr[i][1]
 				jx = tuple_arr[j][0]
 				jy = tuple_arr[j][1]
-				Kin_mat[i][j] = self.Kin_matrix_2D_elt(ix,jx,iy,jy)	
+				Kin_mat[i][j] = self.Kin_matrix_2D_elt(ix,jx,iy,jy)
 		return Kin_mat
 
 	def Pot_matrix(self): 
@@ -125,7 +125,7 @@ class DVR2D(DVR1D):
 	def Diagonalize(self):
 		T = self.Kin_matrix()
 		V = self.Pot_matrix()
-
+		
 		H = T+V
 		vals, vecs = np.linalg.eigh(H)
 		
@@ -144,22 +144,24 @@ class DVR2D(DVR1D):
 			for j in range(self.ngridy+1):
 				temp.append((i,j))
 				count+=1
-		
+		#print('tuple',temp)	
 		return temp
 	
-	def pos_mat(self):
+	def pos_mat(self,ind):
 		temp = self.tuple_index()
 		x_arr = np.zeros(len(temp))
 		for p in range(len(temp)):
-			i = temp[p][0]
+			i = temp[p][ind]  ##Needs to be checked!!! -  It works alright, except for the fact the xgrid/ygrid needs to be toggled. 
 			x_arr[p] = self.xgrid[i]
 		return x_arr
 
+	# The function below swaps x and y axis for some reason. However, the ordering of the tuple_index is x-major as usual.
+
 	def eigenstate(self,vector):
 		temp = self.tuple_index()
-		wf = np.zeros((self.ngridx+1,self.ngridy+1))
+		wf = np.zeros((self.ngridx+1,self.ngridy+1))	
 		for p in range(len(temp)):
-			i = temp[p][0]
+			i = temp[p][0] ##Needs to be checked!!!
 			j = temp[p][1]
-			wf[i][j] = vector[p]
-		return wf 
+			wf[i,j] = vector[p]
+		return wf.T 
