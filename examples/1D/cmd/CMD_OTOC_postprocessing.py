@@ -19,15 +19,15 @@ import os
 
 
 dim = 1
-lamda = 0.8
-g = 1/50.0
+lamda = 1.5#0.8
+g = lamda**2/32#1/50.0
 Tc = lamda*(0.5/np.pi)#5.0
 T = Tc
 print('T',T)
 m = 0.5
 N = 1000
 
-nbeads = 24
+nbeads = 16
 rng = np.random.RandomState(1)
 qcart = rng.normal(size=(N,dim,nbeads))#np.ones((N,dim,nbeads))#np.random.normal(size=(N,dim,nbeads))#np.zeros((N,dim,nbeads))#
 q = np.random.normal(size=(N,dim,nbeads))
@@ -45,7 +45,7 @@ rng = np.random.default_rng(rngSeed)
 
 rp.bind(ens,motion,rng)
 
-potkey = 'inv_harmonic_lambda_{}'.format(lamda)
+potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
 pes = double_well(lamda,g)#harmonic(2.0*np.pi)# Harmonic(2*np.pi)#harmonic(2.0)#Harmonic(2*np.pi)#
 pes.bind(ens,rp)
 
@@ -87,9 +87,9 @@ if(1):
     print('count',count)
     #print('otoc',OTOCarr)
     OTOCarr/=count
-    #plt.plot(tarr,np.log(abs(OTOCarr)))
-    #plt.show()
-    store_1D_plotdata(tarr,OTOCarr,'CMD_OTOC_T_1Tc_nbeads_{}_gamma_{}_dt_{}'.format(nbeads,gamma,dt),datapath)
+    plt.plot(tarr,np.log(abs(OTOCarr)))
+    plt.show()
+    store_1D_plotdata(tarr,OTOCarr,'CMD_OTOC_{}_T_1Tc_nbeads_{}_gamma_{}_dt_{}'.format(potkey,nbeads,gamma,dt),datapath)
 
 if(1): # Beads
     #fig = plt.figure()

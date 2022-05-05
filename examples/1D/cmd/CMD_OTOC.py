@@ -43,7 +43,7 @@ def main(filename,pathname,sysname,potkey,nrun,lamda,g,times,m,N,nbeads,dt_therm
 	pes.bind(ens,rp)
 
 	time_therm = time_therm
-	thermalize_rp(ens,rp,pes,time_therm,dt,potkey,rngSeed)
+	thermalize_rp(pathname,ens,rp,pes,time_therm,dt,potkey,rngSeed)
 	
 	tarr=[]
 	qarr=[]
@@ -54,8 +54,8 @@ def main(filename,pathname,sysname,potkey,nrun,lamda,g,times,m,N,nbeads,dt_therm
 
 	dtg = dt/gamma
 		
-	qcart = read_arr('Thermalized_rp_qcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(rp.nsys,rp.nbeads,ens.beta,potkey,rngSeed),"./examples/cmd/Datafiles")
-	pcart = read_arr('Thermalized_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(rp.nsys,rp.nbeads,ens.beta,potkey,rngSeed),"./examples/cmd/Datafiles")
+	qcart = read_arr('Thermalized_rp_qcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(rp.nsys,rp.nbeads,ens.beta,potkey,rngSeed),"{}/Datafiles".format(pathname))
+	pcart = read_arr('Thermalized_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(rp.nsys,rp.nbeads,ens.beta,potkey,rngSeed),"{}/Datafiles".format(pathname))
 	
 	rp = RingPolymer(qcart=qcart,pcart=pcart,m=m,mode='rp',nmats=1,sgamma=gamma)
 	motion = Motion(dt = dtg,symporder=4) 

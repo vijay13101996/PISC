@@ -20,19 +20,19 @@ def get_var_value(path):
 		f.write(str(val))
 		return val
 
-potkey = 'inv_harmonic'
-sysname = 'Selene'		
-	
-lamda = 0.8
-g = 1/50.0
-times = 1
+lamda = 1.5#2.0#0.8
+g = 0.035#lamda**2/32#1/50.0#1/50.0
+times = 1.0
 m = 0.5
 N = 1000
 dt_therm = 0.01
 dt = 0.005
 time_therm = 20.0
-time_total = 40.0
+time_total = 5.0
 
+potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
+sysname = 'Selene'		
+	
 path = os.path.dirname(os.path.abspath(__file__))
 
 def begin_simulation(rngSeed):
@@ -49,6 +49,6 @@ def begin_simulation(rngSeed):
 	Classical_OTOC.main('{}/Classical_OTOC_{}_{}.hdf5'.format(path,sysname,potkey),path,sysname,potkey,counter,lamda,g,times,m,N,dt_therm,dt,rngSeed,time_therm,time_total)
 
 func = partial(begin_simulation)
-seeds = range(0,1)
-seed_split = chunks(seeds,1)
+seeds = range(0,1000)
+seed_split = chunks(seeds,10)
 batching(func,seed_split,max_time=1e6)

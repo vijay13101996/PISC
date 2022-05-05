@@ -9,7 +9,7 @@ from matplotlib import pyplot as plt
 from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr, read_arr
 import time
 
-def thermalize_rp(ens,rp,pes,time_therm,dt,potkey,rngSeed):
+def thermalize_rp(pathname,ens,rp,pes,time_therm,dt,potkey,rngSeed):
 	motion = Motion(dt = dt,symporder=2)
 	rng = np.random.default_rng(rngSeed)
 	rp.bind(ens,motion,rng)
@@ -39,6 +39,6 @@ def thermalize_rp(ens,rp,pes,time_therm,dt,potkey,rngSeed):
 
 	print('kin',rp.kin.sum(),0.5*rp.ndim*rp.nsys*rp.nbeads**2/ens.beta)	
 
-	store_arr(rp.qcart,'Thermalized_rp_qcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(rp.nsys,rp.nbeads,ens.beta,potkey,rngSeed),"./examples/cmd/Datafiles/")
-	store_arr(rp.pcart,'Thermalized_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(rp.nsys,rp.nbeads,ens.beta,potkey,rngSeed),"./examples/cmd/Datafiles/") 
+	store_arr(rp.qcart,'Thermalized_rp_qcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(rp.nsys,rp.nbeads,ens.beta,potkey,rngSeed),"{}/Datafiles".format(pathname))
+	store_arr(rp.pcart,'Thermalized_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(rp.nsys,rp.nbeads,ens.beta,potkey,rngSeed),"{}/Datafiles".format(pathname)) 
 	

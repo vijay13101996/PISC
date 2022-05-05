@@ -24,18 +24,18 @@ def get_var_value(path):
 m = 0.5
 omega = 0.5#0.5
 g0 = 0.1#1/100.0
-T_au = 1.5#0.5
+T_au = 0.238#0.5
 beta = 1.0/T_au 
 print('T in au',T_au)
 
-potkey = 'coupled_harmonic_w_{}_g_{}'.format(omega,g0)
+potkey = 'double_well_2D'#'coupled_harmonic_w_{}_g_{}'.format(omega,g0)
 sysname = 'Selene'		
 
 N = 1000
 dt_therm = 0.01
 dt = 0.005
 time_therm = 40.0
-time_total = 10.0
+time_total = 2.0
 
 path = os.path.dirname(os.path.abspath(__file__))
 
@@ -50,8 +50,8 @@ def begin_simulation(rngSeed):
 			except:
 				pass
 	
-	Classical_OTOC.main('{}/Classical_OTOC_{}_{}.hdf5'.format(path,sysname,potkey),path,sysname,potkey,counter,omega,g0,T_au,m,N,dt_therm,dt,rngSeed,time_therm,time_total)
-	#Classical_TCF.main('{}/Classical_TCF_{}_{}.hdf5'.format(path,sysname,potkey),path,sysname,potkey,counter,omega,g0,T_au,m,N,dt_therm,dt,rngSeed,time_therm,time_total)
+	#Classical_OTOC.main('{}/Classical_OTOC_{}_{}.hdf5'.format(path,sysname,potkey),path,sysname,potkey,counter,omega,g0,T_au,m,N,dt_therm,dt,rngSeed,time_therm,time_total)
+	Classical_TCF.main('{}/Classical_TCF_{}_{}.hdf5'.format(path,sysname,potkey),path,sysname,potkey,counter,omega,g0,T_au,m,N,dt_therm,dt,rngSeed,time_therm,time_total)
 
 func = partial(begin_simulation)
 seeds = range(0,1)

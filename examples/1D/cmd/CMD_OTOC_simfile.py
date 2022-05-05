@@ -20,11 +20,9 @@ def get_var_value(path):
 		f.write(str(val))
 		return val
 
-potkey = 'inv_harmonic'
-sysname = 'Selene'		
-	
-lamda = 0.8
-g = 1/50.0
+
+lamda = 1.5#0.8
+g = lamda**2/32#1/50.0
 times = 1
 m = 0.5
 N = 1000
@@ -33,11 +31,14 @@ dt = 0.005
 time_therm = 20.0
 time_total = 10.0
 
+potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
+sysname = 'Selene'		
+	
 path = os.path.dirname(os.path.abspath(__file__))
 
 def begin_simulation(nbeads,gamma,rngSeed):
 	counter = get_var_value(path)
-	print("This simulation has been run {} times.".format(counter))
+	#print("This simulation has been run {} times.".format(counter))
 
 	if(0):
 		with h5py.File('{}/CMD_OTOC_{}_{}.hdf5'.format(path,sysname,potkey), 'a') as f:
@@ -48,10 +49,10 @@ def begin_simulation(nbeads,gamma,rngSeed):
 				
 	CMD_OTOC.main('{}/CMD_OTOC_{}_{}.hdf5'.format(path,sysname,potkey),path,sysname,potkey,counter,lamda,g,times,m,N,nbeads,dt_therm,dt,rngSeed,time_therm,gamma,time_total)
 
-gamma = 1
-nbeads = 1
+gamma = 16
+nbeads = 8
 
 func = partial(begin_simulation, nbeads,gamma)
-seeds = range(0,1)
-seed_split = chunks(seeds,10)
+seeds = range(0,100)
+seed_split = chunks(seeds,4)
 batching(func,seed_split,max_time=1e6)

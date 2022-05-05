@@ -77,8 +77,8 @@ def main(filename,pathname,sysname,potkey,nrun,lamda,g,times,m,N,dt_therm,dt,rng
 	time_total = time_total
 	nsteps = int(time_total/dt)	
 
-	start_time = time.time()
-		
+	start_time = time.time()	
+	
 	for i in range(nsteps):
 		sim.step(mode="nve",var='monodromy',pc=False)
 		Mqq = np.mean(abs(rp.Mqq[:,0,0,0,0]**2)) #rp.Mqq[0,0,0,0,0]#
@@ -111,5 +111,5 @@ def main(filename,pathname,sysname,potkey,nrun,lamda,g,times,m,N,dt_therm,dt,rng
 	fname = 'Classical_OTOC_{}_{}_T_{}Tc_N_{}_dt_{}_seed_{}'.format(sysname,potkey,times,N,dt,rngSeed)
 	store_1D_plotdata(tarr,Mqqarr,fname,'{}/Datafiles'.format(pathname))
 		
-	plt.plot(tarr,np.log(Mqqarr))
-	plt.show()	
+	#plt.plot(tarr,np.log(Mqqarr))
+	#plt.show()	

@@ -24,12 +24,12 @@ alpha = (0.5*m*w**2/D)**0.5#1.0#1.95
 lamda = 0.8 #4.0
 g = 0.02#4.0
 
-z = 2.0#2.3	
+z = 0.0#2.3	
 
 pes = quartic_bistable(alpha,D,lamda,g,z)
 
 ### Simulation parameters
-T_au = 0.7*lamda*0.5/np.pi
+T_au = 0.95*lamda*0.5/np.pi
 beta = 1.0/T_au 
 print('T in au',T_au)
 
@@ -156,7 +156,7 @@ if(0): # Code for finding the saddle in the PE # Code for finding the saddle in 
 	print('eigval',vals)
 
 eigvec = np.array([1.0,0.0])
-nbeads = 11
+nbeads = 1
 dim = 2
 inst = instantonize(stepsize=1e-4, tol=1e-8)
 qcart = np.zeros((1,dim,nbeads))
@@ -169,7 +169,7 @@ rp.bind(ens, motion, rng)
 pes.bind(ens, rp)
 inst.bind(pes,rp)
 
-rp_init = inst.saddle_init(np.array([0.0,0.0]),0.5,eigvec)
+rp_init = inst.saddle_init(np.array([0.0,0.0]),0.0,eigvec)
 rp = RingPolymer(qcart=rp_init,m=m,nmats=nbeads)
 rp.bind(ens, motion, rng)
 pes.bind(ens, rp)
@@ -181,13 +181,17 @@ plt.scatter(rp.qcart[0,0,:],rp.qcart[0,1,:],color='r')
 vals,vecs = inst.diag_hess()
 eigdir =1 
 
-print('eigval',vals[eigdir])
+print('hess',inst.hess,pes.ddpot)
+print('eigval',vals[:2])
 step = inst.grad_desc_step()
 if(1): # Gradient descent helps move away from the classical saddle to a lower energy RP configuration below crossover temperature.
 	count=0
 	while(step!="terminate" and abs(rp.q[0,0,0])<1e-1):
 		inst.slow_step_update(step)
 		step = 	inst.grad_desc_step()
+		eigval = np.linalg.eigvalsh(inst.hess)#[eigdir]
+		if(count%1000==0):
+			print('eigval',eigval[:2])
 		#if(count%1000==0):
 		#	plt.scatter(count,(pes.pot+rp.pot).sum(),color='r')
 		#	plt.scatter(count,abs(inst.grad).max(),color='k')
@@ -220,12 +224,13 @@ if(0):
 	while(step!="terminate"):# and eigval>-0.1):
 		inst.slow_step_update(step)
 		step = 	inst.eigvec_follow_step(eig_dir=eigdir)
-		#eigval = np.linalg.eigvalsh(inst.hess)[eigdir]
+		eigval = np.linalg.eigvalsh(inst.hess)#[eigdir]
+		print('eigval',eigval[:2])
 		if(0):#count%10000==0):
 			plt.scatter(rp.qcart[0,0,:],rp.qcart[0,1,:])
 			plt.pause(0.05)
 			#print('count',count)
-		if(count%5000==0):
+		if(0):#count%5000==0):
 			print(count,'grad',abs(inst.grad).max())
 			#eigval = np.linalg.eigvalsh(inst.hess)#[eigdir]	
 			#print(count,'vals',eigval)

@@ -7,6 +7,7 @@ module position_matrix
 	public :: compute_pos_mat_arr_n
 	public :: b_matrix_elts
 	public :: compute_b_mat_arr_m
+	public :: compute_b_mat_arr_t
 	public :: c_mc_elts
 	public :: compute_c_mc_arr_n
 	public :: compute_c_mc_arr_t
@@ -82,13 +83,12 @@ module position_matrix
 			x_km = 0.0
 			call compute_pos_mat_arr_k(vecs,len1vecs,len2vecs,x_arr,lenx,dx,dy,n,k_arr,lenk,x_nk)
 			call compute_pos_mat_arr_n(vecs,len1vecs,len2vecs,x_arr,lenx,dx,dy,k_arr,lenk,m,x_km)
-			!$OMP PARALLEL DO PRIVATE(i)	
 			do i=1,lenk
 				E_km = vals_arr(k_arr(i)+1) - vals_arr(m+1)
 				E_nk = vals_arr(n+1) - vals_arr(k_arr(i)+1)
+				!print*,'x_nk old',i, E_nk,vals_arr(k_arr(i)+1)-vals_arr(n+1)
 				b_mat_elt = b_mat_elt + mass*(x_nk(i)*x_km(i)*(E_km*exp(cmplx(0.0,1.0)*E_nk*t) - E_nk*exp(cmplx(0.0,1.0)*E_km*t)))
 			end do
-			!$OMP END PARALLEL DO
 		end subroutine b_matrix_elts
 
 		subroutine compute_b_mat_arr_m(vecs,len1vecs,len2vecs,mass,x_arr,lenx,dx,dy,k_arr,lenk,vals_arr,lenv,n,m_arr,lenm,t,b_mat)
@@ -112,11 +112,32 @@ module position_matrix
 			!$OMP END PARALLEL DO
 		end subroutine compute_b_mat_arr_m
 
-		subroutine c_mc_elts(vecs,len1vecs,len2vecs,mass,x_arr,lenx,dx,dy,k_arr,lenk,vals_arr,lenv,n,m_arr,lenm,t,c_mc_elt)
-			integer, intent(in) :: len1vecs,len2vecs,lenx,lenv,lenm			
+		subroutine compute_b_mat_arr_t(vecs,len1vecs,len2vecs,mass,x_arr,lenx,dx,dy,k_arr,lenk,vals_arr,lenv,n,m,t_arr,lent,b_mat)
+			integer, intent(in) :: len1vecs,len2vecs,lenx,lenv,lent
 			real(kind=8), dimension(len1vecs,len2vecs), intent(in) :: vecs
 			real(kind=8), dimension(lenx), intent(in) :: x_arr
-			real(kind=8), intent(in) ::  dx,dy			
+			real(kind=8), intent(in) ::  dx,dy
+			integer, intent(in) :: lenk, n,m
+			real(kind=8), dimension(lent),intent(in) :: t_arr
+			integer, dimension(lenk), intent(in) :: k_arr
+			real(kind=8), dimension(lenv), intent(in) :: vals_arr
+			real(kind=8), intent(in) :: mass
+			integer :: i
+			!f2py complex, dimension(lent),intent(in,out,copy) :: b_mat
+			complex(kind=8), dimension(lent),intent(inout) :: b_mat
+			!call b_matrix_elts(vecs,len1vecs,len2vecs,x_arr,lenx,dx,dy,k_arr,lenk,vals_arr,lenv,n,m_arr(2),t,b_mat(2))
+			!$OMP PARALLEL DO PRIVATE(i)
+			do i=1,lent
+				call b_matrix_elts(vecs,len1vecs,len2vecs,mass,x_arr,lenx,dx,dy,k_arr,lenk,vals_arr,lenv,n,m,t_arr(i),b_mat(i))
+			end do
+			!$OMP END PARALLEL DO
+		end subroutine compute_b_mat_arr_t
+
+		subroutine c_mc_elts(vecs,len1vecs,len2vecs,mass,x_arr,lenx,dx,dy,k_arr,lenk,vals_arr,lenv,n,m_arr,lenm,t,c_mc_elt)
+			integer, intent(in) :: len1vecs,len2vecs,lenx,lenv,lenm
+			real(kind=8), dimension(len1vecs,len2vecs), intent(in) :: vecs
+			real(kind=8), dimension(lenx), intent(in) :: x_arr
+			real(kind=8), intent(in) ::  dx,dy
 			integer, intent(in) :: lenk, n
 			integer, dimension(lenm),intent(in) :: m_arr
 			integer, dimension(lenk), intent(in) :: k_arr
@@ -129,6 +150,7 @@ module position_matrix
 			b_nm=0.0
 			call compute_b_mat_arr_m(vecs,len1vecs,len2vecs,mass,x_arr,lenx,dx,dy,k_arr,lenk,vals_arr,lenv,n,m_arr,lenm,t,b_nm)
 			do i=1,lenm
+				!print*, n, m_arr(i), b_nm(i)
 				c_mc_elt = c_mc_elt + b_nm(i)*conjg(b_nm(i))
 			end do		
 		end subroutine c_mc_elts
@@ -157,7 +179,7 @@ module position_matrix
 
 		subroutine compute_c_mc_arr_t(vecs,len1vecs,len2vecs,mass,x_arr,lenx,dx,dy,k_arr,lenk, &
 					vals_arr,lenv,n,m_arr,lenm,t_arr,lent,c_mc_mat)
-			integer, intent(in) :: len1vecs,len2vecs,lenx,lenv,lenm,lent,n			
+			integer, intent(in) :: len1vecs,len2vecs,lenx,lenv,lenm,lent,n
 			real(kind=8), dimension(len1vecs,len2vecs), intent(in) :: vecs
 			real(kind=8), dimension(lenx), intent(in) :: x_arr
 			real(kind=8), intent(in) ::  dx,dy,mass			
@@ -266,11 +288,11 @@ module position_matrix
 		end subroutine Kubo_OTOC_elts
 
 		subroutine compute_Kubo_OTOC_arr_t(vecs,len1vecs,len2vecs,mass,x_arr,lenx,dx,dy,k_arr,lenk,vals_arr,lenv, &
-				m_arr,lenm,t_arr,lent,beta,n_eigen,Kubo_OTOC_mat)	
-			integer, intent(in) :: len1vecs,len2vecs,lenx,lenv,lenk,lenm,lent,n_eigen			
+				m_arr,lenm,t_arr,lent,beta,n_eigen,Kubo_OTOC_mat)
+			integer, intent(in) :: len1vecs,len2vecs,lenx,lenv,lenk,lenm,lent,n_eigen
 			real(kind=8), dimension(len1vecs,len2vecs), intent(in) :: vecs
 			real(kind=8), dimension(lenx), intent(in) :: x_arr
-			real(kind=8), intent(in) ::  dx,dy			
+			real(kind=8), intent(in) ::  dx,dy
 			integer, dimension(lenm),intent(in) :: m_arr
 			integer, dimension(lenk), intent(in) :: k_arr
 			real(kind=8), dimension(lent), intent(in) :: t_arr
@@ -287,4 +309,5 @@ module position_matrix
 			end do
 			!$OMP END PARALLEL DO
 		end subroutine compute_Kubo_OTOC_arr_t
+
 end module position_matrix

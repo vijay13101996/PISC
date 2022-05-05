@@ -34,7 +34,7 @@ class quartic_bistable(PES):
 			Vxx = 4*self.g*(-2*x**2*(1 - np.exp(-self.alpha*y*self.z)) + 3*x**2 - (1 - np.exp(-self.alpha*y*self.z))*(8*x**2 - self.lamda**2/self.g)/8 - self.lamda**2/(8*self.g))
 			Vxy = -4*self.alpha*self.g*x*self.z*(x**2 - self.lamda**2/(8*self.g))*np.exp(-self.alpha*y*self.z)
 			Vyy = self.alpha**2*(-2*self.D*(1 - np.exp(-self.alpha*y))*np.exp(-self.alpha*y) + 2*self.D*np.exp(-2*self.alpha*y) \
-						+ self.z**2*(self.g*(8*x**2 - self.lamda**2/self.g)**2 - self.lamda**4/self.g)*np.exp(-self.alpha*y*self.z)/64)	
+						+ self.z**2*(self.g*(8*x**2 - self.lamda**2/self.g)**2 - self.lamda**4/self.g)*np.exp(-self.alpha*y*self.z)/64)
 			return np.transpose([[Vxx, Vxy],[Vxy, Vyy]],axes=[2,0,1,3]) 
 			
 		def potential_xy(self,x,y):

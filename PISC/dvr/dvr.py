@@ -1,5 +1,11 @@
 from __future__ import division, print_function, absolute_import
 import numpy as np
+import scipy
+from scipy.sparse.linalg import eigsh
+from scipy import sparse
+from PISC.utils import misc
+import pickle
+import time
 
 class DVR1D(object):
 	def __init__(self,ngrid,lb,ub,m,potential,hbar=1.0):
@@ -56,7 +62,7 @@ class DVR1D(object):
 		V = self.Pot_matrix()
 
 		H = T+V
-		vals, vecs = np.linalg.eigh(H)
+		vals, vecs = eigsh(H,k=150,which='SM') # np.linalg.eigh(H)
 		
 		norm = 1/(np.sum(vecs[:,0]**2*self.dx))**0.5
 		vecs*=norm
@@ -65,7 +71,7 @@ class DVR1D(object):
 		self.vals = vals
 	
 		return vals,vecs
-
+	
 class DVR2D(DVR1D):
 	def __init__(self,ngridx,ngridy,lbx,ubx,lby,uby,m,potential,hbar=1.0):
 		self.xgrid = np.linspace(lbx,ubx,ngridx+1)
@@ -82,8 +88,8 @@ class DVR2D(DVR1D):
 		self.hbar = hbar
 		self.potential = potential
 
-		self.vals = np.zeros((self.ngridx+1)*(self.ngridy+1))
-		self.vecs = np.zeros(((self.ngridx+1)*(self.ngridy+1),(self.ngridx+1)*(self.ngridy+1)))
+		self.vals = None#np.zeros((self.ngridx+1)*(self.ngridy+1))
+		self.vecs = None#np.zeros(((self.ngridx+1)*(self.ngridy+1),(self.ngridx+1)*(self.ngridy+1)))
 
 	def Kin_matrix_2D_elt(self,ix,jx,iy,jy):
 		if(iy==jy and ix!=jx):
@@ -106,12 +112,37 @@ class DVR2D(DVR1D):
 				jx = tuple_arr[j][0]
 				jy = tuple_arr[j][1]
 				Kin_mat[i][j] = self.Kin_matrix_2D_elt(ix,jx,iy,jy)
+		np.set_printoptions(threshold=np. inf)
+		#print('kin',np.count_nonzero(Kin_mat==0.0))#,np.around(Kin_mat,2))	
+		return Kin_mat
+
+	def Kin_matrix_mod(self):
+		tuple_arr = self.tuple_index()
+		length = len(tuple_arr)
+		row_mat = []
+		col_mat = []
+		data_mat = []
+		for i in range(length):
+			for j in range(length):
+				ix = tuple_arr[i][0]
+				iy = tuple_arr[i][1]
+				jx = tuple_arr[j][0]
+				jy = tuple_arr[j][1]
+				kin = self.Kin_matrix_2D_elt(ix,jx,iy,jy)
+				if(kin!=0.0):
+					row_mat.append(i)
+					col_mat.append(j)
+					data_mat.append(kin)
+		row_mat = np.array(row_mat)
+		col_mat = np.array(col_mat)
+		data_mat = np.array(data_mat)
+		Kin_mat = sparse.csr_matrix((data_mat, (row_mat,col_mat)))
 		return Kin_mat
 
 	def Pot_matrix(self): 
 		tuple_arr = self.tuple_index()
 		length = len(tuple_arr)
-		Pot_mat = np.zeros((length,length))
+		Pot_mat =  np.zeros((length,length))
 		for i in range(length):
 			for j in range(length):
 				ix = tuple_arr[i][0]
@@ -122,13 +153,46 @@ class DVR2D(DVR1D):
 					Pot_mat[i][j] = self.potential(self.xgrid[ix],self.ygrid[iy])	
 		return Pot_mat	 
 
+	def Pot_matrix_mod(self):
+		tuple_arr = self.tuple_index()
+		length = len(tuple_arr)
+		data_mat = []
+		for i in range(length):
+			i_ind = tuple_arr[i][0]
+			j_ind = tuple_arr[i][1]
+			data_mat.append(self.potential(self.xgrid[i_ind],self.ygrid[j_ind]))	
+		Pot_mat = sparse.csr_matrix((data_mat, (range(length),range(length))))
+		return Pot_mat	 
+
 	def Diagonalize(self):
+		start_time = time.time()
+		T = self.Kin_matrix_mod()
+		V = self.Pot_matrix_mod()	
+		
+		H = T+V
+		print('time',time.time()-start_time)	
+
+		vals, vecs = eigsh(H,k=150,which='SM') #np.linalg.eigh(H)	
+		norm = 1/(np.sum(vecs[:,0]**2*self.dx*self.dy))**0.5
+		vecs*=norm
+
+		self.vecs = vecs
+		self.vals = vals
+	
+		return vals,vecs
+
+	def Diagonalize_Lanczos(self,neig_tot):
 		T = self.Kin_matrix()
 		V = self.Pot_matrix()
 		
 		H = T+V
-		vals, vecs = np.linalg.eigh(H)
-		
+		print('Starting diagonalization')
+		np.savetxt('/scratch/vgs23/H.txt',H)	
+		misc.call_python_version("2.7", "/home/vgs23/spartan/","lanczos_solver", "main",  ("/scratch/vgs23/H.txt",neig_tot))
+		vals = np.loadtxt('/scratch/vgs23/vals.txt')
+		vecs = np.loadtxt('/scratch/vgs23/vecs.txt')
+		#eigsh(H,k=neig_tot,which='SM')
+	
 		norm = 1/(np.sum(vecs[:,0]**2*self.dx*self.dy))**0.5
 		vecs*=norm
 

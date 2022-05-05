@@ -5,12 +5,12 @@ x = sympy.Symbol('x')
 y = sympy.Symbol('y')
 
 
-if(0):### Quartic Bistable potential
-	alpha = sympy.Symbol('alpha')
-	lamda = sympy.Symbol('lamda')
-	g = sympy.Symbol('g')
-	D = sympy.Symbol('D')
-	z = sympy.Symbol('z')
+if(1):### Quartic Bistable potential
+	alpha = sympy.Symbol('self.alpha')
+	lamda = sympy.Symbol('self.lamda')
+	g = sympy.Symbol('self.g')
+	D = sympy.Symbol('self.D')
+	z = sympy.Symbol('self.z')
 
 	eay = exp(-alpha*y)
 	quartx = (x**2 - lamda**2/(8*g))
@@ -28,6 +28,8 @@ if(0):### Quartic Bistable potential
 	print('Vyx',diff(V,y,x))
 	print('Vyy',diff(V,y,y))
 
+	print('hess',diff(V,x,x)*diff(V,y,y) - diff(V,x,y)**2) 
+
 if(0):### Adams function
 	vx = 2*x**2*(4-x)
 	vy = y**2*(4+y)
@@ -43,7 +45,7 @@ if(0):### Adams function
 	print('Vyx',diff(V,y,x))
 	print('Vyy',diff(V,y,y))
 
-if(1):### Henon Heiles
+if(0):### Henon Heiles
 	lamda = sympy.Symbol('lamda')
 	g = sympy.Symbol('g')
 	
