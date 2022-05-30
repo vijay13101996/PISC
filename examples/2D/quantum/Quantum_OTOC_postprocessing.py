@@ -11,7 +11,7 @@ from matplotlib import pyplot as plt
 import os 
 import time 
 
-if(1): # Coupled harmonic
+if(0): # Coupled harmonic
 	L = 10.0
 	lbx = -L
 	ubx = L
@@ -66,7 +66,7 @@ if(1): # Double well 2D
 
 	w = 0.1	
 	D = 5.0#10.0
-	alpha = 0.175#0.41#0.255#1.165
+	alpha = 1.165#0.81#0.175#0.41#0.255#1.165
 	
 	lamda = 1.5#4.0
 	g = 0.035#lamda**2/32#4.0
@@ -131,18 +131,30 @@ if(1): # Double well 2D
 	#plt.contour(x,y,hesgrid,colors='g',levels=np.arange(-5.0,0.0,0.001))	
 	plt.show()
 
+if(0):
+	fig,ax = plt.subplots()	
+	
+	for N,c in zip([50,70,90,120,140],['c','m','g','r','b']):
+		potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)			
+		fname = '{}/Datafiles/Quantum_mc_n_1_qqTCF_{}_T_{}_basis_{}_n_eigen_{}'.format(path,potkey,T_au,N,15)
+		plot_1D(ax,fname,label='N={}'.format(N),color=c,log=False)
+		
+	plt.legend()
+	plt.show()
+
 if(1):
 	fig,ax = plt.subplots()	
 	
-	for N,c in zip([20,30,50,70,90,120,140],['c','m','g','r','b','k','y']):
+	if(0):
+		for N,c in zip([20,50,70,100,140],['c','m','g','r','b','k','y']):
 			potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)		
-			fname = '{}/Datafiles/Quantum_mc_n_1_OTOC_{}_T_{}_basis_{}_n_eigen_{}'.format(path,potkey,T_au,N,15)	
+			fname = '{}/Datafiles/Quantum_mc_n_1_OTOC_{}_basis_{}'.format(path,potkey,N)	
 			plot_1D(ax,fname,label='N={}'.format(N),color=c,log=True)
 		
-	if(0):
-		for z,c in zip([0.0,0.5,1.0,1.5,2.0],['c','m','g','r','b']):
+	if(1):
+		for z,c in zip([0.0,1.5],['c','m','g','r','b']):
 			potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)		
-			fname = '{}/Datafiles/Quantum_mc_n_2_OTOC_{}_T_{}_basis_{}_n_eigen_{}'.format(path,potkey,T_au,120,15)	
+			fname = '{}/Datafiles/Quantum_mc_n_1_OTOC_{}_basis_{}'.format(path,potkey,140)	
 			plot_1D(ax,fname,label='z={}'.format(z),color=c,log=True)
 	
 	if(0):

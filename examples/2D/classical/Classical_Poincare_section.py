@@ -10,13 +10,13 @@ import os
 
 m=0.5
 w = 0.5
-D = 5.0#10.0
-alpha = 0.175#0.255#1.165#0.255
+D = 10.0#10.0
+alpha = 0.81#0.175#0.255#1.165#0.255
 
 lamda = 1.5
 g = 0.035
 
-z = 0.5
+z = 1.0
 potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
 
 pes = quartic_bistable(alpha,D,lamda,g,z)
@@ -28,13 +28,14 @@ pcart = np.zeros_like(qcart)
 pathname = os.path.dirname(os.path.abspath(__file__))
 
 L = lamda/np.sqrt(8*g)
-xcart_lin = np.linspace(-L,L,41)
-ycart_lin = np.linspace(-1.0,1.0,21)
+xcart_lin = np.linspace(-L,L,11)
+ycart_lin = np.linspace(-2.0,2.0,21)
 
-E = 4.72#lamda**4/(64*g)	
+E = 4.8#lamda**4/(64*g)	
 
-for i in range(len(xcart_lin)):
-		qcart[0,:,0] = [xcart_lin[i],0.0]
+#for i in range(len(xcart_lin)):
+for j in range(len(ycart_lin)):
+		qcart[0,:,0] = [-3.0,ycart_lin[j]]
 		Pot = pes.potential_xy(qcart[0,0],qcart[0,1])
 		if(E<Pot):
 			continue
@@ -62,7 +63,7 @@ for i in range(len(xcart_lin)):
 		pcart[0,0,0] = -(xkincomp*Ekin)**0.5
 		pcart[0,1,0] = -(ykincomp*Ekin)**0.5	
 
-		if(i%2==0):
+		if(j%2==0):
 			plt.scatter(poincare.X,poincare.PX,s=4,color='r')
 			plt.show()
 	

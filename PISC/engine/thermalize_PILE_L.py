@@ -9,12 +9,14 @@ from matplotlib import pyplot as plt
 from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr, read_arr
 import time
 
-def thermalize_rp(pathname,ens,rp,pes,time_therm,dt,potkey,rngSeed):
-	motion = Motion(dt = dt,symporder=2)
-	rng = np.random.default_rng(rngSeed)
+def thermalize_rp(pathname,m,dim,N,nbeads,ens,pes,rng,time_therm,dt_therm,potkey,rngSeed,tau0=0.1,pile_lambda=100.0):	
+	qcart = rng.normal(size=(N,dim,nbeads))
+	rp = RingPolymer(qcart=qcart,m=m) 
+		
+	motion = Motion(dt = dt_therm,symporder=2)
 	rp.bind(ens,motion,rng)
  
-	therm = PILE_L(tau0=0.1,pile_lambda=100.0) 
+	therm = PILE_L(tau0=tau0,pile_lambda=pile_lambda) 
 	therm.bind(rp,motion,rng,ens)
 
 	propa = Symplectic_order_II()

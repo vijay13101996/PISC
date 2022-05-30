@@ -4,8 +4,18 @@ from sympy import *
 x = sympy.Symbol('x')
 y = sympy.Symbol('y')
 
+if(1):
+	g = sympy.Symbol('self.g')
+	lamda = sympy.Symbol('self.lamda')
 
-if(1):### Quartic Bistable potential
+	V = 0.1875*(g*x**3 - lamda*x)**2
+
+	print('V',V)
+	print('Vx',diff(V,x))
+	print('Vxx',diff(V,x,x))
+	
+
+if(0):### Quartic Bistable potential
 	alpha = sympy.Symbol('self.alpha')
 	lamda = sympy.Symbol('self.lamda')
 	g = sympy.Symbol('self.g')

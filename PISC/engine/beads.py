@@ -8,13 +8,7 @@ import numpy as np
 from PISC.utils import nmtrans,misc
 ### Work left:
 # 1. Display error messages on input errors.
-# 2. Augment code to simulate molecules: 
-#	 a. Take care of labels initialization and
-#		further usage.
-#	 b. When molecular labels are passed, ensure 
-#		that the masses are appropriately obtained
-#		from the utils module.
-# 3. Comment out the code. 
+# 2. Comment out the code. 
   
 class RingPolymer(object):
 	"""

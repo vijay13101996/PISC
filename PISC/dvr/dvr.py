@@ -113,7 +113,6 @@ class DVR2D(DVR1D):
 				jy = tuple_arr[j][1]
 				Kin_mat[i][j] = self.Kin_matrix_2D_elt(ix,jx,iy,jy)
 		np.set_printoptions(threshold=np. inf)
-		#print('kin',np.count_nonzero(Kin_mat==0.0))#,np.around(Kin_mat,2))	
 		return Kin_mat
 
 	def Kin_matrix_mod(self):
@@ -164,7 +163,7 @@ class DVR2D(DVR1D):
 		Pot_mat = sparse.csr_matrix((data_mat, (range(length),range(length))))
 		return Pot_mat	 
 
-	def Diagonalize(self):
+	def Diagonalize(self,neig_total=150):
 		start_time = time.time()
 		T = self.Kin_matrix_mod()
 		V = self.Pot_matrix_mod()	
@@ -172,27 +171,7 @@ class DVR2D(DVR1D):
 		H = T+V
 		print('time',time.time()-start_time)	
 
-		vals, vecs = eigsh(H,k=150,which='SM') #np.linalg.eigh(H)	
-		norm = 1/(np.sum(vecs[:,0]**2*self.dx*self.dy))**0.5
-		vecs*=norm
-
-		self.vecs = vecs
-		self.vals = vals
-	
-		return vals,vecs
-
-	def Diagonalize_Lanczos(self,neig_tot):
-		T = self.Kin_matrix()
-		V = self.Pot_matrix()
-		
-		H = T+V
-		print('Starting diagonalization')
-		np.savetxt('/scratch/vgs23/H.txt',H)	
-		misc.call_python_version("2.7", "/home/vgs23/spartan/","lanczos_solver", "main",  ("/scratch/vgs23/H.txt",neig_tot))
-		vals = np.loadtxt('/scratch/vgs23/vals.txt')
-		vecs = np.loadtxt('/scratch/vgs23/vecs.txt')
-		#eigsh(H,k=neig_tot,which='SM')
-	
+		vals, vecs = eigsh(H,k=neig_total,which='SM') #np.linalg.eigh(H)	
 		norm = 1/(np.sum(vecs[:,0]**2*self.dx*self.dy))**0.5
 		vecs*=norm
 
@@ -208,14 +187,13 @@ class DVR2D(DVR1D):
 			for j in range(self.ngridy+1):
 				temp.append((i,j))
 				count+=1
-		#print('tuple',temp)	
 		return temp
 	
 	def pos_mat(self,ind):
 		temp = self.tuple_index()
 		x_arr = np.zeros(len(temp))
 		for p in range(len(temp)):
-			i = temp[p][ind]  ##Needs to be checked!!! -  It works alright, except for the fact the xgrid/ygrid needs to be toggled. 
+			i = temp[p][ind]  ##It works alright, except for the fact the xgrid/ygrid needs to be toggled. 
 			x_arr[p] = self.xgrid[i]
 		return x_arr
 
@@ -225,7 +203,7 @@ class DVR2D(DVR1D):
 		temp = self.tuple_index()
 		wf = np.zeros((self.ngridx+1,self.ngridy+1))	
 		for p in range(len(temp)):
-			i = temp[p][0] ##Needs to be checked!!!
+			i = temp[p][0] 
 			j = temp[p][1]
 			wf[i,j] = vector[p]
 		return wf.T 
