@@ -9,6 +9,7 @@ from PISC.engine.simulation import RP_Simulation
 from PISC.utils.readwrite import store_1D_plotdata, read_arr
 from PISC.utils.tcf_fft import gen_tcf
 from PISC.engine.thermalize_PILE_L import thermalize_rp
+from matplotlib import pyplot as plt
 
 def main(pathname,sysname,potkey,pes,Tkey,T,m,dim,N,nbeads,dt_therm,dt,rngSeed,time_therm,time_total,corrkey,tau0=0.1,pile_lambda=1000.0):
 	print('T, nbeads',T,nbeads)
@@ -63,6 +64,12 @@ def main(pathname,sysname,potkey,pes,Tkey,T,m,dim,N,nbeads,dt_therm,dt,rngSeed,t
 			tarr.append(sim.t)
 			qarr.append(q)
 			parr.append(p)
+
+	#qarr = np.array(qarr)
+	#for i in range(N):	
+	#	plt.plot(tarr,qarr[:,i,0])
+	#plt.show()
+
 	
 	if(corrkey=='qq'):
 		tarr,tcf = gen_tcf(qarr,qarr,tarr)

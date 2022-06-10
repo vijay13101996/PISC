@@ -12,22 +12,25 @@ import os
 
 dim=1
 lamda = 1.5#0.8
-g = 0.035#1/50.0
+g = 0.05#1/50.0
 
 pes = double_well(lamda,g)
 
 Tc = 0.5*lamda/np.pi
-times = 0.7
+times = 1.0
 T = times*Tc
 
+print('Vmin', lamda/(8*g)**0.5)
+print('Vb,beta',T/(lamda**4/(64*g)))
+
 m = 0.5
-N = 1000
+N = 10000
 dt_therm = 0.01
 dt = 0.005
 time_therm = 40.0
-time_total = 10.0
+time_total = 5.0
 
-potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
+potkey = 'tst3_harmonic_lambda_{}_g_{}'.format(lamda,g)
 sysname = 'Selene'		
 Tkey = '{}Tc'.format(times)
 corrkey = 'OTOC'
@@ -40,7 +43,7 @@ def begin_simulation(rngSeed):
 	
 start_time=time.time()
 func = partial(begin_simulation)
-seeds = range(10)
+seeds = range(100)
 seed_split = chunks(seeds,10)
 
 param_dict = {'Temperature':Tkey,'CType':corrkey,'m':m,\

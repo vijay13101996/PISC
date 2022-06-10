@@ -31,6 +31,7 @@ def seed_collector(kwlist,datapath,tarr,Carr,allseeds=True,seedcount=None):
 	print('kwlist',kwlist)
 	for fname in os.listdir(datapath):
 		if all(kw in fname for kw in kwlist):
+			print('f',fname)
 			flist.append(fname)
 
 	count=0

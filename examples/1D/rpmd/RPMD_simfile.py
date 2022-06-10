@@ -12,8 +12,10 @@ import time
 import os 
 
 dim=1
-lamda = 1.5#0.8
-g = 0.035#1/50.0
+lamda = 2.0#1.5#
+g = 0.08#0.035#
+
+print('Vb', lamda**4/(64*g))
 
 pes = double_well(lamda,g)
 
@@ -25,13 +27,13 @@ m = 0.5
 N = 1000
 dt_therm = 0.01
 dt = 0.005
-time_therm = 40.0
-time_total = 20.0
+time_therm = 100.0
+time_total = 6.0
 
-potkey = 'testinv_harmonic_lambda_{}_g_{}'.format(lamda,g)
+potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
 sysname = 'Selene'		
 Tkey = '{}Tc'.format(times)
-corrkey = 'qq'
+corrkey = 'OTOC'
 	
 path = os.path.dirname(os.path.abspath(__file__))
 
@@ -39,13 +41,13 @@ def begin_simulation(nbeads,rngSeed):
 	RPMD_core.main(path,sysname,potkey,pes,Tkey,T,m,dim,\
 											N,nbeads,dt_therm,dt,rngSeed,time_therm,time_total,corrkey)
 	
-nbeads = 4
+nbeads = 8
 
 start_time=time.time()
 
 func = partial(begin_simulation, nbeads)
-seeds = range(100)
-seed_split = chunks(seeds,10)
+seeds = range(1000)
+seed_split = chunks(seeds,12)
 
 param_dict = {'Temperature':Tkey,'CType':corrkey,'m':m,\
 	'therm_time':time_therm,'time_total':time_total,'nbeads':nbeads,'dt':dt,'dt_therm':dt_therm}

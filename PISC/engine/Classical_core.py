@@ -9,16 +9,17 @@ from PISC.engine.simulation import RP_Simulation
 from PISC.utils.readwrite import store_1D_plotdata, read_arr
 from PISC.utils.tcf_fft import gen_tcf
 from PISC.engine.thermalize_PILE_L import thermalize_rp
+from matplotlib import pyplot as plt
 
-def main(pathname,sysname,potkey,pes,Tkey,T,m,dim,N,dt_therm,dt,rngSeed,time_therm,time_total,corrkey,tau0=0.1,pile_lambda=1000.0):
+def main(pathname,sysname,potkey,pes,Tkey,T,m,dim,N,dt_therm,dt,rngSeed,time_therm,time_total,corrkey,tau0=0.1,pile_lambda=100.0):
 	print('T',T)
 	beta = 1/T
 	
 	rng = np.random.default_rng(rngSeed)
 	ens = Ensemble(beta=beta,ndim=dim)
-		
+	
 	thermalize_rp(pathname,m,dim,N,1,ens,pes,rng,time_therm,dt_therm,potkey,rngSeed)
-			
+				
 	qcart = read_arr('Thermalized_rp_qcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(N,1,beta,potkey,rngSeed),"{}/Datafiles".format(pathname))
 	pcart = read_arr('Thermalized_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(N,1,beta,potkey,rngSeed),"{}/Datafiles".format(pathname))
 	
@@ -63,6 +64,11 @@ def main(pathname,sysname,potkey,pes,Tkey,T,m,dim,N,dt_therm,dt,rngSeed,time_the
 			tarr.append(sim.t)
 			qarr.append(q)
 			parr.append(p)
+
+	#qarr = np.array(qarr)
+	#for i in range(N):	
+	#	plt.plot(tarr,qarr[:,i,0])
+	#plt.show()
 	
 	if(corrkey=='qq'):
 		tarr,tcf = gen_tcf(qarr,qarr,tarr)

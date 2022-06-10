@@ -6,8 +6,8 @@ import os
 from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr, read_arr
 
 dim = 1
-lamda = 1.5
-g = 0.035#lamda**2/32
+lamda = 2.0#1.5
+g = 0.08#0.035#0.13#0.075#0.035#lamda**2/32
 
 Tc = lamda*(0.5/np.pi)
 times = 1.0
@@ -15,13 +15,12 @@ T = times*Tc
 
 m = 0.5
 N = 1000
-times = 1.0
 dt = 0.005
 
 nbeads = 8
 gamma = 16
 
-time_total = 20.0#10.0
+time_total = 6.0#10.0
 
 tarr = np.arange(0.0,time_total,dt)
 OTOCarr = np.zeros_like(tarr) +0j
@@ -36,8 +35,8 @@ Cext = '{}/classical/Datafiles/'.format(path)
 rpext = '{}/rpmd/Datafiles/'.format(path)
 
 #Simulation specifications
-corrkey = 'qq'#'OTOC'
-beadkey = 'nbeads_{}'.format(nbeads)
+corrkey = 'OTOC'#'qq_TCF'#
+beadkey = 'nbeads_{}_'.format(nbeads)
 Tkey = 'T_{}Tc'.format(times)
 syskey = 'Selene'
 
@@ -50,10 +49,24 @@ if(1):#RPMD
 
 	if(corrkey!='OTOC'):
 		OTOCarr/=nbeads
-	plt.plot(tarr,OTOCarr)
-	#plt.plot(tarr,np.log(abs(OTOCarr)))
+	#plt.plot(tarr,OTOCarr)
+	plt.plot(tarr,np.log(abs(OTOCarr)))
 	plt.show()
 	store_1D_plotdata(tarr,OTOCarr,'RPMD_{}_{}_{}_nbeads_{}_dt_{}'.format(corrkey,potkey,Tkey,nbeads,dt),rpext)
+
+if(0):#RPMD/mc
+	methodkey = 'RPMD'
+	enskey  = 'mc'
+	kwlist = [enskey,methodkey,corrkey,syskey,potkey,Tkey,beadkey]
+	
+	tarr,OTOCarr = seed_collector(kwlist,rpext,tarr,OTOCarr)
+
+	if(corrkey!='OTOC'):
+		OTOCarr/=nbeads
+	#plt.plot(tarr,OTOCarr)
+	plt.plot(tarr,np.log(abs(OTOCarr)))
+	plt.show()
+	store_1D_plotdata(tarr,OTOCarr,'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,nbeads,dt),rpext)
 
 if(0):#CMD
 	methodkey = 'CMD'
@@ -72,7 +85,7 @@ if(0):#Classical
 
 	kwlist = [methodkey,corrkey,syskey,potkey,Tkey]
 	
-	tarr,OTOCarr = seed_collector(kwlist,Cext,OTOCarr)
+	tarr,OTOCarr = seed_collector(kwlist,Cext,tarr,OTOCarr)
 
 	plt.plot(tarr,np.log(abs(OTOCarr)))
 	plt.show()
