@@ -1,0 +1,8 @@
+
+{'lbx': -6.0, 'ubx': 6.0, 'lby': -1, 'uby': 15, 'm': 0.5, 'ngridx': 150, 'ngridy': 150, 'n_eig': 250}
+{'lbx': -6.0, 'ubx': 6.0, 'lby': -1, 'uby': 15, 'm': 0.5, 'ngridx': 150, 'ngridy': 150, 'n_eig': 250}
+{'lbx': -7.0, 'ubx': 7.0, 'lby': -1, 'uby': 15, 'm': 0.5, 'ngridx': 250, 'ngridy': 250, 'n_eig': 250}
+{'lbx': -6.0, 'ubx': 6.0, 'lby': -1, 'uby': 15, 'm': 0.5, 'ngridx': 200, 'ngridy': 200, 'n_eig': 250}
+{'lbx': -7.0, 'ubx': 7.0, 'lby': -1, 'uby': 15, 'm': 0.5, 'ngridx': 200, 'ngridy': 200, 'n_eig': 250}
+{'lbx': -7.0, 'ubx': 7.0, 'lby': -1, 'uby': 15, 'm': 0.5, 'ngridx': 200, 'ngridy': 200, 'n_eig': 250}
+{'lbx': -7.0, 'ubx': 7.0, 'lby': -1, 'uby': 15, 'm': 0.5, 'ngridx': 150, 'ngridy': 150, 'n_eig': 250}

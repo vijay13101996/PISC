@@ -1,0 +1,15 @@
+
+{'lbx': -10, 'ubx': 10, 'lby': -10, 'uby': 10.0, 'm': 0.5, 'ngridx': 100, 'ngridy': 100, 'n_eig': 150}
+{'lbx': -10, 'ubx': 10, 'lby': -10, 'uby': 10.0, 'm': 0.5, 'ngridx': 100, 'ngridy': 100, 'n_eig': 50}
+{'lbx': -10, 'ubx': 10, 'lby': -10, 'uby': 10.0, 'm': 0.5, 'ngridx': 100, 'ngridy': 100, 'n_eig': 150}
+{'lbx': -15, 'ubx': 15, 'lby': -15, 'uby': 15.0, 'm': 0.5, 'ngridx': 150, 'ngridy': 150, 'n_eig': 400}
+{'lbx': -15, 'ubx': 15, 'lby': -15, 'uby': 15.0, 'm': 0.5, 'ngridx': 150, 'ngridy': 150, 'n_eig': 100}
+{'lbx': -15, 'ubx': 15, 'lby': -15, 'uby': 15.0, 'm': 0.5, 'ngridx': 150, 'ngridy': 150, 'n_eig': 100}
+{'lbx': -15, 'ubx': 15, 'lby': -15, 'uby': 15.0, 'm': 0.5, 'ngridx': 150, 'ngridy': 150, 'n_eig': 100}
+{'lbx': -13, 'ubx': 13, 'lby': -13, 'uby': 13, 'm': 0.5, 'ngridx': 120, 'ngridy': 120, 'n_eig': 150}
+{'lbx': -13.0, 'ubx': 13.0, 'lby': -13.0, 'uby': 13.0, 'm': 0.5, 'ngridx': 110, 'ngridy': 110, 'n_eig': 200}
+{'lbx': -13.0, 'ubx': 13.0, 'lby': -13.0, 'uby': 13.0, 'm': 0.5, 'ngridx': 50, 'ngridy': 50, 'n_eig': 200}
+{'lbx': -13.0, 'ubx': 13.0, 'lby': -13.0, 'uby': 13.0, 'm': 0.5, 'ngridx': 100, 'ngridy': 100, 'n_eig': 200}
+{'lbx': -13.0, 'ubx': 13.0, 'lby': -13.0, 'uby': 13.0, 'm': 0.5, 'ngridx': 100, 'ngridy': 100, 'n_eig': 200}
+{'lbx': -13.0, 'ubx': 13.0, 'lby': -13.0, 'uby': 13.0, 'm': 0.5, 'ngridx': 70, 'ngridy': 70, 'n_eig': 200}
+{'lbx': -13.0, 'ubx': 13.0, 'lby': -13.0, 'uby': 13.0, 'm': 0.5, 'ngridx': 70, 'ngridy': 70, 'n_eig': 200}

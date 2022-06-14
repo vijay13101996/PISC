@@ -1,0 +1,3 @@
+
+{'lbx': -7.0, 'ubx': 7.0, 'lby': -1, 'uby': 15, 'm': 0.5, 'ngridx': 100, 'ngridy': 100, 'n_eig': 250}
+{'lbx': -7.0, 'ubx': 7.0, 'lby': -1, 'uby': 15, 'm': 0.5, 'ngridx': 100, 'ngridy': 100, 'n_eig': 250}
