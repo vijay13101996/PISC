@@ -9,65 +9,73 @@ import time
 import os
 
 m=0.5
+N=50#20
+dt=0.005
+
 w = 0.5
-D = 10.0#10.0
-alpha = 0.81#0.175#0.255#1.165#0.255
+D = 10.0
+alpha = 0.363
 
-lamda = 1.5
-g = 0.035
+lamda = 2.0
+g = 0.08
 
-z = 1.0
+Vb = lamda**4/(64*g)
+
+z = 1.25
 potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
 
-pes = quartic_bistable(alpha,D,lamda,g,z)
-poincare = Poincare_SOS(pes,m)
+Tc = 0.5*lamda/np.pi
+times = 1.0
+T = times*Tc
+Tkey = 'T_{}Tc'.format(times) 
 
-qcart = np.zeros((1,2,1))
-pcart = np.zeros_like(qcart)
+pes = quartic_bistable(alpha,D,lamda,g,z)
 
 pathname = os.path.dirname(os.path.abspath(__file__))
 
-L = lamda/np.sqrt(8*g)
-xcart_lin = np.linspace(-L,L,11)
-ycart_lin = np.linspace(-2.0,2.0,21)
+E = Vb
+xg = np.linspace(-8,8,int(1e2)+1)
+yg = np.linspace(-5,10,int(1e2)+1)
+xgrid,ygrid = np.meshgrid(xg,yg)
+potgrid = pes.potential_xy(xgrid,ygrid)
 
-E = 4.8#lamda**4/(64*g)	
+print('pot',potgrid.shape)
+ind = np.where(potgrid<E)
+xind,yind = ind
 
-#for i in range(len(xcart_lin)):
-for j in range(len(ycart_lin)):
-		qcart[0,:,0] = [-3.0,ycart_lin[j]]
-		Pot = pes.potential_xy(qcart[0,0],qcart[0,1])
-		if(E<Pot):
-			continue
-		Ekin = 2*(E - Pot)*m
+qlist = []
 
-		xkincomp = poincare.rng.uniform(0,1)
-		ykincomp = 1-xkincomp
+fig,ax = plt.subplots(1)
 
-		pcart[0,0,0] = (xkincomp*Ekin)**0.5
-		pcart[0,1,0] = (ykincomp*Ekin)**0.5
+for x,y in zip(xind,yind):
+	#x = i[0]
+	#y = i[1]
+	#ax.scatter( xgrid[x,y],ygrid[x,y])#xgrid[x][y] , ygrid[x][y] )
+	qlist.append([xgrid[x,y],ygrid[x,y]])
+
+ax.contour(xgrid,ygrid,potgrid,levels=np.arange(0,1.01*D,D/30))
+plt.show()
+
+qlist = np.array(qlist)
+print('qlist',qlist.shape)
+
+nbeads = 5
+PSOS = Poincare_SOS('Classical',pathname,potkey,Tkey)
+PSOS.set_sysparams(pes,T,m,2)
+PSOS.set_simparams(N,dt,dt,nbeads=nbeads)	
+PSOS.set_runtime(20.0,500.0)
+PSOS.bind(qcartg=qlist,E=E)
+
+if(0):
+	PSOS.run_traj(0,ax)
+	plt.show()
 	
-		#xgrid = np.linspace(-5,5,200)
-		#ygrid = np.linspace(-5,5,200)
-		#xmesh,ymesh = np.meshgrid(xgrid,ygrid)
-		#potgrid = pes.potential_xy(xmesh,ymesh)	
-		#plt.contour(xmesh,ymesh,potgrid,colors='k',levels=np.arange(0.0,5.1,0.5))	
-
-		x,px,y= poincare.PSOS_X(qcart,pcart,0.0)
-		x = np.array(x[::10])
-		y = np.array(y[::10])
-		#plt.quiver(x[:-1], y[:-1], x[1:]-x[:-1], y[1:]-y[:-1], scale_units='xy', angles='xy', scale=1)
-		#plt.scatter(x[0],y[0],s=30,color='r')		
-		#plt.show()
-		
-		pcart[0,0,0] = -(xkincomp*Ekin)**0.5
-		pcart[0,1,0] = -(ykincomp*Ekin)**0.5	
-
-		if(j%2==0):
-			plt.scatter(poincare.X,poincare.PX,s=4,color='r')
-			plt.show()
-	
-fname = 'Poincare_Section_x_px_{}_T_{}'.format(potkey,T)
-store_1D_plotdata(X,PX,fname,'{}/Datafiles'.format(pathname))
-		
+if(0):
+	X,PX,Y = PSOS.PSOS_X(y0=0.0)#-0.267)
+	plt.title(r'PSOS, $N_b={}$'.format(nbeads))
+	plt.scatter(X,PX,s=2)
+	plt.show()
+	#fname = 'Poincare_Section_x_px_{}_T_{}'.format(potkey,T)
+	#store_1D_plotdata(X,PX,fname,'{}/Datafiles'.format(pathname))
+			
 	

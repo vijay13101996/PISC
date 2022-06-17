@@ -31,13 +31,14 @@ if(0):
 	potkey = 'triple_well_lambda_{}_g_{}'.format(lamda,g)
 
 if(0):
-	lb = -6.0
+	lb = -5.0
 	ub = 30.0
 	m = 0.5
 
 	w = 0.1
 	D = 10.0
-	alpha = 0.255#0.81#0.41#0.175#0.255#1.165
+	alpha = 0.363
+	#0.81#0.41#0.175#0.255#1.165
 	pes = morse(D,alpha)
 	Tc = 1.0
 	potkey = 'morse'#_lambda_{}_g_{}'
@@ -47,6 +48,9 @@ if(1):
 	lb = -L
 	ub = L
 	m = 0.5
+
+	#1.5: 0.035,0.075,0.13
+	#2.0: 0.08,0.175
 
 	lamda = 2.0#1.5#3.0#2.5#2.0#1.5
 	g = 0.08#0.035#0.13#0.265#0.155#0.08#0.035
@@ -105,7 +109,7 @@ n_eigen = 50
 k_arr = np.arange(basis_N) +1
 m_arr = np.arange(basis_N) +1
 
-t_arr = np.linspace(0,5.0,1000)
+t_arr = np.linspace(0,20.0,1000)
 OTOC_arr = np.zeros_like(t_arr) +0j
 
 if(1):

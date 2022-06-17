@@ -23,10 +23,10 @@ start_time = time.time()
 
 if(1): #2D double well
 	L = 10.0
-	lbx = -8
-	ubx = 8
-	lby = -6#
-	uby = 30.0#
+	lbx = -7
+	ubx = 7
+	lby = -5#
+	uby = 10.0#
 	m = 0.5
 	ngrid = 100
 	ngridx = ngrid
@@ -34,15 +34,16 @@ if(1): #2D double well
 
 	w = 0.1	
 	D = 10.0
-	alpha = 0.255#0.81#0.255#0.41#0.175#1.165#0.255#
+	alpha = 0.363#0.81#0.255#0.41#0.175#1.165#0.255#
 	
-	lamda = 1.5#4.0
-	g = 0.035#lamda**2/32#0.02#4.0
+	lamda = 2.0#4.0
+	g = 0.08#lamda**2/32#0.02#4.0
 
 	z = 1.5#2.3	
 
 	Tc = lamda*0.5/np.pi
-	T_au = Tc#10.0 
+	times = 1.0
+	T_au = times*Tc#10.0 
 	beta = 1.0/T_au 
 	
 	print('beta', beta)
@@ -57,7 +58,7 @@ if(1): #2D double well
 	path = os.path.dirname(os.path.abspath(__file__))
 
 	DVR = DVR2D(ngridx,ngridy,lbx,ubx,lby,uby,m,pes.potential_xy)
-	n_eig_tot = 150
+	n_eig_tot = 200
 	print('potential',potkey)	
 	if(0): #Diagonalization
 		param_dict = {'lbx':lbx,'ubx':ubx,'lby':lby,'uby':uby,'m':m,'ngridx':ngridx,'ngridy':ngridy,'n_eig':n_eig_tot}
@@ -72,19 +73,20 @@ if(1): #2D double well
 	vals = read_arr('{}_vals'.format(fname),'{}/Datafiles'.format(path))
 	vecs = read_arr('{}_vecs'.format(fname),'{}/Datafiles'.format(path))
 
-	basis_N = 120#165
-	n_eigen = 30#150
+	basis_N = 140#165
+	n_eigen = 50#150
 
-	print('vals',vals[:30])#vals[0],vals[5],vals[16],vals[50],vals[104])
+	#print('vals',vals[:30])#vals[0],vals[5],vals[16],vals[50],vals[104])
 	#print('expvals',np.exp(-beta*vals[:70]))
 	#print('vecs',vecs[:200,10])	
-	n=2
+	n=9
 	M=1
+	print('vals[n]', vals[n])
 	if(0):
 		xg = np.linspace(lbx,ubx,ngridx)
 		yg = np.linspace(lby,uby,ngridy)
 		xgr,ygr = np.meshgrid(xg,yg)
-		plt.contour(pes.potential_xy(xgr,ygr),levels=np.arange(0,5,0.25))
+		plt.contour(pes.potential_xy(xgr,ygr),levels=np.arange(0,10,0.5))
 	plt.imshow(DVR.eigenstate(vecs[:,n])**2,origin='lower')
 	plt.show()
 	#plt.contour(DVR.eigenstate(vecs[:,n])**2)
@@ -123,9 +125,9 @@ if(1): #2D double well
 			lda = 0.5
 			Z = 0.0
 			coefftot = 0.0
-			for n in range(2,3):
+			for n in range(1):
 				Z+= np.exp(-beta*vals[n])		
-				for M in range(5,15):
+				for M in range(10):
 					bnm =OTOC_f_2D_omp_updated.otoc_tools.quadop_matrix_arr_t(vecs,m,x_arr,DVR.dx,DVR.dy,k_arr,vals,n+1,M+1,t_arr,1,'cm',OTOC_arr)
 					coeff = 0.0
 					if(n!=M):
@@ -134,10 +136,10 @@ if(1): #2D double well
 						coeff = np.exp(-beta*(vals[n]))
 					coefftot+=coeff
 					if(1):#coeff>=1e-4):
-						coeffpercent = coeff*100/0.104
-						print('coeff',n,M,coeffpercent)
+						coeffpercent = coeff*100/0.001876
+						print('coeff,Z',n,M,coeff,np.exp(-beta*vals[n])*np.exp(-lda*beta*(vals[M]-vals[n]))  )
 						plt.plot(t_arr,abs(bnm)**2,label='n,M, % ={},{},{}'.format(n,M,np.around(coeffpercent,2)))
-						#print('contribution of b_nm for lambda={},n,m={},{}'.format(lda,n,M), np.exp(-beta*vals[n])*np.exp(-lda*beta*(vals[M]-vals[n])))
+						#print('coeff_sym', np.exp(-beta*vals[n])*np.exp(-lda*beta*(vals[M]-vals[n])))
 					bnm_arr+=coeff*abs(bnm)**2
 			bnm_arr/=Z
 			print('Z',Z,coefftot)
@@ -169,14 +171,14 @@ if(1): #2D double well
 		#plt.plot(t_arr,xp1T,color='g')
 		#plt.plot(t_arr,xp1,color='k')
 		#plt.title('{}'.format(potkey))
-		#plt.plot(t_arr,np.log(abs(C)))
+		#plt.plot(t_arr,np.log(abs(CT)))
 		#plt.plot(t_arr,G1+G2-2*np.real(F))	
 		#plt.plot(t_arr,b_arr,color='k')
-		plt.show()
+		#plt.show()
 		
 		path = os.path.dirname(os.path.abspath(__file__))
-		fname = 'Quantum_mc_n_1_OTOC_{}_basis_{}'.format(potkey,basis_N)
-		store_1D_plotdata(t_arr,C,fname,'{}/Datafiles'.format(path))
+		fname = 'Quantum_OTOC_{}_neigen_{}_basis_{}'.format(potkey,n_eigen,basis_N)
+		#store_1D_plotdata(t_arr,CT,fname,'{}/Datafiles'.format(path))
 
 		#fname = 'Quantum_mc_n_1_qqTCF_{}_T_{}_basis_{}_n_eigen_{}'.format(potkey,T_au,basis_N,n_eigen)
 		#store_1D_plotdata(t_arr,xp2,fname,'{}/Datafiles'.format(path))

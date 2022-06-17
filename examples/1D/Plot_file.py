@@ -6,21 +6,21 @@ import os
 from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr, read_arr
 
 dim = 1
-lamda = 1.5
-g = 0.035#0.13#lamda**2/32
+lamda = 2.0
+g = 0.175#0.13#lamda**2/32
 
 Tc = lamda*(0.5/np.pi)
-times = 10.0
+times = 0.5
 T = times*Tc
 
 m = 0.5
 N = 1000
 dt = 0.005
 
-nbeads = 4
+nbeads = 8
 gamma = 16
 
-potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
+potkey = 'tst2_harmonic_lambda_{}_g_{}'.format(lamda,g)
 
 #Path extensions
 path = os.path.dirname(os.path.abspath(__file__))	
@@ -29,31 +29,34 @@ cext = '{}/cmd/Datafiles/'.format(path)
 Cext = '{}/classical/Datafiles/'.format(path)
 rpext = '{}/rpmd/Datafiles/'.format(path)
 
-ext = 'Quantum_OTOC_inv_harmonic_lambda_{}_g_{}_T_{}Tc_basis_140_n_eigen_50'
-l3_t1 = qext + ext.format(1.5,0.035,times)
-#l3_t2 = qext + ext.format(1.5,0.035,0.8)
-#l3_t3 = qext + ext.format(1.5,0.035,0.6) 
-#l3_t4 = qext + ext.format(1.5,0.035,0.4) 
-#l3_t5 = qext + ext.format(1.5,0.035,0.2) 
-
 fig,ax = plt.subplots()
-#plot_1D(ax,l3_t1, label=r'$Quantum,T=T_c$',color='m', log=True,linewidth=1)
-#plot_1D(ax,l3_t2, label='Quantum,T=0.8Tc',color='k', log=True,linewidth=1)
-#plot_1D(ax,l3_t3, label='Quantum,T=0.6Tc',color='g', log=True,linewidth=1)
-#plot_1D(ax,l3_t4, label='Quantum,T=0.4Tc',color='r', log=True,linewidth=1)
-#plot_1D(ax,l3_t5, label='Quantum,T=0.2Tc',color='b', log=True,linewidth=1)
-
-slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(l3_t1,1.1,1.9)#1.63,2.67)
-#ax.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k')
-
+	
 if(0):
-	ext = 'RPMD_OTOC_{}_T_{}Tc_nbeads_{}_dt_0.005'.format(potkey,times,nbeads)
-	l3_t1 = rpext + ext.format(1.5,0.035,1.0)
+	ext = 'Quantum_OTOC_inv_harmonic_lambda_{}_g_{}_T_{}Tc_basis_140_n_eigen_50'
+	l3_t1 = qext + ext.format(1.5,0.035,times)
+	#l3_t2 = qext + ext.format(1.5,0.035,0.8)
+	#l3_t3 = qext + ext.format(1.5,0.035,0.6) 
+	#l3_t4 = qext + ext.format(1.5,0.035,0.4) 
+	#l3_t5 = qext + ext.format(1.5,0.035,0.2) 
+
+	#plot_1D(ax,l3_t1, label=r'$Quantum,T=T_c$',color='m', log=True,linewidth=1)
+	#plot_1D(ax,l3_t2, label='Quantum,T=0.8Tc',color='k', log=True,linewidth=1)
+	#plot_1D(ax,l3_t3, label='Quantum,T=0.6Tc',color='g', log=True,linewidth=1)
+	#plot_1D(ax,l3_t4, label='Quantum,T=0.4Tc',color='r', log=True,linewidth=1)
+	#plot_1D(ax,l3_t5, label='Quantum,T=0.2Tc',color='b', log=True,linewidth=1)
+
+	slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(l3_t1,1.1,1.9)#1.63,2.67)
+	#ax.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k')
+
+if(1):
+	ext = 'RPMD_mc_OTOC_{}_T_{}Tc_nbeads_{}_dt_0.005'.format(potkey,times,nbeads)
+	l3_t1 = rpext + ext.format(2.0,0.175,1.0)
 	print('fname',l3_t1)
 	plot_1D(ax,l3_t1, label=r'$RPMD,T=Tc,\; N_b=32$',color='g', log=True,linewidth=1)
-	slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(l3_t1,2.,3.5)#3.26,4.08)
+	slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(l3_t1,1.75,3.0)#3.26,4.08)
 	ax.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k')
-
+	print('2pi/beta', 2*np.pi*T,slope/2)
+	
 if(0):
 	ext = 'CMD_OTOC_{}_T_1.0Tc_nbeads_4_gamma_32_dt_0.005'.format(potkey)
 	l3_t1 = cext + ext.format(1.5,0.035,1.0)
@@ -74,7 +77,7 @@ if(0):
 	ax.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k')
 
 
-if(1):
+if(0):
 	for i,c in zip([1,4],['c','r','k','g']):
 		ext = 'RPMD_OTOC_{}_T_{}Tc_nbeads_{}_dt_0.005'.format(potkey,times,i)
 		f = rpext + ext#.format(1.5,0.035,1.0,i)	
@@ -88,7 +91,7 @@ if(0):
 	f = qext + ext.format(1.5,0.035,1.0)	
 	plot_1D(ax,f, label=r'$Quantum,T={}Tc$'.format(times),color='g', log=False,linewidth=1)
 	
-if(1):
+if(0):
 	ext = 'Quantum_OTOC_{}_T_{}Tc_basis_140_n_eigen_50'.format(potkey,times)
 	f = qext + ext#.format(1.5,0.035,1.0)	
 	plot_1D(ax,f, label=r'$Quantum,T={}Tc$'.format(times),color='m', log=True,linewidth=1)

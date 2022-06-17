@@ -7,25 +7,25 @@ from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr,
 
 dim = 1
 lamda = 2.0#1.5
-g = 0.08#0.035#0.13#0.075#0.035#lamda**2/32
+g = 0.175#0.035#0.13#0.075
 
 Tc = lamda*(0.5/np.pi)
-times = 1.0
+times = 0.9
 T = times*Tc
 
 m = 0.5
 N = 1000
-dt = 0.005
+dt = 0.002
 
-nbeads = 8
+nbeads = 48
 gamma = 16
 
-time_total = 6.0#10.0
+time_total = 5.0#10.0
 
 tarr = np.arange(0.0,time_total,dt)
 OTOCarr = np.zeros_like(tarr) +0j
 
-potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
+potkey = 'tst2_harmonic_lambda_{}_g_{}'.format(lamda,g)
 
 #Path extensions
 path = os.path.dirname(os.path.abspath(__file__))	
@@ -40,7 +40,7 @@ beadkey = 'nbeads_{}_'.format(nbeads)
 Tkey = 'T_{}Tc'.format(times)
 syskey = 'Selene'
 
-if(1):#RPMD
+if(0):#RPMD
 	methodkey = 'RPMD'
 
 	kwlist = [methodkey,corrkey,syskey,potkey,Tkey,beadkey]
@@ -54,7 +54,7 @@ if(1):#RPMD
 	plt.show()
 	store_1D_plotdata(tarr,OTOCarr,'RPMD_{}_{}_{}_nbeads_{}_dt_{}'.format(corrkey,potkey,Tkey,nbeads,dt),rpext)
 
-if(0):#RPMD/mc
+if(1):#RPMD/mc
 	methodkey = 'RPMD'
 	enskey  = 'mc'
 	kwlist = [enskey,methodkey,corrkey,syskey,potkey,Tkey,beadkey]

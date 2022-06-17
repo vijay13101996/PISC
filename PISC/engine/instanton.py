@@ -36,7 +36,7 @@ class instantonize(object):
 	def saddle_init(self,q,delta,z):
 		rpqcart = np.zeros_like(self.rp.qcart)
 		for i in range(self.rp.nbeads):
-			rpqcart[...,i] = q #+ delta*np.cos(np.pi*i/(self.rp.nbeads-1))*z	 #initialize beads as in eqn. 56
+			rpqcart[...,i] = q + delta*np.cos(np.pi*i/(self.rp.nbeads-1))*z	 #initialize beads as in eqn. 56
 		return rpqcart	
 			
 	def eigvec_follow_step(self,eig_dir=0):

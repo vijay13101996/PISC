@@ -18,13 +18,13 @@ import time
 m=0.5#8.0
 
 w = 0.2#0.1
-D = 5.0#10.0
-alpha = (0.5*m*w**2/D)**0.5#1.0#1.95
+D = 10.0#10.0
+alpha = 0.363#(0.5*m*w**2/D)**0.5#1.0#1.95
 
-lamda = 0.8 #4.0
-g = 0.02#4.0
+lamda = 2.0 #4.0
+g = 0.08#4.0
 
-z = 0.0#2.3	
+z = 1.0#2.3	
 
 pes = quartic_bistable(alpha,D,lamda,g,z)
 
@@ -50,8 +50,8 @@ T = 1.0
 L = 7.0
 lbx = -L
 ubx = L
-lby = -6*L
-uby = 12*L
+lby = -5
+uby = 10
 ngrid = 200
 ngridx = ngrid
 ngridy = ngrid
@@ -99,7 +99,7 @@ if(0): ### Setting up the ring polymer
 
 
 potgrid = pes.potential_xy(x,y)
-plt.contour(x,y,potgrid,colors='k',levels=np.arange(0,1.5*D,D/20))
+plt.contour(x,y,potgrid,colors='k',levels=np.arange(0,D,D/20))
 print('pot',pes.potential_xy(0,0))
 #plt.show()
 
@@ -156,7 +156,7 @@ if(0): # Code for finding the saddle in the PE # Code for finding the saddle in 
 	print('eigval',vals)
 
 eigvec = np.array([1.0,0.0])
-nbeads = 1
+nbeads = 12
 dim = 2
 inst = instantonize(stepsize=1e-4, tol=1e-8)
 qcart = np.zeros((1,dim,nbeads))
@@ -169,7 +169,7 @@ rp.bind(ens, motion, rng)
 pes.bind(ens, rp)
 inst.bind(pes,rp)
 
-rp_init = inst.saddle_init(np.array([0.0,0.0]),0.0,eigvec)
+rp_init = inst.saddle_init(np.array([0.0,0.0]),1.0,eigvec)
 rp = RingPolymer(qcart=rp_init,m=m,nmats=nbeads)
 rp.bind(ens, motion, rng)
 pes.bind(ens, rp)
@@ -177,11 +177,11 @@ pes.update()
 
 inst.bind(pes,rp)
 
-plt.scatter(rp.qcart[0,0,:],rp.qcart[0,1,:],color='r')	
+plt.scatter(rp.qcart[0,0,:],rp.qcart[0,1,:],color='g')	
 vals,vecs = inst.diag_hess()
 eigdir =1 
 
-print('hess',inst.hess,pes.ddpot)
+#print('hess',inst.hess,pes.ddpot)
 print('eigval',vals[:2])
 step = inst.grad_desc_step()
 if(1): # Gradient descent helps move away from the classical saddle to a lower energy RP configuration below crossover temperature.
@@ -191,14 +191,14 @@ if(1): # Gradient descent helps move away from the classical saddle to a lower e
 		step = 	inst.grad_desc_step()
 		eigval = np.linalg.eigvalsh(inst.hess)#[eigdir]
 		if(count%1000==0):
-			print('eigval',eigval[:2])
+			print('eigval in',eigval[:2])
 		#if(count%1000==0):
 		#	plt.scatter(count,(pes.pot+rp.pot).sum(),color='r')
 		#	plt.scatter(count,abs(inst.grad).max(),color='k')
 		#	plt.pause(0.05)
 			#print('grad',abs(inst.grad).max())
 			#print('pot',(pes.pot+rp.pot).sum())
-		if(0):#count%10000==0):
+		if(0):#count%1000==0):
 			plt.scatter(rp.qcart[0,0,:],rp.qcart[0,1,:])
 			plt.pause(0.05)
 			#print('count',count)
@@ -207,8 +207,9 @@ if(1): # Gradient descent helps move away from the classical saddle to a lower e
 			print('step', np.around(np.linalg.norm(step),5))
 			
 		count+=1
-	print('count',count)
-	print('gradient',np.around(inst.grad,4))
+	#print('count',count)
+	#print('gradient',np.around(inst.grad,4))
+	print('final centroid coord', rp.q[:,:,0])
 	plt.scatter(rp.qcart[0,0,:],rp.qcart[0,1,:],color='m')
 
 #plt.show()
