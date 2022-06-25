@@ -2,6 +2,7 @@ import numpy as np
 from PISC.dvr.dvr import DVR2D
 from PISC.potentials.Coupled_harmonic import coupled_harmonic
 from PISC.potentials.Quartic_bistable import quartic_bistable
+from PISC.potentials.Heller_Davis import heller_davis
 from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr, read_arr
 from PISC.engine import OTOC_f_1D
 from PISC.engine import OTOC_f_2D_omp_updated
@@ -79,14 +80,14 @@ if(1): #2D double well
 	#print('vals',vals[:30])#vals[0],vals[5],vals[16],vals[50],vals[104])
 	#print('expvals',np.exp(-beta*vals[:70]))
 	#print('vecs',vecs[:200,10])	
-	n=9
+	n=2#15
 	M=1
 	print('vals[n]', vals[n])
-	if(0):
+	if(1):
 		xg = np.linspace(lbx,ubx,ngridx)
 		yg = np.linspace(lby,uby,ngridy)
 		xgr,ygr = np.meshgrid(xg,yg)
-		plt.contour(pes.potential_xy(xgr,ygr),levels=np.arange(0,10,0.5))
+		plt.contour(pes.potential_xy(xgr,ygr),levels=np.arange(0,10,2))
 	plt.imshow(DVR.eigenstate(vecs[:,n])**2,origin='lower')
 	plt.show()
 	#plt.contour(DVR.eigenstate(vecs[:,n])**2)
@@ -249,3 +250,69 @@ if(0):
 		plt.plot(t_arr,np.log(OTOC_arr))
 		plt.show()
 		
+
+if(0): #Heller Davis
+	L = 10.0
+	lbx = -7
+	ubx = 7
+	lby = -9
+	uby = 9
+	m = 1.0
+	ngrid = 100
+	ngridx = ngrid
+	ngridy = ngrid
+
+	ws= 1.0
+	wu= 1.1
+	lamda = -0.11
+	
+	T_au = 1.0 
+	beta = 1.0/T_au 
+	
+	print('beta', beta)
+
+	x = np.linspace(lbx,ubx,ngridx+1)
+	potkey = 'Heller_Davis_ws_{}_wu_{}_lamda_{}'.format(ws,wu,lamda)
+
+	pes = heller_davis(ws,wu,lamda)
+
+	print('pot',pes.potential_xy(0,0))
+	fname = 'Eigen_basis_{}_ngrid_{}'.format(potkey,ngrid)	
+	path = os.path.dirname(os.path.abspath(__file__))
+
+	DVR = DVR2D(ngridx,ngridy,lbx,ubx,lby,uby,m,pes.potential_xy)
+	n_eig_tot = 200
+	print('potential',potkey)	
+	if(0): #Diagonalization
+		param_dict = {'lbx':lbx,'ubx':ubx,'lby':lby,'uby':uby,'m':m,'ngridx':ngridx,'ngridy':ngridy,'n_eig':n_eig_tot}
+		with open('{}/Datafiles/Input_log_{}.txt'.format(path,potkey),'a') as f:	
+			f.write('\n'+str(param_dict))#print(param_dict,file=f)
+		
+		vals,vecs = DVR.Diagonalize()#_Lanczos(n_eig_tot)
+
+		store_arr(vecs[:,:n_eig_tot],'{}_vecs'.format(fname),'{}/Datafiles'.format(path))
+		store_arr(vals[:n_eig_tot],'{}_vals'.format(fname),'{}/Datafiles'.format(path))
+
+	vals = read_arr('{}_vals'.format(fname),'{}/Datafiles'.format(path))
+	vecs = read_arr('{}_vecs'.format(fname),'{}/Datafiles'.format(path))
+
+	basis_N = 140#165
+	n_eigen = 50#150
+
+	#print('vals',vals[:30])#vals[0],vals[5],vals[16],vals[50],vals[104])
+	#print('expvals',np.exp(-beta*vals[:70]))
+	#print('vecs',vecs[:200,10])	
+	n=93
+	M=1
+	print('vals[n]', vals[n])
+	if(1):
+		xg = np.linspace(lbx,ubx,ngridx)
+		yg = np.linspace(lby,uby,ngridy)
+		xgr,ygr = np.meshgrid(xg,yg)
+		#plt.contour(xgr,ygr,pes.potential_xy(xgr,ygr),levels=np.arange(-20,20,1))
+	plt.imshow(DVR.eigenstate(vecs[:,n])**2,origin='lower')
+	plt.show()
+	#plt.contour(DVR.eigenstate(vecs[:,n])**2)
+	#plt.show()
+
+

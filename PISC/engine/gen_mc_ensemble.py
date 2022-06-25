@@ -12,6 +12,7 @@ import time
 def generate_rp(pathname,m,dim,N,nbeads,ens,pes,rng,time_relax,dt_relax,potkey,rngSeed,E,qlist):
 
 	index_arr = rng.choice(len(qlist),N)  # Choose N points at random from the qlist
+	print('ind',index_arr)
 	qcart = np.zeros((N,dim,nbeads))
 	pcart = np.zeros((N,dim,nbeads))
 	for i in range(nbeads):

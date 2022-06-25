@@ -171,7 +171,6 @@ class RingPolymer(object):
 			self.p = self.rng.normal(size=self.q.shape,scale=1/np.sqrt(self.ens.beta))
 			self.pcart = self.nmtrans.mats2cart(self.p)		
 		elif(self.pcart is None):
-			print('jere')
 			self.pcart = self.nmtrans.mats2cart(self.p)
 		else:
 			self.p = self.nmtrans.cart2mats(self.pcart)

@@ -5,6 +5,23 @@ x = sympy.Symbol('x')
 y = sympy.Symbol('y')
 
 if(1):
+	ws = sympy.Symbol('self.ws')
+	wu = sympy.Symbol('self.wu')
+	lamda = sympy.Symbol('self.lamda')
+
+	V = 0.5*wu**2*y**2 + 0.5*ws**2*x**2 + lamda*y**2*x
+		
+	print('V',V)
+	print('Vx=',diff(V,x))
+	print('Vy=',diff(V,y))
+	print('Vxx=',diff(V,x,x))
+	print('Vxy=',diff(V,x,y))
+	print('Vyx=',diff(V,y,x))
+	print('Vyy=',diff(V,y,y))
+
+	
+
+if(0):
 	g = sympy.Symbol('self.g')
 	lamda = sympy.Symbol('self.lamda')
 

@@ -20,7 +20,17 @@ class instantonize(object):
 		self.q = (self.rp.q).flatten() 
 		self.grad = (self.rp.dpot+self.pes.dpot).flatten()
 		self.hess = self.flatten_hess(self.rp.ddpot+self.pes.ddpot)
-		
+	
+	def reinit_inst_scaled(self,qscaled,n,eig_dir):
+		self.q = qscaled.flatten()	
+		dpot = self.rp.dpot+self.pes.dpot
+		dpot[:,eig_dir]/=n
+		self.grad = dpot.flatten()
+		ddpot = self.rp.ddpot+self.pes.ddpot
+		ddpot[:,eig_dir]/=n
+		ddpot[:,:,eig_dir]/=n
+		self.hess = self.flatten_hess(ddpot)
+	
 	def flatten_hess(self,hess):
 		# Rearranges the Hessian matrix to be consistent with the ordering [x1,x2,...xN,y1,y2,...yN]
 		arr = hess.swapaxes(2,3).reshape(len(hess)*self.ndim*self.nbeads,len(hess)*self.ndim*self.nbeads)
@@ -47,24 +57,51 @@ class instantonize(object):
 		if((abs(F)<self.tol).all()):#abs(F[eig_dir])<self.tol):# and abs(F[0])<self.tol):
 			print('F',F)
 			return "terminate"
-		lamda = np.zeros(len(self.q))
-		if(vals[eig_dir]>=0.0): # Here, the 'cutoff' for using Lagrange multiplier may need to be altered depending on PES.
+		lamda = np.zeros(len(self.q)) - 0.1
+		if(vals[eig_dir]>=-2.0): # Here, the 'cutoff' for using Lagrange multiplier may need to be altered depending on PES.
 			lamda[eig_dir] = vals[eig_dir] + abs(F[eig_dir]/self.stepsize)
 			#lamda[eig_dir+1] = vals[eig_dir+1] + abs(F[eig_dir+1]/self.stepsize)
-			h = np.matmul(vecs, F/(lamda-vals))
+			h = np.matmul(vecs, F/(lamda-vals))	
 		else:
 			h = -self.stepsize*F	#The directionality ought to be changed 'by hand' for the time being. 	
-		#print('h,F',h,F)
 		hnorm = np.sum(h**2)**0.5
 		if(hnorm>self.stepsize):
 			h/=(hnorm/self.stepsize)
-		return h	
+		return h
+
+	def eigvec_follow_step_soft(self,eig_dir=0):
+		vals,vecs = np.linalg.eigh(self.hess)
+		F = np.matmul(vecs.T,self.grad)
+		if(vals[eig_dir] >= 0.5*vals[eig_dir-1]):
+			h = -self.stepsize*vecs[eig_dir]
+			print('here 1')
+			return h			
+		if((abs(F)<self.tol).all()):#abs(F[eig_dir])<self.tol):# and abs(F[0])<self.tol):
+			print('F',F)
+			return "terminate"
+		lamda = np.zeros(len(self.q))
+		if(vals[eig_dir]>=-2.0): # Here, the 'cutoff' for using Lagrange multiplier may need to be altered depending on PES.
+			if(abs(F[eig_dir])>1e-2):
+				print('here 2')
+				lamda[eig_dir] = vals[eig_dir] + abs(F[eig_dir]/self.stepsize)
+			else:
+				print('here 3')
+				lamda[eig_dir] = 0.0
+			#lamda[eig_dir+1] = vals[eig_dir+1] + abs(F[eig_dir+1]/self.stepsize)	
+			h = np.matmul(vecs, F/(lamda-vals))	
+		else:
+			print('here 4')
+			h = -self.stepsize*F	#The directionality ought to be changed 'by hand' for the time being. 	
+		hnorm = np.sum(h**2)**0.5
+		if(hnorm>self.stepsize):
+			h/=(hnorm/self.stepsize)
+		return h
 
 	def grad_desc_step(self):
+		#print('rp', self.rp.ens.beta)
 		gradnorm = np.sum(self.grad**2)**0.5
 		h = -self.stepsize*self.grad/gradnorm
 		if(gradnorm<self.tol):
-			print('here')
 			return "terminate"
 		hnorm = np.sum(h**2)**0.5
 		if(hnorm>self.stepsize):
@@ -82,7 +119,21 @@ class instantonize(object):
 		self.pes.update()
 		self.grad = (self.rp.dpot+self.pes.dpot).flatten()
 		self.hess = self.flatten_hess(self.rp.ddpot+self.pes.ddpot)
-	
+
+	def slow_step_update_soft(self,step,n,eig_dir):
+		self.q+=step
+		self.rp.q = (self.q.copy()).reshape((-1,self.ndim,self.nbeads))
+		self.rp.q[:,eig_dir+1]*=n
+		self.rp.mats2cart()
+		self.pes.update()
+		dpot = self.rp.dpot+self.pes.dpot
+		dpot[:,eig_dir]*=n
+		self.grad = dpot.flatten()
+		ddpot = self.rp.ddpot+self.pes.ddpot
+		ddpot[:,eig_dir]*=n
+		ddpot[:,:,eig_dir]*=n
+		self.hess = self.flatten_hess(ddpot)
+
 	def Newton_Raphson_step(self,eps=0.1):
 		gradnorm = np.sum(self.grad**2)**0.5
 		if(gradnorm<self.tol):

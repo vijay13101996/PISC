@@ -46,13 +46,14 @@ class Poincare_SOS(object):
 		self.propa = Symplectic_order_II()
 		self.sim = RP_Simulation()
 		self.E = E	
-		if(pcartg is not None):
-			self.rp = RingPolymer(qcart=qcartg,pcart=pcartg,m=self.m)
-		elif(E is not None):	
+		if(E is not None):	
 			generate_rp(self.pathname,self.m,self.dim,self.N,self.nbeads,self.ens,self.pes,self.rng,self.time_ens,self.dt,self.potkey,self.rngSeed,E,qcartg)
 			qcartg = read_arr('Microcanonical_rp_qcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(self.N,self.nbeads,self.beta,self.potkey,self.rngSeed),"{}/Datafiles".format(self.pathname))
 			pcartg = read_arr('Microcanonical_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(self.N,self.nbeads,self.beta,self.potkey,self.rngSeed),"{}/Datafiles".format(self.pathname)) 
-		
+		#
+		ind = [0]
+		qcartg = qcartg[ind]
+		pcartg = pcartg[ind]	
 		self.rp = RingPolymer(qcart=qcartg,pcart=pcartg,m=self.m)	
 		self.sim.bind(self.ens,self.motion,self.rng,self.rp,self.pes,self.propa,self.therm)
 
@@ -64,8 +65,7 @@ class Poincare_SOS(object):
 			px = self.rp.pcart[ind,0,:]
 			y = self.rp.qcart[ind,1,:]
 			py = self.rp.pcart[ind,1,:]
-			#print('x', x)
-			if(i%5e2==0):
+			if(i%1e1==0):
 				ax.scatter(x,y,s=7)
 				plt.pause(0.05)	
 			
@@ -107,6 +107,7 @@ class Poincare_SOS(object):
 		X_list = []
 		PX_list = []
 		Y_list = []
+		
 		for i in range(nsteps):
 			self.sim.step(mode="nve",var='pq')	
 			x = self.rp.q[:,0,0]/self.rp.nbeads**0.5
@@ -116,13 +117,14 @@ class Poincare_SOS(object):
 			cent_E = np.sum(self.rp.p[:,:,0]**2/self.rp.nbeads,axis=1) + self.pes.potential(self.rp.q[:,:,0]/self.rp.nbeads**0.5)
 			#print('t, cent E',self.sim.t,cent_E.shape)		
 			curr = y-y0
-			ind = np.where( (prev*curr<0.0) & (py<0.0) & (cent_E<0.85*self.E) & (cent_E>0.8*self.E))
+			ind = np.where( (prev*curr<0.0) & (py<0.0))# & (cent_E>0.95*self.E))# & (cent_E>0.8*self.E))
 			X_list.extend(x[ind])
 			PX_list.extend(px[ind])
 			Y_list.extend(y[ind])
 			prev = curr
 			count+=1
 
+		print('X',np.array(X_list).shape)
 		self.X.extend(X_list)
 		self.PX.extend(PX_list)
 
