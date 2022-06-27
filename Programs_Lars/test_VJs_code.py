@@ -89,6 +89,7 @@ if(diag):
 #####read out arrays s.t.has to be diag only once
 vals = read_arr('{}_vals'.format(fname),'{}/Datafiles'.format(path))
 vecs = read_arr('{}_vecs'.format(fname),'{}/Datafiles'.format(path))
+print('... data retrieved!')
 
 ##########plot x and y potentials, eigenvalues and eigenvalues of the coupled problem, and 3D potential
 if(True):
@@ -98,9 +99,9 @@ if(True):
     DVR_Morse = DVR1D(2*ngridy,lby,2*uby,m,pot_Morse)#get t a little more exact
     vals_M, vecs_M= DVR_Morse.Diagonalize()
     vals_DW, vecs_DW= DVR_DW.Diagonalize()
-    Check_DVR.plot_V_and_E(xg,yg,vals=vals,vecs=vecs,vals_x=vals_DW,vals_y= vals_M ,pot=pes.potential_xy,z=z)
+    Check_DVR.plot_V_and_E(xg,yg,vals=vals,vecs=vecs,vals_x=vals_DW,vals_y= vals_M ,pot=pes.potential_xy,z=z,threeDplot=True)
 
-if(True): #some inside/intuition about potential and Eigenvalues
+if(False): #some inside/intuition about potential and Eigenvalues
     xg = np.linspace(lbx,ubx,ngridx)#ngridx+1 if "prettier"
     yg = np.linspace(lby,uby,ngridy)
     xgr,ygr = np.meshgrid(xg,yg)
@@ -113,12 +114,11 @@ if(True): #some inside/intuition about potential and Eigenvalues
     
     plt.show()
 
-
 ##########Parameters
 T=1
 beta=1/T
-n_eigen=30#up to which n C_n should be calculated
-N_trunc=70#how long m_arr is and therefore N_trunc 
+n_eigen=50#up to which n C_n should be calculated
+N_trunc=80#how long m_arr is and therefore N_trunc 
 
 ##########Arrays
 x_arr = DVR.pos_mat(0)#defines grid points on x
@@ -135,19 +135,22 @@ b_arr = np.zeros_like(OTOC_arr)#store B
 time_mc=time.time()
 k=0
 #for n in (0,5,10,20):####MC OTOC
-for n in range(15):###Mircocanonic OTOC
-    n=n
+for n in range(10):###Mircocanonic OTOC
+    n=5+n#for specific values
     C_n = OTOC_f_2D_omp_updated.otoc_tools.corr_mc_arr_t(vecs,m,x_arr,DVR.dx,DVR.dy,k_arr,vals,n+1,m_arr,t_arr,'xxC',OTOC_arr)
     #plt.plot(t_arr,np.real(C_n),label='n = %i' % (n+1)) #is real anyway
     plt.plot(t_arr,np.real(C_n),'--')#,label='n = %i' % (n+1)) #is real anyway
-    if(n<20):
-        l=np.random.randint((len(t_arr)))
+
+    if(n<20):#plot the numbers of C_n somewhere visible
+        l=np.random.randint(int((len(t_arr)/2)))
+        l+=int(len(t_arr)/2) # so thaat in second part of plot
         #plt.text(t_arr[-1],np.real(C_n[-1]),f'n = {n+1}',fontsize=8 )
         plt.text(t_arr[l],np.real(C_n[l]),f'n = {n+1}',fontsize=10 )
     k +=1
 print('Time for 1 McOTOC (avg over %i): %.2f s ' % (k,(time.time()-time_mc)/k))
 
-if(False):###Thermal OTOC
+plt.show()#depending if also want in the same plot (or not)
+if(True):###Thermal OTOC
     start_time=time.time()
     OTOC_arr = OTOC_f_2D_omp_updated.otoc_tools.therm_corr_arr_t(vecs,m,x_arr,DVR.dx,DVR.dy,k_arr,vals,m_arr,t_arr,beta,n_eigen,'xxC','stan',OTOC_arr) 
     plt.title('z = %.3f ' % z)
