@@ -17,7 +17,7 @@ from mylib.testing import Check_DVR
 Lx=5.0
 lbx = -Lx
 ubx = Lx
-lby = -2#Morse, will explode quickly
+lby = -3#Morse, will explode quickly
 uby = 10#Morse, will explode quickly
 m = 0.5
 ngrid = 100
@@ -34,37 +34,42 @@ g = 0.08
 
 ##########Start- Educated guessing:
 alpha= 1
-if(False):###Educated guessing:
+if(True):###Educated guessing:
     ###Parameter
     z=0
     #alpha_range= np.linspace(0.1,1,10)
     #for alpha in (0.175,0.41,0.255,1.165, 0.363,0.5):#,0.9,1.5):
     #alpha = 0.#,1#0.363 #1.165#0.81#0.175#0.41#0.255#1.165 
     #0.153,0.157,0.193,0.252,0.344,0.363,0.525,0.837,1.1,1.665,2.514###DVR nicht genug converged fuer 3 stellen
-    alpha_range = (0.153,0.157,0.193,0.252,0.344,0.363,0.525,0.837,1.1,1.665,2.514)
-    print(len(alpha_range))
+    alpha_range = (0.153,0.157,0.193,0.220,0.252,0.344,0.363,0.525,0.837,1.1,1.665,2.514)
+    #alpha_range = (0.220,)
+    print('# alphas = %i ' % len(alpha_range))
     pes = quartic_bistable(alpha,D,lamda,g,z)
     pot_DW= lambda a: pes.potential_xy(a,0)
     DVR_DW = DVR1D(4*ngridx,lbx,2*ubx,m,pot_DW)
     vals_DW, vecs_DW= DVR_DW.Diagonalize()
-    fig= plt.figure()
-
-    gs = fig.add_gridspec(1,2,hspace=0,wspace=0)
-    axs = gs.subplots(sharey='row')
+    #fig= plt.figure()
+    #gs = fig.add_gridspec(1,2,hspace=0,wspace=0)
+    #axs = gs.subplots(sharey='row')
     xg = np.linspace(lbx,ubx,2*ngridx)#ngridx+1 if "prettier"
     yg = np.linspace(lby,uby,2*ngridy)
-    axs[0].plot(xg,pot_DW(xg))
-    axs[0].set_title('Pot x')
-    #plot the eigenvalues
-    for n in range(6):
-        axs[0].plot(xg,vals_DW[n]*np.ones_like(xg),'--',label='n = %i' %n )
     #plot morse EV for different alphas
     colors= ['b','g','r','c','m','y','k']
     print('Lowest energy levels of DW:')
     print(vals_DW[0:4])
 
     cntr=0
+        
     for alpha in alpha_range:
+        fig= plt.figure()
+        gs = fig.add_gridspec(1,2,hspace=0,wspace=0)
+        axs = gs.subplots(sharey='row')
+        axs[0].plot(xg,pot_DW(xg))
+        axs[0].set_title('Pot x')
+        #plot the eigenvalues
+        for n in range(6):
+            axs[0].plot(xg,vals_DW[n]*np.ones_like(xg),'--',label='n = %i' %n )
+
         color = colors[cntr % len(colors)]
         cntr+=1
         pes = quartic_bistable(alpha,D,lamda,g,z)
@@ -73,23 +78,23 @@ if(False):###Educated guessing:
         vals_M, vecs_M= DVR_Morse.Diagonalize()
 
         axs[1].plot(yg, pot_Morse(yg), color,label = r'$\alpha$ = %.3f'%alpha)
-        for n in range(2):#amount of ev
+        for n in range(4):#amount of ev
             axs[1].plot(xg,vals_M[n]*np.ones_like(yg), ('--'+color),label=r'n = %i, $\alpha$ = %.2f' %(n,alpha) )
         #axs[1].plot(xg,vals_M[0]*np.ones_like(yg),('--'+color),label=r'n = %i, $\alpha$ = %.2f' %(n,alpha) )
         print()
         print('alpha= %.3f'%(alpha))
-        print(vals_M[0:2])
+        print(vals_M[0:3])
         print('ratio Dw2 to Morse0 = %.3f, (1/x = %.3f)' %((vals_DW[2]/vals_M[0]),(vals_M[0]/vals_DW[2])))
         print('ratio Dw2 to Morse1 = %.3f, (1/x = %.3f)' %((vals_DW[2]/vals_M[1]),(vals_M[1]/vals_DW[2])))
       
-    axs[1].set_title('Pot y')
-    axs[0].set_ylim([0,9])
-    axs[1].set_ylim([0,9])
-    axs[1].legend(loc='upper center',ncol=3,fancybox=True,shadow=True,fontsize=7)
-    axs[0].legend()
+        axs[1].set_title('Pot y')
+        axs[0].set_ylim([0,9])
+        axs[1].set_ylim([0,9])
+        axs[1].legend(loc='upper center',ncol=3,fancybox=True,shadow=True,fontsize=7)
+        axs[0].legend()
 
-    #plt.show()
-
+        plt.show()
+sys.exit()
 
 ##########Parameter to vary: alpha
 ###loop over different parameters (only alpha is changed), alpha only changes Morse
