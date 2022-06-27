@@ -2,9 +2,10 @@ import numpy as np
 from PISC.dvr.dvr import DVR2D
 from PISC.potentials.Coupled_harmonic import coupled_harmonic
 from PISC.potentials.Quartic_bistable import quartic_bistable
+from PISC.potentials.Heller_Davis import heller_davis
 from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr, read_arr
 from PISC.engine import OTOC_f_1D
-from PISC.engine import OTOC_f_2D_omp, OTOC_f_2D_omp_updated,OTOC_f_2D_omp_test
+from PISC.engine import OTOC_f_2D_omp_updated
 from matplotlib import pyplot as plt
 import os 
 import time 
@@ -23,10 +24,10 @@ start_time = time.time()
 
 if(1): #2D double well
 	L = 10.0
-	lbx = -8
-	ubx = 8
-	lby = -6#
-	uby = 20.0#
+	lbx = -7
+	ubx = 7
+	lby = -5#
+	uby = 10.0#
 	m = 0.5
 	ngrid = 100
 	ngridx = ngrid
@@ -34,15 +35,16 @@ if(1): #2D double well
 
 	w = 0.1	
 	D = 10.0
-	alpha = 0.255#0.81#0.255#0.41#0.175#1.165#0.255#
+	alpha = 0.363#0.81#0.255#0.41#0.175#1.165#0.255#
 	
-	lamda = 1.5#4.0
-	g = 0.05#lamda**2/32#0.02#4.0
+	lamda = 2.0#4.0
+	g = 0.08#lamda**2/32#0.02#4.0
 
-	z = 0.0#2.3	
+	z = 1.5#2.3	
 
 	Tc = lamda*0.5/np.pi
-	T_au = Tc#10.0 
+	times = 1.0
+	T_au = times*Tc#10.0 
 	beta = 1.0/T_au 
 	
 	print('beta', beta)
@@ -57,7 +59,7 @@ if(1): #2D double well
 	path = os.path.dirname(os.path.abspath(__file__))
 
 	DVR = DVR2D(ngridx,ngridy,lbx,ubx,lby,uby,m,pes.potential_xy)
-	n_eig_tot = 150
+	n_eig_tot = 200
 	print('potential',potkey)	
 	if(0): #Diagonalization
 		param_dict = {'lbx':lbx,'ubx':ubx,'lby':lby,'uby':uby,'m':m,'ngridx':ngridx,'ngridy':ngridy,'n_eig':n_eig_tot}
@@ -72,19 +74,20 @@ if(1): #2D double well
 	vals = read_arr('{}_vals'.format(fname),'{}/Datafiles'.format(path))
 	vecs = read_arr('{}_vecs'.format(fname),'{}/Datafiles'.format(path))
 
-	basis_N = 100#165
-	n_eigen = 30#150
+	basis_N = 140#165
+	n_eigen = 50#150
 
-	print('vals',vals[:30])#vals[0],vals[5],vals[16],vals[50],vals[104])
+	#print('vals',vals[:30])#vals[0],vals[5],vals[16],vals[50],vals[104])
 	#print('expvals',np.exp(-beta*vals[:70]))
 	#print('vecs',vecs[:200,10])	
-	n=12
+	n=2#15
 	M=1
-	if(0):
+	print('vals[n]', vals[n])
+	if(1):
 		xg = np.linspace(lbx,ubx,ngridx)
 		yg = np.linspace(lby,uby,ngridy)
 		xgr,ygr = np.meshgrid(xg,yg)
-		plt.contour(pes.potential_xy(xgr,ygr),levels=np.arange(0,5,0.25))
+		plt.contour(pes.potential_xy(xgr,ygr),levels=np.arange(0,10,2))
 	plt.imshow(DVR.eigenstate(vecs[:,n])**2,origin='lower')
 	plt.show()
 	#plt.contour(DVR.eigenstate(vecs[:,n])**2)
@@ -94,7 +97,7 @@ if(1): #2D double well
 	k_arr = np.arange(basis_N) +1
 	m_arr = np.arange(basis_N) +1
 
-	t_arr = np.linspace(0.0,50.0,1000)
+	t_arr = np.linspace(0.0,20.0,1000)
 	OTOC_arr = np.zeros_like(t_arr)+0j 
 	b_arr = np.zeros_like(OTOC_arr)
 	print('time',time.time()-start_time)
@@ -108,24 +111,42 @@ if(1): #2D double well
 		#G1 = OTOC_f_2D_omp_updated.otoc_tools.corr_mc_arr_t(vecs,m,x_arr,DVR.dx,DVR.dy,k_arr,vals,n+1,m_arr,t_arr,'xG1',OTOC_arr)
 		#G2 = OTOC_f_2D_omp_updated.otoc_tools.corr_mc_arr_t(vecs,m,x_arr,DVR.dx,DVR.dy,k_arr,vals,n+1,m_arr,t_arr,'xG2',OTOC_arr)
 		#F = OTOC_f_2D_omp_updated.otoc_tools.corr_mc_arr_t(vecs,m,x_arr,DVR.dx,DVR.dy,k_arr,vals,n+1,m_arr,t_arr,'xxF',OTOC_arr)
-		C = OTOC_f_2D_omp_updated.otoc_tools.corr_mc_arr_t(vecs,m,x_arr,DVR.dx,DVR.dy,k_arr,vals,n+1,m_arr,t_arr,'xxC',OTOC_arr)
+		#C = OTOC_f_2D_omp_updated.otoc_tools.corr_mc_arr_t(vecs,m,x_arr,DVR.dx,DVR.dy,k_arr,vals,n+1,m_arr,t_arr,'xxC',OTOC_arr)
 		#xp2 = OTOC_f_2D_omp_updated.otoc_tools.corr_mc_arr_t(vecs,m,x_arr,DVR.dx,DVR.dy,k_arr,vals,n+1,m_arr,t_arr,'qp2',OTOC_arr) 
 		#xp1 = OTOC_f_2D_omp_updated.otoc_tools.corr_mc_arr_t(vecs,m,x_arr,DVR.dx,DVR.dy,k_arr,vals,n+1,m_arr,t_arr,'qp1',OTOC_arr) 
-		
+		#c0 = 0.0j
+		#c0 = OTOC_f_2D_omp_updated.otoc_tools.corr_mc_elts(vecs,m,x_arr,DVR.dx,DVR.dy,k_arr,vals,n+1,m_arr,0.0,'xxC',c0)
+		#print('C(0)', c0)	
 		#CT = OTOC_f_2D_omp_updated.otoc_tools.therm_corr_arr_t(vecs,m,x_arr,DVR.dx,DVR.dy,k_arr,vals,m_arr,t_arr,beta,n_eigen,'xxC','kubo',OTOC_arr)
 		#xp1T = OTOC_f_2D_omp_updated.otoc_tools.therm_corr_arr_t(vecs,m,x_arr,DVR.dx,DVR.dy,k_arr,vals,m_arr,t_arr,beta,n_eigen,'qp2','stan',OTOC_arr)
 			
-		if(0):
-			for M in range(10,15):
-				b_temp = np.zeros_like(OTOC_arr) + 0j
-				b_temp = OTOC_f_2D_omp.position_matrix.compute_b_mat_arr_t(vecs,m,x_arr,DVR.dx,DVR.dy,k_arr,vals,n,M,t_arr,b_temp)
-				b_arr+=abs(b_temp)**2
-				#plt.plot(t_arr,np.real(b_temp),label=M)
-				#plt.plot(t_arr,np.imag(b_temp),label=M)
-				plt.plot(t_arr,abs(b_temp)**2,label=M)
+		if(1):
+			bnm_arr=np.zeros_like(OTOC_arr)
+			OTOC_arr[:] = 0.0
+			lda = 0.5
+			Z = 0.0
+			coefftot = 0.0
+			for n in range(1):
+				Z+= np.exp(-beta*vals[n])		
+				for M in range(10):
+					bnm =OTOC_f_2D_omp_updated.otoc_tools.quadop_matrix_arr_t(vecs,m,x_arr,DVR.dx,DVR.dy,k_arr,vals,n+1,M+1,t_arr,1,'cm',OTOC_arr)
+					coeff = 0.0
+					if(n!=M):
+						coeff =(1/beta)*((np.exp(-beta*vals[n]) - np.exp(-beta*vals[M]))/(vals[M]-vals[n]))
+					else:
+						coeff = np.exp(-beta*(vals[n]))
+					coefftot+=coeff
+					if(1):#coeff>=1e-4):
+						coeffpercent = coeff*100/0.001876
+						print('coeff,Z',n,M,coeff,np.exp(-beta*vals[n])*np.exp(-lda*beta*(vals[M]-vals[n]))  )
+						plt.plot(t_arr,abs(bnm)**2,label='n,M, % ={},{},{}'.format(n,M,np.around(coeffpercent,2)))
+						#print('coeff_sym', np.exp(-beta*vals[n])*np.exp(-lda*beta*(vals[M]-vals[n])))
+					bnm_arr+=coeff*abs(bnm)**2
+			bnm_arr/=Z
+			print('Z',Z,coefftot)
+			#plt.plot(t_arr,np.log(bnm_arr),color='m',linewidth=3)
 			plt.legend()
-			plt.show()	
-	
+
 		if(0):	
 			ist = 65#119#70#80#100 
 			iend = 150#180#110#140#173
@@ -150,15 +171,15 @@ if(1): #2D double well
 		#plt.plot(t_arr,G1+G2)	
 		#plt.plot(t_arr,xp1T,color='g')
 		#plt.plot(t_arr,xp1,color='k')
-		plt.title('{}'.format(potkey))
-		plt.plot(t_arr,np.log(abs(C)))
+		#plt.title('{}'.format(potkey))
+		#plt.plot(t_arr,np.log(abs(CT)))
 		#plt.plot(t_arr,G1+G2-2*np.real(F))	
 		#plt.plot(t_arr,b_arr,color='k')
-		plt.show()
+		#plt.show()
 		
 		path = os.path.dirname(os.path.abspath(__file__))
-		fname = 'Quantum_mc_n_1_OTOC_{}_basis_{}'.format(potkey,basis_N)
-		store_1D_plotdata(t_arr,C,fname,'{}/Datafiles'.format(path))
+		fname = 'Quantum_OTOC_{}_neigen_{}_basis_{}'.format(potkey,n_eigen,basis_N)
+		#store_1D_plotdata(t_arr,CT,fname,'{}/Datafiles'.format(path))
 
 		#fname = 'Quantum_mc_n_1_qqTCF_{}_T_{}_basis_{}_n_eigen_{}'.format(potkey,T_au,basis_N,n_eigen)
 		#store_1D_plotdata(t_arr,xp2,fname,'{}/Datafiles'.format(path))
@@ -229,3 +250,69 @@ if(0):
 		plt.plot(t_arr,np.log(OTOC_arr))
 		plt.show()
 		
+
+if(0): #Heller Davis
+	L = 10.0
+	lbx = -7
+	ubx = 7
+	lby = -9
+	uby = 9
+	m = 1.0
+	ngrid = 100
+	ngridx = ngrid
+	ngridy = ngrid
+
+	ws= 1.0
+	wu= 1.1
+	lamda = -0.11
+	
+	T_au = 1.0 
+	beta = 1.0/T_au 
+	
+	print('beta', beta)
+
+	x = np.linspace(lbx,ubx,ngridx+1)
+	potkey = 'Heller_Davis_ws_{}_wu_{}_lamda_{}'.format(ws,wu,lamda)
+
+	pes = heller_davis(ws,wu,lamda)
+
+	print('pot',pes.potential_xy(0,0))
+	fname = 'Eigen_basis_{}_ngrid_{}'.format(potkey,ngrid)	
+	path = os.path.dirname(os.path.abspath(__file__))
+
+	DVR = DVR2D(ngridx,ngridy,lbx,ubx,lby,uby,m,pes.potential_xy)
+	n_eig_tot = 200
+	print('potential',potkey)	
+	if(0): #Diagonalization
+		param_dict = {'lbx':lbx,'ubx':ubx,'lby':lby,'uby':uby,'m':m,'ngridx':ngridx,'ngridy':ngridy,'n_eig':n_eig_tot}
+		with open('{}/Datafiles/Input_log_{}.txt'.format(path,potkey),'a') as f:	
+			f.write('\n'+str(param_dict))#print(param_dict,file=f)
+		
+		vals,vecs = DVR.Diagonalize()#_Lanczos(n_eig_tot)
+
+		store_arr(vecs[:,:n_eig_tot],'{}_vecs'.format(fname),'{}/Datafiles'.format(path))
+		store_arr(vals[:n_eig_tot],'{}_vals'.format(fname),'{}/Datafiles'.format(path))
+
+	vals = read_arr('{}_vals'.format(fname),'{}/Datafiles'.format(path))
+	vecs = read_arr('{}_vecs'.format(fname),'{}/Datafiles'.format(path))
+
+	basis_N = 140#165
+	n_eigen = 50#150
+
+	#print('vals',vals[:30])#vals[0],vals[5],vals[16],vals[50],vals[104])
+	#print('expvals',np.exp(-beta*vals[:70]))
+	#print('vecs',vecs[:200,10])	
+	n=93
+	M=1
+	print('vals[n]', vals[n])
+	if(1):
+		xg = np.linspace(lbx,ubx,ngridx)
+		yg = np.linspace(lby,uby,ngridy)
+		xgr,ygr = np.meshgrid(xg,yg)
+		#plt.contour(xgr,ygr,pes.potential_xy(xgr,ygr),levels=np.arange(-20,20,1))
+	plt.imshow(DVR.eigenstate(vecs[:,n])**2,origin='lower')
+	plt.show()
+	#plt.contour(DVR.eigenstate(vecs[:,n])**2)
+	#plt.show()
+
+

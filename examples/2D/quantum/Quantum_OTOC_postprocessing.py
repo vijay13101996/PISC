@@ -55,21 +55,21 @@ if(0): # Coupled harmonic
 
 if(1): # Double well 2D
 	L = 10.0#
-	lbx = -10.0#
-	ubx = 10.0#
-	lby = -7.0#
-	uby = 25.0
+	lbx = -7.0#
+	ubx = 7.0#
+	lby = -5.0#
+	uby = 10.0
 	m = 0.5#8.0
 	ngrid = 100
 	ngridx = ngrid
 	ngridy = ngrid
 
 	w = 0.1	
-	D = 5.0#10.0
-	alpha = 1.165#0.81#0.175#0.41#0.255#1.165
+	D = 10.0#10.0
+	alpha = 0.363#0.81#0.175#0.41#0.255#1.165
 	
-	lamda = 1.5#4.0
-	g = 0.035#lamda**2/32#4.0
+	lamda = 2.0#4.0
+	g = 0.08#lamda**2/32#4.0
 
 	z = 1.5#1.25#2.3	
 
