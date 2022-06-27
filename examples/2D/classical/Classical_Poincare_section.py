@@ -9,6 +9,8 @@ from Saddle_point_finder import separatrix_path
 import time
 import os
 
+
+### Potential parameters
 m=0.5
 N=20#20
 dt=0.005
@@ -25,6 +27,7 @@ Vb = lamda**4/(64*g)
 z = 1.5
 potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
 
+### Temperature is only relevant for the ring-polymer Poincare section
 Tc = 0.5*lamda/np.pi
 times = 1.0
 T = times*Tc
@@ -41,16 +44,16 @@ xgrid,ygrid = np.meshgrid(xg,yg)
 potgrid = pes.potential_xy(xgrid,ygrid)
 
 print('pot',potgrid.shape)
-ind = np.where(potgrid<E)
-xind,yind = ind
-
 qlist = []
 
 fig,ax = plt.subplots(1)
 #ax.contour(xgrid,ygrid,potgrid,levels=np.arange(0,1.01*D,D/30))
 #plt.show()
 	
-if(0):
+
+### Choice of initial conditions
+
+if(0): ## Initial conditions chosen along the 'transition path' from minima to saddle point
 	qlist,vecslist = separatrix_path()
 	plist = []
 
@@ -62,7 +65,6 @@ if(0):
 		p = (2*m*K)**0.5
 		
 		eigdir = 1	
-		# The eigenvectors change sign along the transition path. Choose the direction with the higher x coefficient. 
 		px = vecslist[i,eigdir,0]*p
 		py = vecslist[i,eigdir,1]*p
 	
@@ -70,8 +72,6 @@ if(0):
 		plist.append([px,py])			
 
 	plist = np.array(plist)
-	#print('plist',plist)
-	#print('plist',plist.shape,qlist.shape)
 	rng = np.random.default_rng(0)
 	ind = rng.choice(len(qlist),N)  # Choose N points at random from the qlist,plist
 	ind = [236]
@@ -86,7 +86,10 @@ if(0):
 		plist = plist[:,:,np.newaxis]
 		print('p',qlist.shape,plist.shape)	
 		
-if(1):
+if(1): ## Initial conditions are chosen by scanning through the PES. 
+	ind = np.where(potgrid<E)
+	xind,yind = ind
+
 	for x,y in zip(xind,yind):
 		#x = i[0]
 		#y = i[1]
@@ -98,6 +101,7 @@ if(1):
 	#qlist = qlist[ind,:]
 	print('qlist',qlist.shape)
 
+### 'nbeads' can be set to >1 for ring-polymer simulations.
 nbeads = 1
 PSOS = Poincare_SOS('Classical',pathname,potkey,Tkey)
 PSOS.set_sysparams(pes,T,m,2)
@@ -105,7 +109,7 @@ PSOS.set_simparams(N,dt,dt,nbeads=nbeads)
 PSOS.set_runtime(20.0,500.0)
 PSOS.bind(qcartg=qlist,E=E)#pcartg=plist)#E=E)
 
-if(1):
+if(1): ## Plot the trajectories that make up the Poincare section
 	xg = np.linspace(-8,8,int(1e2)+1)
 	yg = np.linspace(-5,10,int(1e2)+1)
 	xgrid,ygrid = np.meshgrid(xg,yg)
@@ -115,7 +119,7 @@ if(1):
 	PSOS.run_traj(0,ax) #(1,2,3,4,8,13 for z=1.25), (2,3) 
 	plt.show()
 	
-if(1):
+if(1): ## Collect the data from the Poincare section and plot. 
 	X,PX,Y = PSOS.PSOS_X(y0=0)
 	plt.title(r'PSOS, $N_b={}$'.format(nbeads))
 	plt.scatter(X,PX,s=1)

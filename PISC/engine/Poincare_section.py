@@ -45,15 +45,19 @@ class Poincare_SOS(object):
 		self.therm = PILE_L(tau0=0.1,pile_lambda=100.0) 
 		self.propa = Symplectic_order_II()
 		self.sim = RP_Simulation()
-		self.E = E	
+		self.E = E
+		
+		# If E is specified, the 'gen_mc_ensemble' function initializes a mc ensemble, 'ergodizes' the phase space and
+		# returns the initial conditions pcartg, qcartg to use for plotting the Poincare section. 	
 		if(E is not None):	
 			generate_rp(self.pathname,self.m,self.dim,self.N,self.nbeads,self.ens,self.pes,self.rng,self.time_ens,self.dt,self.potkey,self.rngSeed,E,qcartg)
 			qcartg = read_arr('Microcanonical_rp_qcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(self.N,self.nbeads,self.beta,self.potkey,self.rngSeed),"{}/Datafiles".format(self.pathname))
 			pcartg = read_arr('Microcanonical_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(self.N,self.nbeads,self.beta,self.potkey,self.rngSeed),"{}/Datafiles".format(self.pathname)) 
-		#
+		
+		# Specific trajectories could be chosen by specifying the 'ind' and uncommenting the lines below. 
 		ind = [0]
-		qcartg = qcartg[ind]
-		pcartg = pcartg[ind]	
+		#qcartg = qcartg[ind]
+		#pcartg = pcartg[ind]	
 		self.rp = RingPolymer(qcart=qcartg,pcart=pcartg,m=self.m)	
 		self.sim.bind(self.ens,self.motion,self.rng,self.rp,self.pes,self.propa,self.therm)
 
