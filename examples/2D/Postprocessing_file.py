@@ -46,7 +46,7 @@ beadkey = 'nbeads_{}_'.format(nbeads)
 Tkey = 'T_{}Tc'.format(times)
 syskey = 'Selene'
 
-if(1):#RPMD
+if(0):#RPMD
 	methodkey = 'RPMD'
 
 	kwlist = [methodkey,corrkey,syskey,potkey,Tkey,beadkey]
@@ -60,7 +60,7 @@ if(1):#RPMD
 	plt.show()
 	store_1D_plotdata(tarr,OTOCarr,'RPMD_{}_{}_{}_nbeads_{}_dt_{}'.format(corrkey,potkey,Tkey,nbeads,dt),rpext)
 
-if(0):#RPMD/mc
+if(1):#RPMD/mc
 	methodkey = 'RPMD'
 	enskey  = 'mc'
 	kwlist = [enskey,methodkey,corrkey,syskey,potkey,Tkey,beadkey]

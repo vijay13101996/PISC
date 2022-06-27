@@ -58,11 +58,11 @@ if(0):
 
 
 if(1):
-	ext ='RPMD_{}_{}_{}_nbeads_{}_dt_{}'.format(corrkey,potkey,Tkey,nbeads,dt)
+	ext ='RPMD_mc_{}_{}_{}_nbeads_{}_dt_{}'.format(corrkey,potkey,Tkey,nbeads,dt)
 	extclass = rpext + ext
 	print('fname',extclass)
 	plot_1D(ax,extclass, label=r'$RPMD,T={}Tc, N_b={}$'.format(times,nbeads),color='g', log=True,linewidth=1)
-	slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(extclass,5,8)
+	slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(extclass,1,3)
 	ax.plot(t_trunc, slope*t_trunc+ic,linewidth=2,color='k')
 
 plt.legend()
