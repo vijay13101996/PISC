@@ -16,18 +16,7 @@ import time
 ### returns the 'transition path' connecting those two. This code can be modified slightly to do the 
 ### same for other potentials.
 
-def separatrix_path():
-	### Potential parameters
-	m=0.5
-
-	D = 10.0
-	alpha = 0.363
-
-	lamda = 2.0
-	g = 0.08
-
-	z = 1.5	
-
+def separatrix_path(m,D,alpha,lamda, g,z):
 	pes = quartic_bistable(alpha,D,lamda,g,z)
 
 	### Simulation parameters
@@ -37,7 +26,7 @@ def separatrix_path():
 	rngSeed = 1
 	N = 1
 	dim = 2
-	nbeads = 1
+	nbeads = 1#can this also be changed? question for later!##########
 	T = T_au	
 	dt = 0.005
 
