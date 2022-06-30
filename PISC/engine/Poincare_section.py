@@ -1,3 +1,4 @@
+from cProfile import label
 import numpy as np
 from PISC.engine.beads import RingPolymer
 from PISC.engine.ensemble import Ensemble
@@ -38,7 +39,7 @@ class Poincare_SOS(object):
 		self.time_ens = time_ens
 		self.time_run = time_run
 	
-	def bind(self,qcartg,pcartg=None,E=None):
+	def bind(self,qcartg,pcartg=None,E=None,specific_traj=False):
 		self.ens = Ensemble(beta=self.beta,ndim=self.dim)
 		self.motion = Motion(dt = self.dt,symporder=2) 
 		self.rng = np.random.default_rng(self.rngSeed) 
@@ -50,27 +51,35 @@ class Poincare_SOS(object):
 		# If E is specified, the 'gen_mc_ensemble' function initializes a mc ensemble, 'ergodizes' the phase space and
 		# returns the initial conditions pcartg, qcartg to use for plotting the Poincare section. 	
 		if(E is not None):	
+			#####look at generate rp (in gen_mc_ens)!!!!!!!###################### print( wie viele beads(und das es kein rp ist))
 			generate_rp(self.pathname,self.m,self.dim,self.N,self.nbeads,self.ens,self.pes,self.rng,self.time_ens,self.dt,self.potkey,self.rngSeed,E,qcartg)
 			qcartg = read_arr('Microcanonical_rp_qcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(self.N,self.nbeads,self.beta,self.potkey,self.rngSeed),"{}/Datafiles".format(self.pathname))
 			pcartg = read_arr('Microcanonical_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(self.N,self.nbeads,self.beta,self.potkey,self.rngSeed),"{}/Datafiles".format(self.pathname)) 
 		
 		# Specific trajectories could be chosen by specifying the 'ind' and uncommenting the lines below. 
-		ind = [0]
-		#qcartg = qcartg[ind]
-		#pcartg = pcartg[ind]	
+		if(specific_traj!=False):
+			ind= specific_traj
+			#ind = [0,1]# how do I make them colourful???
+			qcartg = qcartg[ind]
+			pcartg = pcartg[ind]	
 		self.rp = RingPolymer(qcart=qcartg,pcart=pcartg,m=self.m)	
 		self.sim.bind(self.ens,self.motion,self.rng,self.rp,self.pes,self.propa,self.therm)
 
-	def run_traj(self,ind,ax):			
-		nsteps = int(self.time_run/self.motion.dt)
+	def run_traj(self,ind,ax,nsteps=False,colour=False,sample=1e1):	
+		if(nsteps==False):
+			nsteps = int(self.time_run/self.motion.dt)
+		print('Num steps in trajectory (plotted): ', nsteps)
 		for i in range(nsteps):
 			self.sim.step(mode="nve",var='pq')	
 			x = self.rp.qcart[ind,0,:]
 			px = self.rp.pcart[ind,0,:]
 			y = self.rp.qcart[ind,1,:]
 			py = self.rp.pcart[ind,1,:]
-			if(i%1e1==0):
-				ax.scatter(x,y,s=7)
+			if(i%sample==0):
+				if(colour==False):
+					ax.scatter(x,y,s=7)
+				else:
+					ax.scatter(x,y,s=7,c=colour)#s=marker size
 				plt.pause(0.05)	
 			
 	def PSOS_Y(self,x0):
@@ -81,7 +90,8 @@ class Poincare_SOS(object):
 		nsteps = int(self.time_run/self.motion.dt)
 		print('E,kin,pot',self.rp.kin+self.pes.pot,self.rp.kin,self.pes.pot)
 		Y_list = []
-		PY_list = []
+		PY_list = []###dont I also have to create X_list
+		X_list = []
 		for i in range(nsteps):
 			self.sim.step(mode="nve",var='pq')	
 			x = self.rp.q[0,0,0]/self.rp.nbeads**0.5
@@ -105,7 +115,7 @@ class Poincare_SOS(object):
 		prev = self.rp.q[:,1,0] - y0
 		curr = self.rp.q[:,1,0] - y0
 		count=0
-
+		
 		nsteps = int(self.time_run/self.motion.dt)
 		#print('E,kin,pot',np.sum(self.rp.pcart**2/(2*self.m),axis=1)+self.pes.pot,self.rp.kin,self.pes.pot)
 		X_list = []
@@ -122,13 +132,13 @@ class Poincare_SOS(object):
 			#print('t, cent E',self.sim.t,cent_E.shape)		
 			curr = y-y0
 			ind = np.where( (prev*curr<0.0) & (py<0.0))# & (cent_E>0.95*self.E))# & (cent_E>0.8*self.E))
-			X_list.extend(x[ind])
+			X_list.extend(x[ind])#.append() adds a single element to the end of the list while .extend() can add multiple individual elements to the end of the list.
 			PX_list.extend(px[ind])
 			Y_list.extend(y[ind])
 			prev = curr
 			count+=1
 
-		print('X',np.array(X_list).shape)
+		print('shape(X):',np.array(X_list).shape,'(at x: sign of y changes and py<0)')
 		self.X.extend(X_list)
 		self.PX.extend(PX_list)
 
