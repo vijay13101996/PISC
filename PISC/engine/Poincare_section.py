@@ -77,10 +77,10 @@ class Poincare_SOS(object):
 			py = self.rp.pcart[ind,1,:]
 			if(i%sample==0):
 				if(colour==False):
-					ax.scatter(x,y,s=7)
+					ax.scatter(x,y,s=5)
 				else:
-					ax.scatter(x,y,s=7,c=colour)#s=marker size
-				plt.pause(0.05)	
+					ax.scatter(x,y,s=5,c=colour)#s=marker size
+				plt.pause(0.005)	
 			
 	def PSOS_Y(self,x0):
 		prev = self.rp.q[:,0,0] - x0
