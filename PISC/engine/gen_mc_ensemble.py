@@ -10,12 +10,15 @@ from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr,
 import time
 
 def generate_rp(pathname,m,dim,N,nbeads,ens,pes,rng,time_relax,dt_relax,potkey,rngSeed,E,qlist):
-
 	index_arr = rng.choice(len(qlist),N)  # Choose N points at random from the qlist
-	qcart = np.zeros((N,dim,nbeads))
+	index_arr = rng.choice(len(qlist),int(N/2))  # Choose N points at random from the qlist
+	qcart = np.zeros((N,dim,nbeads)) 
+	neg_qlist=qlist[index_arr]
+	neg_qlist[:,0]=-neg_qlist[:,0]
 	pcart = np.zeros((N,dim,nbeads))
 	for i in range(nbeads):
-		qcart[:,:,i] = qlist[index_arr]  # Initialize ring polymers with collapsed configuration at these points	
+		qcart[:,:,i] = np.concatenate((qlist[index_arr], neg_qlist), axis=0)# Initialize ring polymers with collapsed configuration at these points	
+		#qcart[:,:,i] =qlist[index_arr]# Initialize ring polymers with collapsed configuration at these points	
 
 	pot = pes.potential(qcart)
 	if(dim>1):

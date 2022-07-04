@@ -94,7 +94,7 @@ class Poincare_SOS(object):
 		X_list = []
 		for i in range(nsteps):
 			self.sim.step(mode="nve",var='pq')	
-			x = self.rp.q[0,0,0]/self.rp.nbeads**0.5
+			x = self.rp.q[0,0,0]/self.rp.nbeads**0.5#normal mode: 0th entry gives that
 			px = self.rp.p[0,0,0]
 			y = self.rp.q[0,1,0]/self.rp.nbeads**0.5
 			py = self.rp.p[0,1,0]
@@ -111,7 +111,7 @@ class Poincare_SOS(object):
 
 		return Y_list,PY_list,X_list
 	
-	def PSOS_X(self,y0):
+	def PSOS_X(self,y0,gyr=10,greater=False):
 		prev = self.rp.q[:,1,0] - y0
 		curr = self.rp.q[:,1,0] - y0
 		count=0
@@ -128,10 +128,24 @@ class Poincare_SOS(object):
 			px = self.rp.p[:,0,0]
 			y = self.rp.q[:,1,0]/self.rp.nbeads**0.5
 			py = self.rp.p[:,1,0]
-			cent_E = np.sum(self.rp.p[:,:,0]**2/self.rp.nbeads,axis=1) + self.pes.potential(self.rp.q[:,:,0]/self.rp.nbeads**0.5)
-			#print('t, cent E',self.sim.t,cent_E.shape)		
+			#cent_E = np.sum(self.rp.p[:,:,0]**2/self.rp.nbeads,axis=1) + self.pes.potential(self.rp.q[:,:,0]/self.rp.nbeads**0.5)
+			#print(len(x))
+			
+			gyr_x=0
+			gyr_y=0
+			for i in range(self.rp.nbeads): 
+				gyr_x+=(x-self.rp.qcart[:,0,i])**2
+				gyr_y+=(y-self.rp.qcart[:,1,i])**2
+			gyr_x/=self.rp.nbeads
+			gyr_y/=self.rp.nbeads#stays small anyways
+			gyr_tot=gyr_x+gyr_y
+			#print(gyr_x)
+
 			curr = y-y0
-			ind = np.where( (prev*curr<0.0) & (py<0.0))# & (cent_E>0.95*self.E))# & (cent_E>0.8*self.E))
+			if(greater==True):
+				ind = np.where( (prev*curr<0.0) & (py<0.0)& (gyr<gyr_tot))
+			else:
+				ind = np.where( (prev*curr<0.0) & (py<0.0)& (gyr>gyr_tot))
 			X_list.extend(x[ind])#.append() adds a single element to the end of the list while .extend() can add multiple individual elements to the end of the list.
 			PX_list.extend(px[ind])
 			Y_list.extend(y[ind])

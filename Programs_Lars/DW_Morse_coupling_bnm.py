@@ -32,9 +32,9 @@ lamda = 2.0
 D=10.0  
 g = 0.08
 
-z_range=(0,0.5,1,1.25,1.5)#,1.25,1.5): #(1.25))
-#z_range=(0.5,)
-alpha_range=(0.363,0.525)#,0.837,1.1,1.665,2.514)###note how close 0.363 and 0.525 are
+z_range=(0,0.5,1,1.5)#,1.25,1.5): #(1.25))
+#z_range=(0,0.5,)
+alpha_range=(0.363,0.525,0.837,1.1,1.665,2.514)###note how close 0.363 and 0.525 are
 #alpha_range=(0.837,)
 cntr=0###counter for outer loop (over alpha)
 
@@ -128,7 +128,7 @@ for alpha in alpha_range:
         ##########OTOC calc
 
         time_mc=time.time()
-        k=0
+        k=ngridx
         
         ###Mircocanonic OTOC
         
@@ -147,7 +147,7 @@ for alpha in alpha_range:
             print('Time for 1 McOTOC (avg over %i): %.2f s ' % (k,(time.time()-time_mc)/k))
         
         n_for_b=2
-        m_for_b=7
+        m_for_b=0
         plt.title(r'B$_{%i%i}$ for different $\alpha$'%(n_for_b,m_for_b))
         X=np.zeros((N_trunc,N_trunc))
         for i in range(N_trunc):
