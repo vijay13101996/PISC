@@ -111,7 +111,7 @@ class Poincare_SOS(object):
 
 		return Y_list,PY_list,X_list
 	
-	def PSOS_X(self,y0,gyr=10,greater=False):
+	def PSOS_X(self,y0,gyr=10,greater=False,hist=False):
 		prev = self.rp.q[:,1,0] - y0
 		curr = self.rp.q[:,1,0] - y0
 		count=0
@@ -121,7 +121,9 @@ class Poincare_SOS(object):
 		X_list = []
 		PX_list = []
 		Y_list = []
-		
+		if(hist==True):
+			gyr_list = []
+
 		for i in range(nsteps):
 			self.sim.step(mode="nve",var='pq')	
 			x = self.rp.q[:,0,0]/self.rp.nbeads**0.5
@@ -139,24 +141,34 @@ class Poincare_SOS(object):
 			gyr_x/=self.rp.nbeads
 			gyr_y/=self.rp.nbeads#stays small anyways
 			gyr_tot=gyr_x+gyr_y
-			#print(gyr_x)
+			###histogram
+			if(hist==True):
+				gyr_list.extend(gyr_tot)
 
+			
 			curr = y-y0
 			if(greater==True):
 				ind = np.where( (prev*curr<0.0) & (py<0.0)& (gyr<gyr_tot))
-			else:
+			if(greater==False):
 				ind = np.where( (prev*curr<0.0) & (py<0.0)& (gyr>gyr_tot))
 			X_list.extend(x[ind])#.append() adds a single element to the end of the list while .extend() can add multiple individual elements to the end of the list.
 			PX_list.extend(px[ind])
 			Y_list.extend(y[ind])
 			prev = curr
 			count+=1
-
+		###histogram
+		if(hist==True):
+			hist_fig, hist_ax= plt.subplots(3)
+			hist_ax[0].hist(gyr_list,bins=1000)
+			hist_ax[1].hist(gyr_list,bins=1000,range=(0,1))
+			hist_ax[2].hist(gyr_list,bins=1000,range=(0,0.2))			
+			plt.show(block=False)
+			plt.pause(1)
 		print('shape(X):',np.array(X_list).shape,'(at x: sign of y changes and py<0)')
 		self.X.extend(X_list)
 		self.PX.extend(PX_list)
 
-		return X_list,PX_list,Y_list			
+		return X_list,PX_list,Y_list
 
 	def store_data(self,coord): 
 		key = [self.method,'Poincare_section',self.potkey,self.Tkey,'{}'.format(self.N)]

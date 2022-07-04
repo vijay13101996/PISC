@@ -1,4 +1,3 @@
-from cProfile import label
 import numpy as np
 import sys
 sys.path.insert(0, "/home/lm979/Desktop/PISC")
@@ -19,9 +18,9 @@ def Energy_Barrier_Top(pes,m,option='oneD'):
 	if(option=='oneD'):
 		from PISC.dvr.dvr import DVR1D
 		pot_DW= lambda a: pes.potential_xy(a,0)
-		DVR_DW = DVR1D(int(0.5*1e3)+1,-4,4,m,pot_DW)
+		DVR_DW = DVR1D(int(3*1e2)+1,-4,4,m,pot_DW)
 		pot_Morse= lambda a: pes.potential_xy(0,a)-pes.potential_xy(0,0)#lamda**4/(64*g),a)
-		DVR_Morse = DVR1D(int(0.5*1e3)+1,-5,10,m,pot_Morse)#get t a little more exact
+		DVR_Morse = DVR1D(int(3*1e2)+1,-5,10,m,pot_Morse)#get t a little more exact
 		vals_M, vecs_M= DVR_Morse.Diagonalize()
 		vals_DW, vecs_DW= DVR_DW.Diagonalize()
 		#print(vals_M[0]+vals_DW[2]) #(alpha=0.363,z=(0.25,0.5),E=4.368)  
@@ -79,7 +78,7 @@ Nsteps=400 #2000 #(or more)#steps for animation#3000
 
 ##########Parameters to loop over##########
 alpha_range = (0.153,0.157,0.193,0.220,0.252,0.344,0.363,0.525,0.837,1.1,1.665,2.514)
-alpha_range=(0.363,)#0.363,)#,0.363,0.5)
+alpha_range=(0.363,0.5)#0.363,)#,0.363,0.5)
 z_range=(0.5,1,1.25,1.5)
 #z_range=(0.5,)
 
@@ -183,7 +182,7 @@ for alpha in alpha_range:
 				with contextlib.redirect_stdout(io.StringIO()):#don't want the info
 					PSOS.run_traj(ind=index,ax=ax[0],nsteps=Nsteps,colour=colours[index],sample=sample)#2000 at least  #takes a long time if nsteps are not specified
 			fig.canvas.draw()
-			fname = 'Interactive_PSOS_{}_T_{}_E_{}_rtime_{}_beads_{}_T_by_Tc={}'.format(potkey,T,E,runtime_to,nbeads,times)
+			fname = 'Interactive_PSOS_{}_T_{}_E_{}_runtime_{}_beads_{}_T_by_Tc={}'.format(potkey,T,E,runtime_to,nbeads,times)
 			if(save_all==True or save_inter==True):
 				fig.savefig(('Plots/Poincare_Interactive/Fig_'+fname+'.svg'))
 				print('Fig saved!')
@@ -206,7 +205,7 @@ for alpha in alpha_range:
 			ax.legend(loc=8,fontsize=9,frameon=False)
 			ax.set_xlim([-4.3,4.3])
 		figz.canvas.draw()
-		fname = 'All_z_PSOS_{}_T_{}_E_{}_rtime_{}_beads_{}_T_by_Tc={}'.format(potkey,T,E,runtime_to,nbeads,times)
+		fname = 'All_z_PSOS_{}_T_{}_E_{}_runtime_{}_beads_{}_T_by_Tc={}'.format(potkey,T,E,runtime_to,nbeads,times)
 		if(save_all==True or save_full==True):
 			figz.savefig(('Plots/Poincare_all_z/Fig_'+fname+'.svg'))
 			print('Fig saved!')
