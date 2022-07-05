@@ -111,7 +111,7 @@ class Poincare_SOS(object):
 
 		return Y_list,PY_list,X_list
 	
-	def PSOS_X(self,y0,gyr=10,greater=False,hist=False):
+	def PSOS_X(self,y0,gyr=10,greater=False,hist=False,hist_data=False):
 		prev = self.rp.q[:,1,0] - y0
 		curr = self.rp.q[:,1,0] - y0
 		count=0
@@ -121,8 +121,9 @@ class Poincare_SOS(object):
 		X_list = []
 		PX_list = []
 		Y_list = []
-		if(hist==True):
+		if(hist==True or hist_data==True):
 			gyr_list = []
+			#gyr_x_list = []
 
 		for i in range(nsteps):
 			self.sim.step(mode="nve",var='pq')	
@@ -142,8 +143,9 @@ class Poincare_SOS(object):
 			gyr_y/=self.rp.nbeads#stays small anyways
 			gyr_tot=gyr_x+gyr_y
 			###histogram
-			if(hist==True):
+			if(hist==True or hist_data==True):
 				gyr_list.extend(gyr_tot)
+				#gyr_x_list.extend(gyr_x)
 
 			
 			curr = y-y0
@@ -158,17 +160,22 @@ class Poincare_SOS(object):
 			count+=1
 		###histogram
 		if(hist==True):
-			hist_fig, hist_ax= plt.subplots(3)
+			hist_fig, hist_ax= plt.subplots(2)
 			hist_ax[0].hist(gyr_list,bins=1000)
+			hist_ax[0].set_title(r'R$_g$')
 			hist_ax[1].hist(gyr_list,bins=1000,range=(0,1))
-			hist_ax[2].hist(gyr_list,bins=1000,range=(0,0.2))			
+			#hist_ax[0,1].hist(gyr_x_list,bins=1000)
+			#hist_ax[0,1].set_title('gyr_x')
+			#hist_ax[1,1].hist(gyr_x_list,bins=1000,range=(0,1))			
 			plt.show(block=False)
 			plt.pause(1)
 		print('shape(X):',np.array(X_list).shape,'(at x: sign of y changes and py<0)')
 		self.X.extend(X_list)
 		self.PX.extend(PX_list)
-
-		return X_list,PX_list,Y_list
+		if(hist_data==True):
+			return X_list,PX_list,Y_list, gyr_list
+		else:
+			return X_list,PX_list,Y_list, hist_data
 
 	def store_data(self,coord): 
 		key = [self.method,'Poincare_section',self.potkey,self.Tkey,'{}'.format(self.N)]
