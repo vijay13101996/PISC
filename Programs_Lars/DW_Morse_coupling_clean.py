@@ -325,7 +325,7 @@ C_n_range=range(10)
 C_n_range =(2,6)
 
 ###b_nm
-calc_bnm=False
+calc_bnm=True
 b_n_range=(2,)
 b_m_range=(0,)
 
@@ -365,7 +365,46 @@ if(calc_Cn==True):
 ### b_nm
 if(calc_bnm==True):
     t_arr,b_nm_loop_alpha=compute_b_nm(alpha_range,z_range,b_n_range,b_m_range,D,lamda,g,ngridx,ngridy,ngrid,lbx,ubx,lby,uby,m,n_eig_tot,N_trunc)
-    plot_b_nm_var_nm_fix_alpha_z(alpha_range, z_range, b_n_range,b_m_range,t_arr, b_nm_loop_alpha)
-    plot_b_nm_var_z_fix_alpha_nm(alpha_range, z_range, b_n_range,b_m_range,t_arr, b_nm_loop_alpha)
-    plot_b_nm_var_alpha_fix_z_nm(alpha_range, z_range, b_n_range,b_m_range,t_arr, b_nm_loop_alpha)
+    if((len(b_n_range)>=2) or (len(b_m_range)>=2)):
+        plot_b_nm_var_nm_fix_alpha_z(alpha_range, z_range, b_n_range,b_m_range,t_arr, b_nm_loop_alpha)
+    if(len(z_range)>=2):
+        plot_b_nm_var_z_fix_alpha_nm(alpha_range, z_range, b_n_range,b_m_range,t_arr, b_nm_loop_alpha)
+    if(len(alpha_range)>=2):
+        plot_b_nm_var_alpha_fix_z_nm(alpha_range, z_range, b_n_range,b_m_range,t_arr, b_nm_loop_alpha)
     plot_b_nm_var_alpha_z_fix_nm(alpha_range, z_range, b_n_range,b_m_range,t_arr, b_nm_loop_alpha)
+
+if(False): #recyling
+    X=np.zeros((N_trunc,N_trunc))
+    for i in range(N_trunc):
+        for j in range(N_trunc):
+            X[i,j] = OTOC_f_2D_omp_updated.otoc_tools.pos_matrix_elts(vecs,x_arr,DVR.dx,DVR.dy,i+1,j+1,pos_mat)
+    b_nm = PY_OTOC2D.b_nm(t=t_arr,n=n_for_b,m=m_for_b,X=X,w=vals)
+    if(z==0):# and cntr ==0 ):
+        plt.plot(t_arr,np.abs(b_nm)**2,'-' ,linewidth=2,label=r'z = %.2f, $\alpha$ = %.2f' % (z, alpha))#,label=r'n = %i, $\alpha$ = %.2f' % (n, alpha)) #is real anyway
+    if(z!=0):
+        plt.plot(t_arr,np.abs(b_nm)**2,'--',label=r'z = %.2f, $\alpha$ = %.2f' % (z, alpha),linewidth=1.5) 
+        plt.text(t_arr[10+4*cntr], np.abs(b_nm[10+4*cntr])**2,'%.2f' % alpha )
+    cntr+=1
+    plt.legend(bbox_to_anchor=(0.65,1),ncol=3,fontsize=8)
+    plt.show()
+            #####was to find the corresponding barrier top state, but does not make sense, bc mixing after coupling
+    if(alpha<0.36):
+        n=8
+    if(alpha<0.252):
+        n=15
+    if(alpha<0.194):
+        n=17
+    if(alpha<0.16):
+        n=19
+    if(alpha<0.155):
+        n=24
+    
+    #######
+    C_n = OTOC_f_2D_omp_updated.otoc_tools.corr_mc_arr_t(vecs,m,x_arr,DVR.dx,DVR.dy,k_arr,vals,n+1,m_arr,t_arr,'xxC',OTOC_arr)
+    if(z==0):# and cntr ==0 ):
+        plt.plot(t_arr,np.real(C_n),'-' ,linewidth=2)#,label=r'n = %i, $\alpha$ = %.2f' % (n, alpha)) #is real anyway
+    if(z!=0):
+        plt.plot(t_arr,np.real(C_n),'--',label=r'z = %.2f, $\alpha$ = %.2f' % (z, alpha),linewidth=1.5) #is real anyway
+        plt.text(t_arr[10+8*cntr], np.real(C_n[10+8*cntr]),'%.2f' % alpha )
+    plt.legend()
+    #plt.show()
