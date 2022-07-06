@@ -16,7 +16,7 @@ from mylib.testing import Check_DVR
 Lx=5.0
 lbx = -Lx
 ubx = Lx
-lby = -3#Morse, will explode quickly
+lby = -2#Morse, will explode quickly
 uby = 10#Morse, will explode quickly
 m = 0.5
 ngrid = 100
@@ -31,9 +31,8 @@ lamda = 2.0
 D=10.0  
 g = 0.08
 
-##########Start- Educated guessing:
-alpha= 1
-if(True):###Educated guessing:
+##########Educated guessing:
+if(False):
     ###Parameter
     z=0
     #alpha_range= np.linspace(0.1,1,10)
@@ -93,21 +92,12 @@ if(True):###Educated guessing:
         axs[0].legend()
 
         plt.show()
-sys.exit()
-
-##########Parameter to vary: alpha
-###loop over different parameters (only alpha is changed), alpha only changes Morse
-###exponent in Morse D*(1-e**(-alpha y)) the bigger alpha, the smaller time until plateau
-###because of that energy spacing will also change
-
 
 alpha_range=(0.153,0.157,0.193,0.252,0.344,0.363,0.525,0.837,1.1,1.665,2.514)###found the corresponding energy levels on the barrier top, but for slight coupling almost impossible to identify which one is which
 #alpha_range=(0.363,0.525,0.837,1.1,1.665,2.514)###note how close 0.363 and 0.525 are
 cntr=0###counter for outer loop (over alpha)
 
-###loop over alpha
 for alpha in alpha_range:
-    ###loop over different coupling strengths z 
     for z in (0,0.5):#,1,1.5):#,1.25,1.5): #(1.25)
         if(cntr!=0 and z==0):####skip if not needed
             continue

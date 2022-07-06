@@ -33,17 +33,15 @@ D=10.0
 g = 0.08
 
 z_range=(0,0.5,1,1.5)#,1.25,1.5): #(1.25))
-#z_range=(0,0.5,)
-alpha_range=(0.363,0.525,0.837,1.1,1.665,2.514)###note how close 0.363 and 0.525 are
+z_range=(0,0.5,1)
+alpha_range=(0.363,0.525)#,0.837,1.1,1.665,2.514)###note how close 0.363 and 0.525 are
 #alpha_range=(0.837,)
-cntr=0###counter for outer loop (over alpha)
+cntr=0#counter for outer loop (over alpha)
 
-###loop over alpha
 for alpha in alpha_range:
-    ###loop over different coupling strengths z 
     for z in z_range:
-        #if(cntr!=0 and z==0):####skip if not needed
-        #    continue
+        if(cntr!=0 and z==0):####skip if not needed
+            continue
 
         ###########define potential, grid and DVR
         pes = quartic_bistable(alpha,D,lamda,g,z)
@@ -128,23 +126,28 @@ for alpha in alpha_range:
         ##########OTOC calc
 
         time_mc=time.time()
-        k=ngridx
         
         ###Mircocanonic OTOC
-        
-        if(False): #if want to plot different C_n's (other than 2 )
-            for n in range(5):#should be the n=2 for uncoupled 
+        C_n_range=(0,1,2,3)
+        k=0
+        #What do I want to plot???? # C_n 0,1,2,3 each time
+        if(True): #if want to plot (different) C_n's (other than 2 )
+            fig,ax= plt.subplots(1)
+            for n in C_n_range:#should be the n=2 for uncoupled 
                 C_n = OTOC_f_2D_omp_updated.otoc_tools.corr_mc_arr_t(vecs,m,x_arr,DVR.dx,DVR.dy,k_arr,vals,n+1,m_arr,t_arr,'xxC',OTOC_arr)
-                plt.plot(t_arr,np.real(C_n),'--',label='n = %i' % (n),linewidth=1.5) #is real anyway, just for the type of the variable
-                plt.title('C_n for z= %.2f, alpha = %.3f' % (z,alpha))
-                plt.legend()
-                if(n<20):#plot the numbers of C_n somewhere visible
+                
+                ax.plot(t_arr,np.real(C_n),'--',label='n = %i' % (n),linewidth=1.5) #is real anyway, just for the type of the variable
+                ax.set_title('C_n for z= %.2f, alpha = %.3f' % (z,alpha))
+                ax.legend(fontsize=6)
+
+                if(False):#plot the numbers of C_n somewhere visible
                     l=np.random.randint(int((len(t_arr)/2)))
                     l+=int(len(t_arr)/2) # so thaat in second part of plot
                     #plt.text(t_arr[-1],np.real(C_n[-1]),f'n = {n+1}',fontsize=8 )
                     plt.text(t_arr[l],np.real(C_n[l]),f'n = {n}',fontsize=6 )
                 k +=1
-            print('Time for 1 McOTOC (avg over %i): %.2f s ' % (k,(time.time()-time_mc)/k))
+            fig.show()
+            #print('Time for 1 McOTOC (avg over %i): %.2f s ' % (k,(time.time()-time_mc)/k))
         
         n_for_b=2
         m_for_b=0
@@ -163,4 +166,4 @@ for alpha in alpha_range:
     plt.legend(bbox_to_anchor=(0.65,1),ncol=3,fontsize=8)
     plt.show()
     
-plt.show()
+plt.show(block=True)
