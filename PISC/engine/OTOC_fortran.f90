@@ -93,10 +93,10 @@ module position_matrix
 		end subroutine b_matrix_elts
 
 		subroutine compute_b_mat_arr_m(vecs,len1vecs,len2vecs,x_arr,lenx,dx,dy,k_arr,lenk,vals_arr,lenv,n,m_arr,lenm,t,b_mat)
-			integer, intent(in) :: len1vecs,len2vecs,lenx,lenv,lenm			
+			integer, intent(in) :: len1vecs,len2vecs,lenx,lenv,lenm
 			real(kind=8), dimension(len1vecs,len2vecs), intent(in) :: vecs
 			real(kind=8), dimension(lenx), intent(in) :: x_arr
-			real(kind=8), intent(in) ::  dx,dy			
+			real(kind=8), intent(in) ::  dx,dy
 			integer, intent(in) :: lenk, n
 			integer, dimension(lenm),intent(in) :: m_arr
 			integer, dimension(lenk), intent(in) :: k_arr

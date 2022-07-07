@@ -11,7 +11,7 @@ import os
 
 
 ### Potential parameters
-m=0.5
+m=0.5#0.5
 N=20#20
 dt=0.005
 
@@ -37,9 +37,9 @@ pes = quartic_bistable(alpha,D,lamda,g,z)
 
 pathname = os.path.dirname(os.path.abspath(__file__))
 
-E = 4.202#8.613#Vb
-xg = np.linspace(2,4,int(1e2)+1)
-yg = np.linspace(-5,10,int(1e2)+1)
+E = 8.0#14.5#12.698#4.202#6.739#12.84#11.66#8.613#4.202#8.613#Vb
+xg = np.linspace(-6,6,int(1e2)+1)
+yg = np.linspace(-5,5,int(1e2)+1)
 xgrid,ygrid = np.meshgrid(xg,yg)
 potgrid = pes.potential_xy(xgrid,ygrid)
 
@@ -109,22 +109,29 @@ PSOS.set_simparams(N,dt,dt,nbeads=nbeads)
 PSOS.set_runtime(20.0,500.0)
 PSOS.bind(qcartg=qlist,E=E)#pcartg=plist)#E=E)
 
-if(1): ## Plot the trajectories that make up the Poincare section
+if(0): ## Plot the trajectories that make up the Poincare section
 	xg = np.linspace(-8,8,int(1e2)+1)
 	yg = np.linspace(-5,10,int(1e2)+1)
 	xgrid,ygrid = np.meshgrid(xg,yg)
 	potgrid = pes.potential_xy(xgrid,ygrid)
 
 	ax.contour(xgrid,ygrid,potgrid,levels=np.arange(0,1.01*D,D/5))
-	PSOS.run_traj(0,ax) #(1,2,3,4,8,13 for z=1.25), (2,3) 
+	PSOS.run_traj(2,ax) #(1,2,3,4,8,13 for z=1.25), (2,3) 
 	plt.show()
 	
-if(1): ## Collect the data from the Poincare section and plot. 
-	X,PX,Y = PSOS.PSOS_X(y0=0)
+if(0): ## Collect the data from the Poincare section and plot. 
+	X,PX,Y = PSOS.PSOS_X(y0=0.0)
 	plt.title(r'PSOS, $N_b={}$'.format(nbeads))
 	plt.scatter(X,PX,s=1)
 	plt.show()
 	#fname = 'Poincare_Section_x_px_{}_T_{}'.format(potkey,T)
 	#store_1D_plotdata(X,PX,fname,'{}/Datafiles'.format(pathname))
 			
+if(1): ## Collect the data from the Poincare section and plot. 
+	Y,PY,X = PSOS.PSOS_Y(x0=0.0)
+	plt.title(r'PSOS, $N_b={}$'.format(nbeads))
+	plt.scatter(Y,PY,s=1)
+	plt.show()
+	#fname = 'Poincare_Section_x_px_{}_T_{}'.format(potkey,T)
+	#store_1D_plotdata(X,PX,fname,'{}/Datafiles'.format(pathname))
 	

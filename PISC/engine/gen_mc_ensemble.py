@@ -49,7 +49,8 @@ def generate_rp(pathname,m,dim,N,nbeads,ens,pes,rng,time_relax,dt_relax,potkey,r
 
 	nthermsteps = int(time_relax/motion.dt)
 
-	print('rp E', E*nbeads,np.sum(rp.pcart[0]**2) +np.sum(pot[0]))
+	print('m',m)
+	print('rp E', E*nbeads,np.sum(rp.pcart[0]**2/(2*m)) +np.sum(pot[0]))
 	#print('V', pes.pot[0],rp.qcart[0])
 	#print('E tot', np.sum(rp.pcart**2/(2*m),axis=2) + np.sum(pes.potential(rp.qcart),axis=2 ) )
 	#plt.axis([-10, 10, 0, 5])		

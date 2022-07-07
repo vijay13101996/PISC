@@ -1,6 +1,9 @@
 import numpy as np
 from PISC.potentials.base import PES
 
+## This potential is known as 'Pullen-Edmonds Hamiltonian' in 
+##  James L. Anchell, J. Chem. Phys. 92, 4342-4350 (1990) 
+
 class coupled_harmonic(PES):
 		def __init__(self,omega,g0):
 			super(coupled_harmonic).__init__()

@@ -55,7 +55,7 @@ class Poincare_SOS(object):
 			pcartg = read_arr('Microcanonical_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(self.N,self.nbeads,self.beta,self.potkey,self.rngSeed),"{}/Datafiles".format(self.pathname)) 
 		
 		# Specific trajectories could be chosen by specifying the 'ind' and uncommenting the lines below. 
-		ind = [0]
+		ind = [3]
 		#qcartg = qcartg[ind]
 		#pcartg = pcartg[ind]	
 		self.rp = RingPolymer(qcart=qcartg,pcart=pcartg,m=self.m)	
@@ -79,20 +79,21 @@ class Poincare_SOS(object):
 		count=0
 
 		nsteps = int(self.time_run/self.motion.dt)
-		print('E,kin,pot',self.rp.kin+self.pes.pot,self.rp.kin,self.pes.pot)
+		#print('E,kin,pot',self.rp.kin+self.pes.pot,self.rp.kin,self.pes.pot)
 		Y_list = []
 		PY_list = []
+		X_list = []
 		for i in range(nsteps):
 			self.sim.step(mode="nve",var='pq')	
-			x = self.rp.q[0,0,0]/self.rp.nbeads**0.5
-			px = self.rp.p[0,0,0]
-			y = self.rp.q[0,1,0]/self.rp.nbeads**0.5
-			py = self.rp.p[0,1,0]
+			x = self.rp.q[:,0,0]/self.rp.nbeads**0.5
+			px = self.rp.p[:,0,0]
+			y = self.rp.q[:,1,0]/self.rp.nbeads**0.5
+			py = self.rp.p[:,1,0]
 			curr = x-x0
-			if( prev*curr<0.0 and px>0.0 ):
-				Y_list.append(y)
-				PY_list.append(py)
-				X_list.append(x)
+			ind = np.where( (prev*curr<0.0) & (px>0.0))
+			Y_list.extend(y[ind])
+			PY_list.extend(py[ind])
+			X_list.extend(x[ind])
 			prev = curr
 			count+=1
 
@@ -122,6 +123,8 @@ class Poincare_SOS(object):
 			#print('t, cent E',self.sim.t,cent_E.shape)		
 			curr = y-y0
 			ind = np.where( (prev*curr<0.0) & (py<0.0))# & (cent_E>0.95*self.E))# & (cent_E>0.8*self.E))
+			#if(len(np.array(ind)[0])>0):
+			#	print('py',py[ind])
 			X_list.extend(x[ind])
 			PX_list.extend(px[ind])
 			Y_list.extend(y[ind])

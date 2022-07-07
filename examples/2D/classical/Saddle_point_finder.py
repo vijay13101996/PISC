@@ -119,7 +119,7 @@ def separatrix_path():
 	step = inst.eigvec_follow_step(eig_dir=eig_dir)
 	rp.mats2cart()
 	pes.update()
-	#plt.scatter(rp.q[0,0,0],rp.q[0,1,0])	
+	plt.scatter(rp.q[0,0,0],rp.q[0,1,0])	
 
 	print('step',step)
 	qarr = []

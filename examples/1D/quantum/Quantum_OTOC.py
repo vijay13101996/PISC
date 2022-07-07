@@ -30,20 +30,20 @@ if(0):
 	pes = triple_well(lamda,g)
 	potkey = 'triple_well_lambda_{}_g_{}'.format(lamda,g)
 
-if(0):
-	lb = -5.0
-	ub = 30.0
+if(1):
+	lb = -3.0
+	ub = 20.0
 	m = 0.5
 
 	w = 0.1
-	D = 10.0
+	D = 30.0
 	alpha = 0.363
 	#0.81#0.41#0.175#0.255#1.165
 	pes = morse(D,alpha)
 	Tc = 1.0
 	potkey = 'morse'#_lambda_{}_g_{}'
 	
-if(1):
+if(0):
 	L = 10
 	lb = -L
 	ub = L
@@ -53,7 +53,7 @@ if(1):
 	#2.0: 0.08,0.172
 
 	lamda = 2.0#1.5#3.0#2.5#2.0#1.5
-	g = 0.172#0.035#0.13#0.265#0.155#0.08#0.035
+	g = 0.033#0.172#0.035#0.13#0.265#0.155#0.08#0.035
 	Tc = lamda*(0.5/np.pi)    
 	pes = double_well(lamda,g)
 	potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
@@ -92,9 +92,9 @@ if(1):
 	#potgrid1 = pes1.potential(qgrid)
 	fig = plt.figure()
 	ax = plt.gca()
-	ax.set_ylim([0,20])
+	ax.set_ylim([0,50])
 	plt.plot(qgrid,potgrid)
-	plt.plot(qgrid,abs(vecs[:,2])**2)	
+	plt.plot(qgrid,abs(vecs[:,6])**2)	
 	#plt.plot(qgrid,potgrid1,color='k')
 	#plt.plot(qgrid,-0.16*qgrid**2 + 0.32)
 	for i in range(20):

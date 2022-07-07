@@ -17,11 +17,11 @@ if(0): # Coupled harmonic
 	ubx = L
 	lby = -L
 	uby = L
-	m = 0.5
+	m = 1.0#0.5
 	ngrid = 100
 	ngridx = ngrid
 	ngridy = ngrid
-	omega = 0.5
+	omega = 2.0**0.5#0.5
 	g0 = 0.1#3e-3#1/100.0
 	x = np.linspace(lbx,ubx,ngridx+1)
 	potkey = 'coupled_harmonic_w_{}_g_{}'.format(omega,g0)
@@ -48,15 +48,15 @@ if(0): # Coupled harmonic
 		x,y = np.meshgrid(xgrid,ygrid)
 		potgrid = pes.potential_xy(x,y)
 		hesgrid = 0.25*(omega**2 + 4*g0*omega*(x**2+y**2) - 48*g0**2*x**2*y**2)
-		plt.contour(x,y,potgrid,colors='k',levels=np.arange(0,3,0.05))#,levels=vals[:20])#np.arange(0,5,0.5))
-		plt.contour(x,y,hesgrid,colors='m',levels=np.arange(0.0,0.5,0.1))
+		plt.contour(x,y,potgrid,colors='k',levels=np.arange(0,30,0.5))#,levels=vals[:20])#np.arange(0,5,0.5))
+		#plt.contour(x,y,hesgrid,colors='m',levels=np.arange(0.0,0.5,0.1))
 		#plt.contour(x,y,potgrid,levels=[0.1,vals[0],vals[1],vals[3],vals[4],vals[5],vals[7],vals[100]])
 		plt.show()
 
 if(1): # Double well 2D
 	L = 10.0#
-	lbx = -7.0#
-	ubx = 7.0#
+	lbx = -10.0#
+	ubx = 10.0#
 	lby = -5.0#
 	uby = 10.0
 	m = 0.5#8.0
@@ -65,11 +65,13 @@ if(1): # Double well 2D
 	ngridy = ngrid
 
 	w = 0.1	
-	D = 10.0#10.0
+	D = 30.0#10.0
 	alpha = 0.363#0.81#0.175#0.41#0.255#1.165
 	
 	lamda = 2.0#4.0
-	g = 0.08#lamda**2/32#4.0
+	g = 0.02#lamda**2/32#4.0
+
+	print('Vb', lamda**4/(64*g))
 
 	z = 1.5#1.25#2.3	
 

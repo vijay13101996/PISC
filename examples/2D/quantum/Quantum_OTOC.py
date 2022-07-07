@@ -3,6 +3,7 @@ from PISC.dvr.dvr import DVR2D
 from PISC.potentials.Coupled_harmonic import coupled_harmonic
 from PISC.potentials.Quartic_bistable import quartic_bistable
 from PISC.potentials.Heller_Davis import heller_davis
+from PISC.potentials.harmonic_2D import Harmonic
 from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr, read_arr
 from PISC.engine import OTOC_f_1D
 from PISC.engine import OTOC_f_2D_omp_updated
@@ -24,8 +25,8 @@ start_time = time.time()
 
 if(1): #2D double well
 	L = 10.0
-	lbx = -7
-	ubx = 7
+	lbx = -10#-7
+	ubx = 10#7
 	lby = -5#
 	uby = 10.0#
 	m = 0.5
@@ -34,11 +35,11 @@ if(1): #2D double well
 	ngridy = ngrid
 
 	w = 0.1	
-	D = 10.0
+	D = 30.0
 	alpha = 0.363#0.81#0.255#0.41#0.175#1.165#0.255#
 	
 	lamda = 2.0#4.0
-	g = 0.08#lamda**2/32#0.02#4.0
+	g = 0.02#lamda**2/32#0.02#4.0
 
 	z = 1.5#2.3	
 
@@ -61,7 +62,7 @@ if(1): #2D double well
 	DVR = DVR2D(ngridx,ngridy,lbx,ubx,lby,uby,m,pes.potential_xy)
 	n_eig_tot = 200
 	print('potential',potkey)	
-	if(0): #Diagonalization
+	if(1): #Diagonalization
 		param_dict = {'lbx':lbx,'ubx':ubx,'lby':lby,'uby':uby,'m':m,'ngridx':ngridx,'ngridy':ngridy,'n_eig':n_eig_tot}
 		with open('{}/Datafiles/Input_log_{}.txt'.format(path,potkey),'a') as f:	
 			f.write('\n'+str(param_dict))#print(param_dict,file=f)
@@ -80,14 +81,14 @@ if(1): #2D double well
 	#print('vals',vals[:30])#vals[0],vals[5],vals[16],vals[50],vals[104])
 	#print('expvals',np.exp(-beta*vals[:70]))
 	#print('vecs',vecs[:200,10])	
-	n=2#15
+	n=15#15
 	M=1
 	print('vals[n]', vals[n])
 	if(1):
 		xg = np.linspace(lbx,ubx,ngridx)
 		yg = np.linspace(lby,uby,ngridy)
 		xgr,ygr = np.meshgrid(xg,yg)
-		plt.contour(pes.potential_xy(xgr,ygr),levels=np.arange(0,10,2))
+		#plt.contour(pes.potential_xy(xgr,ygr),levels=np.arange(0,10,2))
 	plt.imshow(DVR.eigenstate(vecs[:,n])**2,origin='lower')
 	plt.show()
 	#plt.contour(DVR.eigenstate(vecs[:,n])**2)
@@ -102,7 +103,7 @@ if(1): #2D double well
 	b_arr = np.zeros_like(OTOC_arr)
 	print('time',time.time()-start_time)
 			
-	if(1):
+	if(0):
 		# Be careful with the Kubo OTOC, when the energy spacing is quite closely packed!
 		#OTOC_arr = OTOC_f_2D_omp.position_matrix.compute_otoc_arr_t(vecs,m,x_arr,DVR.dx,DVR.dy,k_arr,vals,m_arr,t_arr,beta,n_eigen,OTOC_arr) 
 		#OTOC_arr = OTOC_f_2D_omp.position_matrix.compute_kubo_otoc_arr_t(vecs,m,x_arr,DVR.dx,DVR.dy,k_arr,vals,m_arr,t_arr,beta,n_eigen,OTOC_arr) 
@@ -188,19 +189,20 @@ if(1): #2D double well
 		print('time',time.time()-start_time)
 			
 if(0):
-	L = 10.0
+	L = 4.0
 	lbx = -L
 	ubx = L
 	lby = -L
 	uby = L
-	m = 0.5
+	m = 1.0
+	hbar = 1.0#0.25
 	ngrid = 100
 	ngridx = ngrid
 	ngridy = ngrid
-	omega = 1.0
-	g0 = 0.1#3e-3#1/100.0
+	omega = 2.0**0.5#1.0
+	g0 = 0.1
 	x = np.linspace(lbx,ubx,ngridx+1)
-	potkey = 'coupled_harmonic_w_{}_g_{}'.format(omega,g0)
+	potkey = 'coupled_harmonic_w_{}_g_{}_m_{}_hbar_{}'.format(omega,g0,m,hbar)
 
 	T_au = 0.5 
 	beta = 1.0/T_au 
@@ -215,9 +217,14 @@ if(0):
 	fname = 'Eigen_basis_{}_ngrid_{}'.format(potkey,ngrid)	
 	path = os.path.dirname(os.path.abspath(__file__))
 
-	DVR = DVR2D(ngridx,ngridy,lbx,ubx,lby,uby,m,pes.potential_xy)	
+	DVR = DVR2D(ngridx,ngridy,lbx,ubx,lby,uby,m,pes.potential_xy,hbar=hbar)	
+	n_eig_tot=200
 	if(1): #Diagonalization
-		vals,vecs = DVR.Diagonalize()
+		param_dict = {'lbx':lbx,'ubx':ubx,'lby':lby,'uby':uby,'m':m,'ngridx':ngridx,'ngridy':ngridy,'n_eig':n_eig_tot,'hbar':hbar}
+		with open('{}/Datafiles/Input_log_{}.txt'.format(path,potkey),'a') as f:	
+			f.write('\n'+str(param_dict))#print(param_dict,file=f)
+		
+		vals,vecs = DVR.Diagonalize(neig_total=n_eig_tot)
 
 		store_arr(vecs,'{}_vecs'.format(fname),'{}/Datafiles'.format(path))
 		store_arr(vals,'{}_vals'.format(fname),'{}/Datafiles'.format(path))
@@ -225,12 +232,12 @@ if(0):
 	vals = read_arr('{}_vals'.format(fname),'{}/Datafiles'.format(path))
 	vecs = read_arr('{}_vecs'.format(fname),'{}/Datafiles'.format(path))
 
-	print('vals',vals[:100],vecs[:,10])
+	print('vals',vals[1700],vecs[:,10])
 	
-	#plt.imshow(DVR.eigenstate(vecs[:,0]))
+	#plt.imshow(DVR.eigenstate(vecs[:,10]))
 	#plt.show()
 
-	x_arr = DVR.pos_mat()
+	x_arr = DVR.pos_mat(0)
 	k_arr = np.arange(basis_N)
 	m_arr = np.arange(basis_N)
 
@@ -315,4 +322,47 @@ if(0): #Heller Davis
 	#plt.contour(DVR.eigenstate(vecs[:,n])**2)
 	#plt.show()
 
+if(0):
+	L = 5.0
+	lbx = -L
+	ubx = L
+	lby = -L
+	uby = L
+	m = 0.5
+	ngrid = 100
+	ngridx = ngrid
+	ngridy = ngrid
 
+	lamda = 2.0
+	
+	T_au = 1.0 
+	beta = 1.0/T_au 
+	
+	print('beta', beta)
+
+	x = np.linspace(lbx,ubx,ngridx+1)
+	potkey = 'Harmonic_2D_lamda_{}'.format(lamda)
+
+	pes = Harmonic(lamda)
+
+	print('pot',pes.potential_xy(0,0))
+	fname = 'Eigen_basis_{}_ngrid_{}'.format(potkey,ngrid)	
+	path = os.path.dirname(os.path.abspath(__file__))
+
+	DVR = DVR2D(ngridx,ngridy,lbx,ubx,lby,uby,m,pes.potential_xy)
+	n_eig_tot = 200
+	print('potential',potkey)	
+	if(1): #Diagonalization
+		param_dict = {'lbx':lbx,'ubx':ubx,'lby':lby,'uby':uby,'m':m,'ngridx':ngridx,'ngridy':ngridy,'n_eig':n_eig_tot}
+		with open('{}/Datafiles/Input_log_{}.txt'.format(path,potkey),'a') as f:	
+			f.write('\n'+str(param_dict))#print(param_dict,file=f)
+		
+		vals,vecs = DVR.Diagonalize()#_Lanczos(n_eig_tot)
+
+		store_arr(vecs[:,:n_eig_tot],'{}_vecs'.format(fname),'{}/Datafiles'.format(path))
+		store_arr(vals[:n_eig_tot],'{}_vals'.format(fname),'{}/Datafiles'.format(path))
+
+	vals = read_arr('{}_vals'.format(fname),'{}/Datafiles'.format(path))
+	vecs = read_arr('{}_vecs'.format(fname),'{}/Datafiles'.format(path))
+
+	print('vals',vals[:10])
