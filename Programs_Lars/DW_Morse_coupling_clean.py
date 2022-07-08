@@ -433,7 +433,7 @@ if(calc_bnm==True):
     plot_b_nm_var_alpha_fix_z_nm(alpha_range, z_range, b_nm_range,t_arr, b_nm_loop_alpha,log=False)
 
 ### specific plotting
-log=True
+log=False
 if(Specific_plotting==True):
     fig,ax =plt.subplots(int(len(z_range)/2),2,sharex='all',sharey='all')
     fig.suptitle(r'b$_{20}$ for different $\alpha$ and z',fontsize=15)
@@ -497,6 +497,7 @@ if(Specific_plotting==True):
     plt.show()
 
 if(plot_deriv==True):
+    ###Derivative
     fig,ax =plt.subplots(int(len(z_range)/2),2,sharex='all',sharey='all')
     fig.suptitle(r'derivative of log(b$_{20}$) for different $\alpha$ and z',fontsize=15)
     offset=10
@@ -511,6 +512,31 @@ if(plot_deriv==True):
                 axs.set_title(r'z=%.2f' % z_range[z_cntr])
                 z_cntr +=1
                 axs.legend(fontsize=6)
+        if(alpha==0.3):
+            z_cntr=0
+            t_arr,b_nm_loop_alpha=compute_b_nm((alpha,),(0,),((4,0),),D,lamda,g,ngridx,ngridy,ngrid,lbx,ubx,lby,uby,m,n_eig_tot,N_trunc)
+            for axs in ax.flat:
+                if(z_cntr==0):
+                    tmp=np.log(np.abs(b_nm_loop_alpha[0][0][0]))
+                    grad= np.gradient(tmp,t_arr)
+                    axs.plot(t_arr[offset:],grad[offset:],'--',label=r'$\alpha$=%.3f' % alpha,linewidth=1)
+                elif(z_cntr==1):
+                    t_arr,b_nm_loop_alpha=compute_b_nm((alpha,),(0.25,),((3,0),),D,lamda,g,ngridx,ngridy,ngrid,lbx,ubx,lby,uby,m,n_eig_tot,N_trunc)
+                    tmp=np.log(np.abs(b_nm_loop_alpha[0][0][0]))
+                    grad= np.gradient(tmp,t_arr)
+                    axs.plot(t_arr[offset:],grad[offset:],'--',label=r'$\alpha$=%.3f' % alpha,linewidth=1)
+                elif(z_cntr==2):
+                    t_arr,b_nm_loop_alpha=compute_b_nm((alpha,),(0.5,),((2,0),),D,lamda,g,ngridx,ngridy,ngrid,lbx,ubx,lby,uby,m,n_eig_tot,N_trunc)
+                    tmp=np.log(np.abs(b_nm_loop_alpha[0][0][0]))
+                    grad= np.gradient(tmp,t_arr)
+                    axs.plot(t_arr[offset:],grad[offset:],'--',label=r'$\alpha$=%.3f' % alpha,linewidth=1)
+                elif(z_cntr==3):
+                    t_arr,b_nm_loop_alpha=compute_b_nm((alpha,),(1,),((2,0),),D,lamda,g,ngridx,ngridy,ngrid,lbx,ubx,lby,uby,m,n_eig_tot,N_trunc)
+                    tmp=np.log(np.abs(b_nm_loop_alpha[0][0][0]))
+                    grad= np.gradient(tmp,t_arr)
+                    axs.plot(t_arr[offset:],grad[offset:],'--',label=r'$\alpha$=%.3f' % alpha,linewidth=1)
+                z_cntr +=1
+    ###Normal to compare
     fig,ax =plt.subplots(int(len(z_range)/2),2,sharex='all',sharey='all')
     fig.suptitle(r'log(b$_{20}$) for different $\alpha$ and z',fontsize=15)
     for alpha in alpha_range:
@@ -523,6 +549,26 @@ if(plot_deriv==True):
                 axs.set_title(r'z=%.2f' % z_range[z_cntr])
                 z_cntr +=1
                 axs.legend(fontsize=6)
+        if(alpha==0.3):
+            z_cntr=0
+            t_arr,b_nm_loop_alpha=compute_b_nm((alpha,),(0,),((4,0),),D,lamda,g,ngridx,ngridy,ngrid,lbx,ubx,lby,uby,m,n_eig_tot,N_trunc)
+            for axs in ax.flat:
+                if(z_cntr==0):
+                    tmp=np.log(np.abs(b_nm_loop_alpha[0][0][0]))
+                    axs.plot(t_arr[offset:],tmp[offset:],'--',label=r'$\alpha$=%.3f' % alpha,linewidth=1)
+                elif(z_cntr==1):
+                    t_arr,b_nm_loop_alpha=compute_b_nm((alpha,),(0.25,),((3,0),),D,lamda,g,ngridx,ngridy,ngrid,lbx,ubx,lby,uby,m,n_eig_tot,N_trunc)
+                    tmp=np.log(np.abs(b_nm_loop_alpha[0][0][0]))
+                    axs.plot(t_arr[offset:],tmp[offset:],'--',label=r'$\alpha$=%.3f' % alpha,linewidth=1)
+                elif(z_cntr==2):
+                    t_arr,b_nm_loop_alpha=compute_b_nm((alpha,),(0.5,),((2,0),),D,lamda,g,ngridx,ngridy,ngrid,lbx,ubx,lby,uby,m,n_eig_tot,N_trunc)
+                    tmp=np.log(np.abs(b_nm_loop_alpha[0][0][0]))
+                    axs.plot(t_arr[offset:],tmp[offset:],'--',label=r'$\alpha$=%.3f' % alpha,linewidth=1)
+                elif(z_cntr==3):
+                    t_arr,b_nm_loop_alpha=compute_b_nm((alpha,),(1,),((2,0),),D,lamda,g,ngridx,ngridy,ngrid,lbx,ubx,lby,uby,m,n_eig_tot,N_trunc)
+                    tmp=np.log(np.abs(b_nm_loop_alpha[0][0][0]))
+                    axs.plot(t_arr[offset:],tmp[offset:],'--',label=r'$\alpha$=%.3f' % alpha,linewidth=1)
+                    z_cntr +=1
     plt.show()
 if(False): #recyling
     X=np.zeros((N_trunc,N_trunc))
