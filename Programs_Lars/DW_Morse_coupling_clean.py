@@ -1,3 +1,4 @@
+from pickle import FALSE
 import sys
 sys.path.insert(0, "/home/lm979/Desktop/PISC")
 import numpy as np
@@ -187,7 +188,7 @@ def compute_b_nm(alpha_range,z_range,b_nm_range,D,lamda,g,ngridx,ngridy,ngrid,lb
         b_nm_loop_alpha.append(b_nm_loop_z)
     return t_arr,b_nm_loop_alpha
 
-def plot_b_nm_var_nm_fix_alpha_z(alpha_range, z_range, b_nm_range,t_arr, b_nm_loop_alpha,plot_alot=False):
+def plot_b_nm_var_nm_fix_alpha_z(alpha_range, z_range, b_nm_range,t_arr, b_nm_loop_alpha,plot_alot=False,log=False):
     if((len(alpha_range)-1) %2): 
         for z_counter in range(len(z_range)):
             fig, ax= plt.subplots(int(len(alpha_range)/2),2,sharex='all',sharey='all')
@@ -196,14 +197,20 @@ def plot_b_nm_var_nm_fix_alpha_z(alpha_range, z_range, b_nm_range,t_arr, b_nm_lo
                     if(b_nm_range[nm_counter]==(2,0)):
                         alpha_cntr=0
                         for axs in ax.flat:
-                            axs.plot(t_arr,np.abs(b_nm_loop_alpha[alpha_cntr][z_counter][nm_counter]),'-',label='(n,m) = (%i,%i)' % (b_nm_range[nm_counter]),linewidth=1)
+                            if(log==True):
+                                axs.plot(t_arr,np.log(np.abs(b_nm_loop_alpha[alpha_cntr][z_counter][nm_counter])),'-',label='(n,m) = (%i,%i)' % (b_nm_range[nm_counter]),linewidth=1)
+                            else:
+                                axs.plot(t_arr,np.abs(b_nm_loop_alpha[alpha_cntr][z_counter][nm_counter]),'-',label='(n,m) = (%i,%i)' % (b_nm_range[nm_counter]),linewidth=1)
                             axs.set_title(r'$\alpha$ = %.3f' %(alpha_range[alpha_cntr]),fontsize=8)
                             axs.legend(fontsize=6)
                             alpha_cntr +=1
                     else:
                         alpha_cntr=0
                         for axs in ax.flat:
-                            axs.plot(t_arr,np.abs(b_nm_loop_alpha[alpha_cntr][z_counter][nm_counter]),'--',label='(n,m) = (%i,%i)' % (b_nm_range[nm_counter]),linewidth=1)
+                            if(log==True):
+                                axs.plot(t_arr,np.log(np.abs(b_nm_loop_alpha[alpha_cntr][z_counter][nm_counter])),'--',label='(n,m) = (%i,%i)' % (b_nm_range[nm_counter]),linewidth=1)
+                            else:
+                                axs.plot(t_arr,np.abs(b_nm_loop_alpha[alpha_cntr][z_counter][nm_counter]),'--',label='(n,m) = (%i,%i)' % (b_nm_range[nm_counter]),linewidth=1)
                             axs.set_title(r'$\alpha$ = %.3f' %(alpha_range[alpha_cntr]),fontsize=8)
                             axs.legend(fontsize=6)
                             alpha_cntr +=1
@@ -215,17 +222,23 @@ def plot_b_nm_var_nm_fix_alpha_z(alpha_range, z_range, b_nm_range,t_arr, b_nm_lo
                 for z_counter in range(len(z_range)):
                     fig, ax= plt.subplots(1)
                     for nm_counter in range(len(b_nm_range)):
-                            ax.plot(t_arr,np.abs(b_nm_loop_alpha[alpha_counter][z_counter][nm_counter]),'--',label='(n,m) = (%i,%i)' % (b_nm_range[nm_counter]),linewidth=1)
+                            if(log==True):
+                                ax.plot(t_arr,np.log(np.abs(b_nm_loop_alpha[alpha_counter][z_counter][nm_counter])),'--',label='(n,m) = (%i,%i)' % (b_nm_range[nm_counter]),linewidth=1)
+                            else:
+                                ax.plot(t_arr,np.abs(b_nm_loop_alpha[alpha_counter][z_counter][nm_counter]),'--',label='(n,m) = (%i,%i)' % (b_nm_range[nm_counter]),linewidth=1)
                     ax.set_title(r'b_nm for $\alpha$ = %.3f, z = %.2f' %(alpha_range[alpha_counter],z_range[z_counter]))
                     ax.legend()
             plt.show()
-def plot_b_nm_var_z_fix_alpha_nm(alpha_range, z_range, b_nm_range,t_arr, b_nm_loop_alpha,plot_alot=False):
+def plot_b_nm_var_z_fix_alpha_nm(alpha_range, z_range, b_nm_range,t_arr, b_nm_loop_alpha,plot_alot=False,log=False):
     if(plot_alot==True):
         for alpha_counter in range(len(alpha_range)):
             for nm_counter in range(len(b_nm_range)):
                 fig, ax= plt.subplots(1)
                 for z_counter in range(len(z_range)):
-                    ax.plot(t_arr,np.abs(b_nm_loop_alpha[alpha_counter][z_counter][nm_counter]),'--',label='z = %.2f' % z_range[z_counter],linewidth=1)
+                    if(log==True):
+                        ax.plot(t_arr,np.log(np.abs(b_nm_loop_alpha[alpha_counter][z_counter][nm_counter])),'--',label='z = %.2f' % z_range[z_counter],linewidth=1)
+                    else:
+                        ax.plot(t_arr,np.abs(b_nm_loop_alpha[alpha_counter][z_counter][nm_counter]),'--',label='z = %.2f' % z_range[z_counter],linewidth=1)
                 ax.set_title(r'b_nm for $\alpha$ = %.3f, (n,m) = (%i,%i)' %(alpha_range[alpha_counter],b_nm_range[nm_counter][0],b_nm_range[nm_counter][1]))
                 ax.legend()
         plt.show()
@@ -235,20 +248,26 @@ def plot_b_nm_var_z_fix_alpha_nm(alpha_range, z_range, b_nm_range,t_arr, b_nm_lo
             alpha_cntr=0
             for axs in ax.flat:
                 for z_counter in range(len(z_range)):
-                    axs.plot(t_arr,np.abs(b_nm_loop_alpha[alpha_cntr][z_counter][nm_counter]),'--',label='z = %.2f' % z_range[z_counter],linewidth=1)
+                    if(log==True):
+                        axs.plot(t_arr,np.log(np.abs(b_nm_loop_alpha[alpha_cntr][z_counter][nm_counter])),'--',label='z = %.2f' % z_range[z_counter],linewidth=1)
+                    else:
+                        axs.plot(t_arr,np.abs(b_nm_loop_alpha[alpha_cntr][z_counter][nm_counter]),'--',label='z = %.2f' % z_range[z_counter],linewidth=1)
                     axs.set_title(r'$\alpha$ = %.3f' %(alpha_range[alpha_cntr]),fontsize=8)
                 axs.legend(fontsize=6)
                 alpha_cntr+=1
             fig.suptitle(r'b_nm for (n,m) = (%i,%i)' %(b_nm_range[nm_counter][0],b_nm_range[nm_counter][1]))
         plt.show()
-def plot_b_nm_var_alpha_fix_z_nm(alpha_range, z_range, b_nm_range,t_arr, b_nm_loop_alpha):
+def plot_b_nm_var_alpha_fix_z_nm(alpha_range, z_range, b_nm_range,t_arr, b_nm_loop_alpha,log=False):
     if(len(z_range)-1%2):
         for nm_counter in range(len(b_nm_range)):
             fig, ax= plt.subplots(int(len(z_range)/2),2,sharex='all',sharey='all')
             z_cntr=0
             for axs in ax.flat:
                 for alpha_counter in range(len(alpha_range)):
-                    axs.plot(t_arr,np.abs(b_nm_loop_alpha[alpha_counter][z_cntr][nm_counter]),'--',label=r'$\alpha$=%.2f' % (alpha_range[alpha_counter]),linewidth=1)
+                    if(log==True):
+                        axs.plot(t_arr,np.log(np.abs(b_nm_loop_alpha[alpha_counter][z_cntr][nm_counter])),'--',label=r'$\alpha$=%.2f' % (alpha_range[alpha_counter]),linewidth=1)
+                    else:
+                        axs.plot(t_arr,np.abs(b_nm_loop_alpha[alpha_counter][z_cntr][nm_counter]),'--',label=r'$\alpha$=%.2f' % (alpha_range[alpha_counter]),linewidth=1)
                     axs.set_title(' z = %.2f' %z_range[z_cntr])
                 z_cntr +=1
             fig.suptitle(r'b_nm for (n,m) = (%i,%i)' %(b_nm_range[nm_counter][0],b_nm_range[nm_counter][1]))
@@ -260,7 +279,10 @@ def plot_b_nm_var_alpha_fix_z_nm(alpha_range, z_range, b_nm_range,t_arr, b_nm_lo
             for nm_counter in range(len(b_nm_range)):
                 fig, ax= plt.subplots(1)
                 for alpha_counter in range(len(alpha_range)):
-                    ax.plot(t_arr,np.abs(b_nm_loop_alpha[alpha_counter][z_counter][nm_counter]),'--',label=r'$\alpha$ = %.3f' % alpha_range[alpha_counter],linewidth=1)
+                    if(log==True):
+                        ax.plot(t_arr,np.log(np.abs(b_nm_loop_alpha[alpha_counter][z_counter][nm_counter])),'--',label=r'$\alpha$ = %.3f' % alpha_range[alpha_counter],linewidth=1)
+                    else:
+                        ax.plot(t_arr,np.abs(b_nm_loop_alpha[alpha_counter][z_counter][nm_counter]),'--',label=r'$\alpha$ = %.3f' % alpha_range[alpha_counter],linewidth=1)
                 ax.set_title(r'b_nm for (n,m) = (%i,%i), z = %.2f' %(b_nm_range[nm_counter][0],b_nm_range[nm_counter][1],z_range[z_counter]))
                 ax.legend()
             plt.show()
@@ -306,14 +328,15 @@ def Compare_DW_and_Morse_energies(Terminal_output,plotting=True,alpha_range = (0
         vals_M, vecs_M= DVR_Morse.Diagonalize()
 
         if(plotting==True):
-            axs[1].plot(yg, pot_Morse(yg), color,label = r'$\alpha$ = %.3f'%alpha)
+            axs[1].plot(yg, pot_Morse(yg), color)#,label = r'$\alpha$ = %.3f'%alpha)
             for n in range(4):#amount of ev
-                axs[1].plot(xg,vals_M[n]*np.ones_like(yg), ('--'+color),label=r'n = %i, $\alpha$ = %.2f' %(n,alpha) )
+                axs[1].plot(xg,vals_M[n]*np.ones_like(yg), ('--')+color )
             axs[1].set_title('Pot y')
             axs[0].set_ylim([0,9])
             axs[1].set_ylim([0,9])
-            axs[1].legend(loc='upper center',ncol=3,fancybox=True,shadow=True,fontsize=7)
+            #axs[1].legend(loc='upper center',ncol=3,fancybox=True,shadow=True,fontsize=7)
             axs[0].legend()
+            fig.suptitle( r'$\alpha$ = %.2f' %(alpha))
 
         if(Terminal_output==True):
             print()
@@ -361,7 +384,7 @@ C_n_range=range(10)
 C_n_range =(2,6)
 
 ###b_nm
-calc_bnm=True
+calc_bnm=False
 b_nm_range=((2,0),(3,0),(4,0),(5,0),(6,0))#0.252: z=0,0.25,0.5,1 -> (4,0),(4,0),(4,0),(6,0)
 #b_nm_range=((2,0),(3,0))
 #z_range=(0,0.5,1,1.5)#,1.25,1.5): #(1.25))
@@ -373,9 +396,9 @@ alpha_range=(0.2,0.252,0.3,0.344,0.363,0.525,0.837,1.1)#,1.665,2.514)###note how
 #alpha_range= (0.252,0.28,0.3,0.32,0.344,0.363,0.383)#for some kind of equal spacing
 #alpha_range=(0.837,)
 
-plot_potential=True
+plot_potential=False
 Specific_plotting=False
-
+plot_deriv=True
 ############################################################
 ###----------End Options/Parameters looped over----------###
 ############################################################
@@ -405,20 +428,24 @@ if(calc_Cn==True):
 if(calc_bnm==True):
     plot_alot=False
     t_arr,b_nm_loop_alpha=compute_b_nm(alpha_range,z_range,b_nm_range,D,lamda,g,ngridx,ngridy,ngrid,lbx,ubx,lby,uby,m,n_eig_tot,N_trunc)    
-    #plot_b_nm_var_nm_fix_alpha_z(alpha_range, z_range, b_nm_range,t_arr, b_nm_loop_alpha,plot_alot)#plots a lot
-    #plot_b_nm_var_z_fix_alpha_nm(alpha_range, z_range, b_nm_range,t_arr, b_nm_loop_alpha,plot_alot)#plots a lot
-    plot_b_nm_var_alpha_fix_z_nm(alpha_range, z_range, b_nm_range,t_arr, b_nm_loop_alpha)
+    plot_b_nm_var_nm_fix_alpha_z(alpha_range, z_range, b_nm_range,t_arr, b_nm_loop_alpha,plot_alot,log=False)#plots a lot
+    plot_b_nm_var_z_fix_alpha_nm(alpha_range, z_range, b_nm_range,t_arr, b_nm_loop_alpha,plot_alot,log=False)#plots a lot
+    plot_b_nm_var_alpha_fix_z_nm(alpha_range, z_range, b_nm_range,t_arr, b_nm_loop_alpha,log=False)
 
 ### specific plotting
+log=True
 if(Specific_plotting==True):
-    fig,ax =plt.subplots(int(len(z_range)/2),2)
+    fig,ax =plt.subplots(int(len(z_range)/2),2,sharex='all',sharey='all')
     fig.suptitle(r'b$_{20}$ for different $\alpha$ and z',fontsize=15)
     for alpha in alpha_range:
         if(alpha>=0.34):
             t_arr,b_nm_loop_alpha=compute_b_nm((alpha,),z_range,((2,0),),D,lamda,g,ngridx,ngridy,ngrid,lbx,ubx,lby,uby,m,n_eig_tot,N_trunc)
             z_cntr=0
             for axs in ax.flat:
-                axs.plot(t_arr,np.abs(b_nm_loop_alpha[0][z_cntr][0]),'--',label=r'$\alpha$=%.3f' % alpha,linewidth=1) 
+                if(log==True):
+                    axs.plot(t_arr,np.abs(b_nm_loop_alpha[0][z_cntr][0]),'--',label=r'$\alpha$=%.3f' % alpha,linewidth=1) 
+                else:
+                    axs.plot(t_arr,np.abs(b_nm_loop_alpha[0][z_cntr][0]),'--',label=r'$\alpha$=%.3f' % alpha,linewidth=1)       
                 axs.set_title(r'z=%.2f' % z_range[z_cntr])
                 z_cntr +=1
                 axs.legend(fontsize=6)       
@@ -427,31 +454,76 @@ if(Specific_plotting==True):
             t_arr,b_nm_loop_alpha=compute_b_nm((alpha,),(0,),((4,0),),D,lamda,g,ngridx,ngridy,ngrid,lbx,ubx,lby,uby,m,n_eig_tot,N_trunc)
             for axs in ax.flat:
                 if(z_cntr==0):
-                    axs.plot(t_arr,np.abs(b_nm_loop_alpha[0][0][0]),'--',label=r'$\alpha$=%.3f' % alpha,linewidth=1)
+                    if(log==True):
+                        axs.plot(t_arr,np.log(np.abs(b_nm_loop_alpha[0][0][0])),'--',label=r'$\alpha$=%.3f' % alpha,linewidth=1)
+                    else:
+                        axs.plot(t_arr,np.abs(b_nm_loop_alpha[0][0][0]),'--',label=r'$\alpha$=%.3f' % alpha,linewidth=1)
                 elif(z_cntr==1):
                     t_arr,b_nm_loop_alpha1=compute_b_nm((alpha,),(0.25,),((3,0),),D,lamda,g,ngridx,ngridy,ngrid,lbx,ubx,lby,uby,m,n_eig_tot,N_trunc)
-                    axs.plot(t_arr,np.abs(b_nm_loop_alpha[0][0][0]),'--',label=r'$\alpha$=%.3f' % alpha,linewidth=1.0)
+                    if(log==True):
+                        axs.plot(t_arr,np.log(np.abs(b_nm_loop_alpha[0][0][0])),'--',label=r'$\alpha$=%.3f' % alpha,linewidth=1)
+                    else:
+                        axs.plot(t_arr,np.abs(b_nm_loop_alpha[0][0][0]),'--',label=r'$\alpha$=%.3f' % alpha,linewidth=1)
                 elif(z_cntr==2):
                     t_arr,b_nm_loop_alpha=compute_b_nm((alpha,),(0.5,),((2,0),),D,lamda,g,ngridx,ngridy,ngrid,lbx,ubx,lby,uby,m,n_eig_tot,N_trunc)
-                    axs.plot(t_arr,np.abs(b_nm_loop_alpha[0][0][0]),'--',label=r'$\alpha$=%.3f' % alpha,linewidth=1)
+                    if(log==True):
+                        axs.plot(t_arr,np.log(np.abs(b_nm_loop_alpha[0][0][0])),'--',label=r'$\alpha$=%.3f' % alpha,linewidth=1)
+                    else:
+                        axs.plot(t_arr,np.abs(b_nm_loop_alpha[0][0][0]),'--',label=r'$\alpha$=%.3f' % alpha,linewidth=1)
                 elif(z_cntr==3):
                     t_arr,b_nm_loop_alpha=compute_b_nm((alpha,),(1,),((2,0),),D,lamda,g,ngridx,ngridy,ngrid,lbx,ubx,lby,uby,m,n_eig_tot,N_trunc)
-                    axs.plot(t_arr,np.abs(b_nm_loop_alpha[0][0][0]),'--',label=r'$\alpha$=%.3f' % alpha,linewidth=1)                
+                    if(log==True):
+                        axs.plot(t_arr,np.log(np.abs(b_nm_loop_alpha[0][0][0])),'--',label=r'$\alpha$=%.3f' % alpha,linewidth=1)
+                    else:
+                        axs.plot(t_arr,np.abs(b_nm_loop_alpha[0][0][0]),'--',label=r'$\alpha$=%.3f' % alpha,linewidth=1)
                 z_cntr +=1
         if(alpha==0.252):
             z_cntr=0
             t_arr,b_nm_loop_alpha=compute_b_nm((alpha,),(0,0.25,0.5),((4,0),),D,lamda,g,ngridx,ngridy,ngrid,lbx,ubx,lby,uby,m,n_eig_tot,N_trunc)
             for axs in ax.flat:
                 if(z_cntr<3):
-                    axs.plot(t_arr,np.abs(b_nm_loop_alpha[0][z_cntr][0]),'--',label=r'$\alpha$=%.3f' % alpha,linewidth=1)
+                    if(log==True):
+                        axs.plot(t_arr,np.log(np.abs(b_nm_loop_alpha[0][z_cntr][0])),'--',label=r'$\alpha$=%.3f' % alpha,linewidth=1)
+                    else:
+                        axs.plot(t_arr,np.abs(b_nm_loop_alpha[0][0][0]),'--',label=r'$\alpha$=%.3f' % alpha,linewidth=1)
                 else:
                     t_arr,b_nm_loop_alpha=compute_b_nm((alpha,),(1,),((6,0),),D,lamda,g,ngridx,ngridy,ngrid,lbx,ubx,lby,uby,m,n_eig_tot,N_trunc)
-                    axs.plot(t_arr,np.abs(b_nm_loop_alpha[0][0][0]),'--',label=r'$\alpha$=%.3f' % alpha,linewidth=1)              
+                    if(log==True):
+                        axs.plot(t_arr,np.log(np.abs(b_nm_loop_alpha[0][0][0])),'--',label=r'$\alpha$=%.3f' % alpha,linewidth=1)
+                    else:
+                        axs.plot(t_arr,np.abs(b_nm_loop_alpha[0][0][0]),'--',label=r'$\alpha$=%.3f' % alpha,linewidth=1) 
                 z_cntr +=1
         
     plt.show()
 
-
+if(plot_deriv==True):
+    fig,ax =plt.subplots(int(len(z_range)/2),2,sharex='all',sharey='all')
+    fig.suptitle(r'derivative of log(b$_{20}$) for different $\alpha$ and z',fontsize=15)
+    offset=10
+    for alpha in alpha_range:
+        if(alpha>=0.34):
+            t_arr,b_nm_loop_alpha=compute_b_nm((alpha,),z_range,((2,0),),D,lamda,g,ngridx,ngridy,ngrid,lbx,ubx,lby,uby,m,n_eig_tot,N_trunc)
+            z_cntr=0
+            for axs in ax.flat:
+                tmp = np.log(np.abs(b_nm_loop_alpha[0][z_cntr][0]))
+                grad=np.gradient(tmp,t_arr)
+                axs.plot(t_arr[offset:],grad[offset:],'--',label=r'$\alpha$=%.3f' % alpha,linewidth=1) 
+                axs.set_title(r'z=%.2f' % z_range[z_cntr])
+                z_cntr +=1
+                axs.legend(fontsize=6)
+    fig,ax =plt.subplots(int(len(z_range)/2),2,sharex='all',sharey='all')
+    fig.suptitle(r'log(b$_{20}$) for different $\alpha$ and z',fontsize=15)
+    for alpha in alpha_range:
+        if(alpha>=0.34):
+            t_arr,b_nm_loop_alpha=compute_b_nm((alpha,),z_range,((2,0),),D,lamda,g,ngridx,ngridy,ngrid,lbx,ubx,lby,uby,m,n_eig_tot,N_trunc)
+            z_cntr=0
+            for axs in ax.flat:
+                tmp2=np.log(np.abs(b_nm_loop_alpha[0][z_cntr][0]))
+                axs.plot(t_arr[offset:],tmp2[offset:],'--',label=r'$\alpha$=%.3f' % alpha,linewidth=1) 
+                axs.set_title(r'z=%.2f' % z_range[z_cntr])
+                z_cntr +=1
+                axs.legend(fontsize=6)
+    plt.show()
 if(False): #recyling
     X=np.zeros((N_trunc,N_trunc))
     for i in range(N_trunc):
