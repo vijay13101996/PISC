@@ -145,7 +145,7 @@ def plot_C_n_var_alpha_fix_z_n(alpha_range, z_range, C_n_range,t_arr, C_n_loop_a
             ax.legend()
             plt.show()
 
-def compute_b_nm(alpha_range,z_range,b_n_range,b_m_range,D,lamda,g,ngridx,ngridy,ngrid,lbx,ubx,lby,uby,m,n_eig_tot,N_trunc):
+def compute_b_nm(alpha_range,z_range,b_nm_range,D,lamda,g,ngridx,ngridy,ngrid,lbx,ubx,lby,uby,m,n_eig_tot,N_trunc):
     from PISC.dvr.dvr import DVR2D
     from PISC.engine import OTOC_f_2D_omp_updated
     b_nm_loop_alpha = []
@@ -179,62 +179,97 @@ def compute_b_nm(alpha_range,z_range,b_n_range,b_m_range,D,lamda,g,ngridx,ngridy
             for i in range(N_trunc):
                 for j in range(N_trunc):
                     X[i,j] = OTOC_f_2D_omp_updated.otoc_tools.pos_matrix_elts(vecs,x_arr,DVR.dx,DVR.dy,i+1,j+1,pos_mat)
-            b_nm_loop_n = []
-            for n_for_bnm in b_n_range:
-                b_nm_loop_m = []
-                for m_for_bnm in b_m_range:
-                    b_nm = PY_OTOC2D.b_nm(t=t_arr,n=n_for_bnm,m=m_for_bnm,X=X,w=vals)
-                    b_nm_loop_m.append(b_nm)
-                b_nm_loop_n.append(b_nm_loop_m)
-            b_nm_loop_z.append(b_nm_loop_n)
+            b_nm_loop_nm = []
+            for nm in b_nm_range:
+                b_nm = PY_OTOC2D.b_nm(t=t_arr,n=nm[0],m=nm[1],X=X,w=vals)
+                b_nm_loop_nm.append(b_nm)
+            b_nm_loop_z.append(b_nm_loop_nm)
         b_nm_loop_alpha.append(b_nm_loop_z)
-        
     return t_arr,b_nm_loop_alpha
-def plot_b_nm_var_nm_fix_alpha_z(alpha_range, z_range, b_n_range,b_m_range,t_arr, b_nm_loop_alpha):
-    for alpha_counter in range(len(alpha_range)):
+
+def plot_b_nm_var_nm_fix_alpha_z(alpha_range, z_range, b_nm_range,t_arr, b_nm_loop_alpha,plot_alot=False):
+    if((len(alpha_range)-1) %2): 
         for z_counter in range(len(z_range)):
-            fig, ax= plt.subplots(1)
-            for n_counter in range(len(b_n_range)):
-                for m_counter in range(len(b_m_range)):
-                    ax.plot(t_arr,np.abs(b_nm_loop_alpha[alpha_counter][z_counter][n_counter][m_counter]),'--',label='(n,m) = (%i,%i)' % (b_n_range[n_counter],b_m_range[m_counter]),linewidth=1)
-            ax.set_title(r'b_nm for $\alpha$ = %.3f, z = %.2f' %(alpha_range[alpha_counter],z_range[z_counter]))
-            ax.legend()
+            fig, ax= plt.subplots(int(len(alpha_range)/2),2,sharex='all',sharey='all')
+            for nm_counter in range(len(b_nm_range)):
+                    fig.suptitle(r'b_nm for z = %.2f' %(z_range[z_counter]))
+                    if(b_nm_range[nm_counter]==(2,0)):
+                        alpha_cntr=0
+                        for axs in ax.flat:
+                            axs.plot(t_arr,np.abs(b_nm_loop_alpha[alpha_cntr][z_counter][nm_counter]),'-',label='(n,m) = (%i,%i)' % (b_nm_range[nm_counter]),linewidth=1)
+                            axs.set_title(r'$\alpha$ = %.3f' %(alpha_range[alpha_cntr]),fontsize=8)
+                            axs.legend(fontsize=6)
+                            alpha_cntr +=1
+                    else:
+                        alpha_cntr=0
+                        for axs in ax.flat:
+                            axs.plot(t_arr,np.abs(b_nm_loop_alpha[alpha_cntr][z_counter][nm_counter]),'--',label='(n,m) = (%i,%i)' % (b_nm_range[nm_counter]),linewidth=1)
+                            axs.set_title(r'$\alpha$ = %.3f' %(alpha_range[alpha_cntr]),fontsize=8)
+                            axs.legend(fontsize=6)
+                            alpha_cntr +=1
+
+        plt.show()
+    else:
+        if(plot_alot==True):
+            for alpha_counter in range(len(alpha_range)):
+                for z_counter in range(len(z_range)):
+                    fig, ax= plt.subplots(1)
+                    for nm_counter in range(len(b_nm_range)):
+                            ax.plot(t_arr,np.abs(b_nm_loop_alpha[alpha_counter][z_counter][nm_counter]),'--',label='(n,m) = (%i,%i)' % (b_nm_range[nm_counter]),linewidth=1)
+                    ax.set_title(r'b_nm for $\alpha$ = %.3f, z = %.2f' %(alpha_range[alpha_counter],z_range[z_counter]))
+                    ax.legend()
             plt.show()
-def plot_b_nm_var_z_fix_alpha_nm(alpha_range, z_range, b_n_range,b_m_range,t_arr, b_nm_loop_alpha):
-    for alpha_counter in range(len(alpha_range)):
-        for n_counter in range(len(b_n_range)):
-            for m_counter in range(len(b_m_range)):
+def plot_b_nm_var_z_fix_alpha_nm(alpha_range, z_range, b_nm_range,t_arr, b_nm_loop_alpha,plot_alot=False):
+    if(plot_alot==True):
+        for alpha_counter in range(len(alpha_range)):
+            for nm_counter in range(len(b_nm_range)):
                 fig, ax= plt.subplots(1)
                 for z_counter in range(len(z_range)):
-                    ax.plot(t_arr,np.abs(b_nm_loop_alpha[alpha_counter][z_counter][n_counter][m_counter]),'--',label='z = %.2f' % z_range[z_counter],linewidth=1)
-                ax.set_title(r'b_nm for $\alpha$ = %.3f, (n,m) = (%i,%i)' %(alpha_range[alpha_counter],b_n_range[n_counter],b_m_range[m_counter]))
+                    ax.plot(t_arr,np.abs(b_nm_loop_alpha[alpha_counter][z_counter][nm_counter]),'--',label='z = %.2f' % z_range[z_counter],linewidth=1)
+                ax.set_title(r'b_nm for $\alpha$ = %.3f, (n,m) = (%i,%i)' %(alpha_range[alpha_counter],b_nm_range[nm_counter][0],b_nm_range[nm_counter][1]))
                 ax.legend()
-                plt.show()
-def plot_b_nm_var_alpha_fix_z_nm(alpha_range, z_range, b_n_range,b_m_range,t_arr, b_nm_loop_alpha):
-    for z_counter in range(len(z_range)):
-        for n_counter in range(len(b_n_range)):
-            for m_counter in range(len(b_m_range)):
+        plt.show()
+    if(len(alpha_range)-1 %2):
+        for nm_counter in range(len(b_nm_range)):
+            fig, ax= plt.subplots(int(len(alpha_range)/2),2,sharex='all',sharey='all')
+            alpha_cntr=0
+            for axs in ax.flat:
+                for z_counter in range(len(z_range)):
+                    axs.plot(t_arr,np.abs(b_nm_loop_alpha[alpha_cntr][z_counter][nm_counter]),'--',label='z = %.2f' % z_range[z_counter],linewidth=1)
+                    axs.set_title(r'$\alpha$ = %.3f' %(alpha_range[alpha_cntr]),fontsize=8)
+                axs.legend(fontsize=6)
+                alpha_cntr+=1
+            fig.suptitle(r'b_nm for (n,m) = (%i,%i)' %(b_nm_range[nm_counter][0],b_nm_range[nm_counter][1]))
+        plt.show()
+def plot_b_nm_var_alpha_fix_z_nm(alpha_range, z_range, b_nm_range,t_arr, b_nm_loop_alpha):
+    if(len(z_range)-1%2):
+        for nm_counter in range(len(b_nm_range)):
+            fig, ax= plt.subplots(int(len(z_range)/2),2,sharex='all',sharey='all')
+            z_cntr=0
+            for axs in ax.flat:
+                for alpha_counter in range(len(alpha_range)):
+                    axs.plot(t_arr,np.abs(b_nm_loop_alpha[alpha_counter][z_cntr][nm_counter]),'--',label=r'$\alpha$=%.2f' % (alpha_range[alpha_counter]),linewidth=1)
+                    axs.set_title(' z = %.2f' %z_range[z_cntr])
+                z_cntr +=1
+            fig.suptitle(r'b_nm for (n,m) = (%i,%i)' %(b_nm_range[nm_counter][0],b_nm_range[nm_counter][1]))
+            for axs in ax.flat:
+                axs.legend(fontsize=6)
+        plt.show()
+    else:
+        for z_counter in range(len(z_range)):
+            for nm_counter in range(len(b_nm_range)):
                 fig, ax= plt.subplots(1)
                 for alpha_counter in range(len(alpha_range)):
-                    ax.plot(t_arr,np.abs(b_nm_loop_alpha[alpha_counter][z_counter][n_counter][m_counter]),'--',label=r'$\alpha$ = %.3f' % alpha_range[alpha_counter],linewidth=1)
-                ax.set_title(r'b_nm for (n,m) = (%i,%i), z = %.2f' %(b_n_range[n_counter],b_m_range[m_counter],z_range[z_counter]))
+                    ax.plot(t_arr,np.abs(b_nm_loop_alpha[alpha_counter][z_counter][nm_counter]),'--',label=r'$\alpha$ = %.3f' % alpha_range[alpha_counter],linewidth=1)
+                ax.set_title(r'b_nm for (n,m) = (%i,%i), z = %.2f' %(b_nm_range[nm_counter][0],b_nm_range[nm_counter][1],z_range[z_counter]))
                 ax.legend()
-                plt.show()
-def plot_b_nm_var_alpha_z_fix_nm(alpha_range, z_range, b_n_range,b_m_range,t_arr, b_nm_loop_alpha):
-    for n_counter in range(len(b_n_range)):
-        for m_counter in range(len(b_m_range)):
-            fig, ax= plt.subplots(len(z_range),sharex='all',sharey='all')
-            for z_counter in range(len(z_range)):
-                for alpha_counter in range(len(alpha_range)):
-                    ax[z_counter].plot(t_arr,np.abs(b_nm_loop_alpha[alpha_counter][z_counter][n_counter][m_counter]),'--',label=r'($\alpha$,z)=(%.3f,%.2f)' % (alpha_range[alpha_counter],z_range[z_counter]),linewidth=1)
-                ax[0].set_title(r'b_nm for (n,m) = (%i,%i)' %(b_n_range[n_counter],b_m_range[m_counter]))
-                ax[z_counter].legend()
             plt.show()
-def Compare_DW_and_Morse_energies(Terminal_output,plotting=True):
+
+def Compare_DW_and_Morse_energies(Terminal_output,plotting=True,alpha_range = (0.252,0.344,0.363,0.525)):
     ###Parameters
     #0.153,0.157,0.193,0.252,0.344,0.363,0.525,0.837,1.1,1.665,2.514###DVR nicht genug converged fuer 3 stellen
-    alpha_range = (0.153,0.157,0.193,0.220,0.252,0.344,0.363,0.525,0.837,1.1,1.665,2.514)
-    alpha_range = (0.344,0.363,0.525)
+    #alpha_range = (0.153,0.157,0.193,0.220,0.252,0.344,0.363,0.525,0.837,1.1,1.665,2.514)
+    #alpha_range = (0.344,0.363,0.525)
     
     #get DW energies, in later loop Morse
     pes = quartic_bistable(alpha_range[0],D,lamda,g,z=0)
@@ -287,6 +322,7 @@ def Compare_DW_and_Morse_energies(Terminal_output,plotting=True):
             print('ratio Dw2 to Morse0 = %.3f, (1/x = %.3f)' %((vals_DW[2]/vals_M[0]),(vals_M[0]/vals_DW[2])))
             print('ratio Dw2 to Morse1 = %.3f, (1/x = %.3f)' %((vals_DW[2]/vals_M[1]),(vals_M[1]/vals_DW[2])))
         plt.show()
+
 #######################################
 ###----------FUNCTIONS END----------###
 #######################################
@@ -326,16 +362,19 @@ C_n_range =(2,6)
 
 ###b_nm
 calc_bnm=True
-b_n_range=(2,)
-b_m_range=(0,)
-
-z_range=(0,0.5,1,1.5)#,1.25,1.5): #(1.25))
+b_nm_range=((2,0),(3,0),(4,0),(5,0),(6,0))#0.252: z=0,0.25,0.5,1 -> (4,0),(4,0),(4,0),(6,0)
+#b_nm_range=((2,0),(3,0))
+#z_range=(0,0.5,1,1.5)#,1.25,1.5): #(1.25))
 z_range=(0,0.25,0.5,1)
 
-alpha_range=(0.363,0.525,0.837)#,1.1,1.665,2.514)###note how close 0.363 and 0.525 are
+#alpha_range = (0.153,0.157,0.193,0.220,0.252,0.344,0.363,0.525,0.837,1.1,1.665,2.514)
+#3 energy levels on dw: (0.20)
+alpha_range=(0.2,0.252,0.3,0.344,0.363,0.525,0.837,1.1)#,1.665,2.514)###note how close 0.363 and 0.525 are
+#alpha_range= (0.252,0.28,0.3,0.32,0.344,0.363,0.383)#for some kind of equal spacing
 #alpha_range=(0.837,)
 
-plot_potential=False
+plot_potential=True
+Specific_plotting=False
 
 ############################################################
 ###----------End Options/Parameters looped over----------###
@@ -345,13 +384,13 @@ plot_potential=False
 
 ###Plots educated guessing scheme, 2D and 3D representation
 if(plot_potential==True):
-    alpha=0.363
+    alpha=0.252
     z=0.5
     contour_eigenstates=(2,3)
     pes = quartic_bistable(alpha,D,lamda,g,z)
     DVR = DVR2D(ngridx,ngridy,lbx,ubx,lby,uby,m,pes.potential_xy)
     vals,vecs=get_EV_and_EVECS(alpha,D,lamda,g,z,ngrid,n_eig_tot,lbx,ubx,lby,uby,m,ngridx,ngridy,pes,DVR)
-    Compare_DW_and_Morse_energies(plotting=True,Terminal_output=False)#True,True
+    Compare_DW_and_Morse_energies(plotting=True,Terminal_output=False,alpha_range=(0.20,0.252,0.344,0.363,0.525))#True,True
     plot_pot_E_Ecoupled_and_3D(pes,ngridx,ngridy,lbx,ubx,lby,uby,m,xg,yg,vals,z)
     plot_pot_and_Eigenvalues(pes,DVR,lbx,lby,ubx,uby,ngridx,ngridy,z,vecs,lrange=contour_eigenstates)
 
@@ -364,14 +403,54 @@ if(calc_Cn==True):
 
 ### b_nm
 if(calc_bnm==True):
-    t_arr,b_nm_loop_alpha=compute_b_nm(alpha_range,z_range,b_n_range,b_m_range,D,lamda,g,ngridx,ngridy,ngrid,lbx,ubx,lby,uby,m,n_eig_tot,N_trunc)
-    if((len(b_n_range)>=2) or (len(b_m_range)>=2)):
-        plot_b_nm_var_nm_fix_alpha_z(alpha_range, z_range, b_n_range,b_m_range,t_arr, b_nm_loop_alpha)
-    if(len(z_range)>=2):
-        plot_b_nm_var_z_fix_alpha_nm(alpha_range, z_range, b_n_range,b_m_range,t_arr, b_nm_loop_alpha)
-    if(len(alpha_range)>=2):
-        plot_b_nm_var_alpha_fix_z_nm(alpha_range, z_range, b_n_range,b_m_range,t_arr, b_nm_loop_alpha)
-    plot_b_nm_var_alpha_z_fix_nm(alpha_range, z_range, b_n_range,b_m_range,t_arr, b_nm_loop_alpha)
+    plot_alot=False
+    t_arr,b_nm_loop_alpha=compute_b_nm(alpha_range,z_range,b_nm_range,D,lamda,g,ngridx,ngridy,ngrid,lbx,ubx,lby,uby,m,n_eig_tot,N_trunc)    
+    #plot_b_nm_var_nm_fix_alpha_z(alpha_range, z_range, b_nm_range,t_arr, b_nm_loop_alpha,plot_alot)#plots a lot
+    #plot_b_nm_var_z_fix_alpha_nm(alpha_range, z_range, b_nm_range,t_arr, b_nm_loop_alpha,plot_alot)#plots a lot
+    plot_b_nm_var_alpha_fix_z_nm(alpha_range, z_range, b_nm_range,t_arr, b_nm_loop_alpha)
+
+### specific plotting
+if(Specific_plotting==True):
+    fig,ax =plt.subplots(int(len(z_range)/2),2)
+    fig.suptitle(r'b$_{20}$ for different $\alpha$ and z',fontsize=15)
+    for alpha in alpha_range:
+        if(alpha>=0.34):
+            t_arr,b_nm_loop_alpha=compute_b_nm((alpha,),z_range,((2,0),),D,lamda,g,ngridx,ngridy,ngrid,lbx,ubx,lby,uby,m,n_eig_tot,N_trunc)
+            z_cntr=0
+            for axs in ax.flat:
+                axs.plot(t_arr,np.abs(b_nm_loop_alpha[0][z_cntr][0]),'--',label=r'$\alpha$=%.3f' % alpha,linewidth=1) 
+                axs.set_title(r'z=%.2f' % z_range[z_cntr])
+                z_cntr +=1
+                axs.legend(fontsize=6)       
+        if(alpha==0.3):########WORKS ONLY FOR 0,0.25,0.5,1
+            z_cntr=0
+            t_arr,b_nm_loop_alpha=compute_b_nm((alpha,),(0,),((4,0),),D,lamda,g,ngridx,ngridy,ngrid,lbx,ubx,lby,uby,m,n_eig_tot,N_trunc)
+            for axs in ax.flat:
+                if(z_cntr==0):
+                    axs.plot(t_arr,np.abs(b_nm_loop_alpha[0][0][0]),'--',label=r'$\alpha$=%.3f' % alpha,linewidth=1)
+                elif(z_cntr==1):
+                    t_arr,b_nm_loop_alpha1=compute_b_nm((alpha,),(0.25,),((3,0),),D,lamda,g,ngridx,ngridy,ngrid,lbx,ubx,lby,uby,m,n_eig_tot,N_trunc)
+                    axs.plot(t_arr,np.abs(b_nm_loop_alpha[0][0][0]),'--',label=r'$\alpha$=%.3f' % alpha,linewidth=1.0)
+                elif(z_cntr==2):
+                    t_arr,b_nm_loop_alpha=compute_b_nm((alpha,),(0.5,),((2,0),),D,lamda,g,ngridx,ngridy,ngrid,lbx,ubx,lby,uby,m,n_eig_tot,N_trunc)
+                    axs.plot(t_arr,np.abs(b_nm_loop_alpha[0][0][0]),'--',label=r'$\alpha$=%.3f' % alpha,linewidth=1)
+                elif(z_cntr==3):
+                    t_arr,b_nm_loop_alpha=compute_b_nm((alpha,),(1,),((2,0),),D,lamda,g,ngridx,ngridy,ngrid,lbx,ubx,lby,uby,m,n_eig_tot,N_trunc)
+                    axs.plot(t_arr,np.abs(b_nm_loop_alpha[0][0][0]),'--',label=r'$\alpha$=%.3f' % alpha,linewidth=1)                
+                z_cntr +=1
+        if(alpha==0.252):
+            z_cntr=0
+            t_arr,b_nm_loop_alpha=compute_b_nm((alpha,),(0,0.25,0.5),((4,0),),D,lamda,g,ngridx,ngridy,ngrid,lbx,ubx,lby,uby,m,n_eig_tot,N_trunc)
+            for axs in ax.flat:
+                if(z_cntr<3):
+                    axs.plot(t_arr,np.abs(b_nm_loop_alpha[0][z_cntr][0]),'--',label=r'$\alpha$=%.3f' % alpha,linewidth=1)
+                else:
+                    t_arr,b_nm_loop_alpha=compute_b_nm((alpha,),(1,),((6,0),),D,lamda,g,ngridx,ngridy,ngrid,lbx,ubx,lby,uby,m,n_eig_tot,N_trunc)
+                    axs.plot(t_arr,np.abs(b_nm_loop_alpha[0][0][0]),'--',label=r'$\alpha$=%.3f' % alpha,linewidth=1)              
+                z_cntr +=1
+        
+    plt.show()
+
 
 if(False): #recyling
     X=np.zeros((N_trunc,N_trunc))
