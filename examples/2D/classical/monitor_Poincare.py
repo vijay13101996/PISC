@@ -42,7 +42,8 @@ def Energy_Barrier_Top(pes,m,option='oneD'):
 ########## Parameters
 ###Potential
 m=0.5
-D = 10.0
+#D = 10.0
+D= 9.375
 lamda = 2.0
 g = 0.08
 
@@ -78,12 +79,17 @@ Nsteps=400 #2000 #(or more)#steps for animation#3000
 
 ##########Parameters to loop over##########
 alpha_range = (0.153,0.157,0.193,0.220,0.252,0.344,0.363,0.525,0.837,1.1,1.665,2.514)
-alpha_range=(0.363,0.5)#0.363,)#,0.363,0.5)
-z_range=(0.5,1,1.25,1.5)
+alpha_range=(0.4,)#0.363,)#,0.363,0.5)
+#z_range=(0.5,1,1.25,1.5)
 #z_range=(0.5,)
+z_range=(1.5,)
 
 #Energy
 option='oneD'#'twoD','cl_barrier_top'
+Vb=lamda**4/(64*g)
+E_manually=True
+if(E_manually==True):
+	E=Vb+1.5*np.sqrt(2*D*alpha_range[0]**2/m)
 ###----------End_Options----------###
 
 for alpha in alpha_range:
@@ -101,7 +107,8 @@ for alpha in alpha_range:
 		potkey = 'alpha_{}_D_{}_lamda_{}_g_{}_z_{}_beads_{}_T_by_Tc={}'.format(alpha,D,lamda,g,z,nbeads,times)
 
 		###ENERGIES
-		E=Energy_Barrier_Top(pes=pes,m=m,option=option)
+		if(E_manually==False):
+			E=Energy_Barrier_Top(pes=pes,m=m,option=option)
 		
 		### Choice of initial conditions
 		ind = np.where(potgrid<E)

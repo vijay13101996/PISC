@@ -175,7 +175,8 @@ class Poincare_SOS(object):
 		if(hist_data==True):
 			return X_list,PX_list,Y_list, gyr_list
 		else:
-			return X_list,PX_list,Y_list, hist_data
+			return X_list,PX_list,Y_list
+		
 
 	def store_data(self,coord): 
 		key = [self.method,'Poincare_section',self.potkey,self.Tkey,'{}'.format(self.N)]
