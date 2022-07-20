@@ -14,6 +14,7 @@ from PISC.engine import OTOC_f_1D_omp, OTOC_f_1D_omp_updated
 from matplotlib import pyplot as plt
 import os 
 from PISC.utils.plottools import plot_1D
+from PISC.utils.misc import find_OTOC_slope
 
 ngrid = 400
 
@@ -35,29 +36,30 @@ if(1):
 	ub = 20.0
 	m = 0.5
 
-	w = 0.1
-	D = 30.0
-	alpha = 0.363
+	w = 17.5/3#2.2#5.7,9.5,29
+	D = 9.375#9.375#4.36
+	alpha = 0.8#(0.5*m*w**2/D)**0.5#0.363
+	print('alpha', alpha, 1.5*(2*D*alpha**2/m)**0.5)
 	#0.81#0.41#0.175#0.255#1.165
 	pes = morse(D,alpha)
 	Tc = 1.0
 	potkey = 'morse'#_lambda_{}_g_{}'
 	
 if(0):
-	L = 10
+	L = 10.0#10.0
 	lb = -L
 	ub = L
 	m = 0.5
 
 	#1.5: 0.035,0.075,0.13
-	#2.0: 0.08,0.172
+	#2.0: 0.08,0.172,0.31
 
 	lamda = 2.0#1.5#3.0#2.5#2.0#1.5
-	g = 0.033#0.172#0.035#0.13#0.265#0.155#0.08#0.035
+	g = 0.08#0.035#0.13#0.265#0.155#0.08#0.035
 	Tc = lamda*(0.5/np.pi)    
 	pes = double_well(lamda,g)
 	potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
-	print('g, Vb', g, lamda**4/(64*g))
+	print('g, Vb,D', g, lamda**4/(64*g), 3*lamda**4/(64*g))
 
 if(0):
 	L = 10
@@ -103,15 +105,17 @@ if(1):
 	plt.show()
 
 x_arr = DVR.grid[1:DVR.ngrid]
-basis_N = 140
-n_eigen = 50
+basis_N = 80
+n_eigen = 20
 
 k_arr = np.arange(basis_N) +1
 m_arr = np.arange(basis_N) +1
 
-t_arr = np.linspace(0,20.0,1000)
+t_arr = np.linspace(0,5.0,1000)
 OTOC_arr = np.zeros_like(t_arr) +0j
 
+path = os.path.dirname(os.path.abspath(__file__))
+	
 if(1):
 	n=2
 	M=4
@@ -119,14 +123,24 @@ if(1):
 	#OTOC_arr = OTOC_f_1D_omp.position_matrix.compute_otoc_arr_t(vecs,m,x_arr,DVR.dx,DVR.dx,k_arr,vals,m_arr,t_arr,beta,n_eigen,OTOC_arr) 
 	#F = OTOC_f_1D_omp_updated.otoc_tools.therm_corr_arr_t(vecs,m,x_arr,DVR.dx,DVR.dx,k_arr,vals,m_arr,t_arr,beta,n_eigen,'xxF','stan',OTOC_arr) 
 	#qp = OTOC_f_1D_omp_updated.otoc_tools.therm_corr_arr_t(vecs,m,x_arr,DVR.dx,DVR.dx,k_arr,vals,m_arr,t_arr,beta,n_eigen,'qp1','kubo',OTOC_arr) 
-	#C = OTOC_f_1D_omp_updated.otoc_tools.therm_corr_arr_t(vecs,m,x_arr,DVR.dx,DVR.dx,k_arr,vals,m_arr,t_arr,beta,n_eigen,'xxC','stan',OTOC_arr) 
-	Ckubo = OTOC_f_1D_omp_updated.otoc_tools.therm_corr_arr_t(vecs,m,x_arr,DVR.dx,DVR.dx,k_arr,vals,m_arr,t_arr,beta,n_eigen,'xxC','kubo',OTOC_arr)
+	Cstan= OTOC_f_1D_omp_updated.otoc_tools.therm_corr_arr_t(vecs,m,x_arr,DVR.dx,DVR.dx,k_arr,vals,m_arr,t_arr,beta,n_eigen,'xxC','stan',OTOC_arr) 
+	OTOC_arr*=0.0
+	Ckubo= OTOC_f_1D_omp_updated.otoc_tools.therm_corr_arr_t(vecs,m,x_arr,DVR.dx,DVR.dx,k_arr,vals,m_arr,t_arr,beta,n_eigen,'xxC','kubo',OTOC_arr)
 	#Csym = OTOC_f_1D_omp_updated.otoc_tools.lambda_corr_arr_t(vecs,m,x_arr,DVR.dx,DVR.dx,k_arr,vals,m_arr,t_arr,beta,n_eigen,'xxC',0.5,OTOC_arr)
 	#Cstan = OTOC_f_1D_omp_updated.otoc_tools.lambda_corr_arr_t(vecs,m,x_arr,DVR.dx,DVR.dx,k_arr,vals,m_arr,t_arr,beta,n_eigen,'xxC',0.0,OTOC_arr)
 	#c0 = 0.0j
 	#c0 = OTOC_f_1D_omp_updated.otoc_tools.corr_mc_elts(vecs,m,x_arr,DVR.dx,DVR.dx,k_arr,vals,n+1,m_arr,0.0,'xxC',c0)
 	#print('C(0)', c0)	
-		
+	fname = 'Quantum_Kubo_OTOC_{}_T_{}Tc_basis_{}_n_eigen_{}'.format(potkey,times,basis_N,n_eigen)
+	store_1D_plotdata(t_arr,Ckubo,fname,'{}/Datafiles'.format(path))
+
+	slope1, ic1, t_trunc1, OTOC_trunc1 = find_OTOC_slope(path+'/Datafiles/'+fname,1.2,2.0)
+	fname = 'Quantum_OTOC_{}_T_{}Tc_basis_{}_n_eigen_{}'.format(potkey,times,basis_N,n_eigen)
+	store_1D_plotdata(t_arr,Cstan,fname,'{}/Datafiles'.format(path))
+
+	slope2, ic2, t_trunc2, OTOC_trunc2 = find_OTOC_slope(path+'/Datafiles/'+fname,1.0,1.75)
+	
+
 	#qqkubo = OTOC_f_1D_omp_updated.otoc_tools.therm_corr_arr_t(vecs,m,x_arr,DVR.dx,DVR.dx,k_arr,vals,m_arr,t_arr,beta,n_eigen,'qq1','kubo',OTOC_arr)
 	#print('t=0 value', qqkubo[0])
 	
@@ -166,42 +180,23 @@ if(1):
 	#	OTOC= (OTOC_f_1D_omp.position_matrix.compute_b_mat_arr_t(vecs,m,x_arr,DVR.dx,DVR.dx,k_arr,vals,n,i,t_arr,OTOC_arr))
 	#	OTOC_arr += abs(OTOC)**2
 
-	if(1):	
-		OTOC_arr = Ckubo.copy()
-		ind_zero = 124
-		ind_max = 281
-		ist = 140#119#70#80#100 
-		iend = 250#180#110#140#173
-
-		t_trunc = t_arr[ist:iend]
-		OTOC_trunc = (np.log(OTOC_arr))[ist:iend]
-		slope,ic = np.polyfit(t_trunc,OTOC_trunc,1)
-		print('slope',slope,2*np.pi/beta)
-		print('time used', t_arr[iend]-t_arr[ist])
-
-		a = -OTOC_arr
-		x = np.where(np.r_[True, a[1:] < a[:-1]] & np.r_[a[:-1] < a[1:], True])
-		#print('min max',t_arr[124],t_arr[281])
-
-		#fig,ax = plt.subplots()
-		#ax.plot(t_arr,np.log(OTOC_arr), linewidth=2,label='Quantum OTOC')
-	
 	#plt.plot(t_arr,bnm_arr,color='k')
 	#plt.plot(t_arr,qqkubo)	
 	#plt.plot(t_arr,np.log(abs(Clamda)))
 	#plt.plot(t_arr,np.log(abs(cmc)))
 	#plt.plot(t_arr,np.log(abs(Cstan)), label='Standard OTOC')	
 	#plt.plot(t_arr,np.log(abs(Csym)), label='Symmetrized OTOC')
-	plt.plot(t_arr,np.log(abs(Ckubo)),color='k',label='Kubo OTOC')
+	plt.plot(t_arr,np.log(abs(Ckubo)),color='k',label=r'Kubo thermal OTOC, $\lambda_K={:.2f}$'.format(np.real(slope1)))
 	#plt.plot(t_arr,np.log(OTOC_arr), linewidth=2,label='Quantum OTOC')
-	plt.plot(t_trunc,slope*t_trunc+ic,linewidth=4,color='k')
-	#plt.plot(t_arr,slope*t_arr+ic,'--',color='k')
+	plt.plot(t_trunc1,slope1*t_trunc1+ic1,linewidth=4,color='k')
+	plt.plot(t_arr,np.log(abs(Cstan)),color='r',label=r'Standard thermal OTOC, $\lambda_S={:.2f} > 2\pi/\beta$'.format(np.real(slope2)))
+	plt.plot(t_trunc2,slope2*t_trunc2+ic2,linewidth=4,color='r')
 	#plt.plot(t_arr,np.imag(Cstan), label='Standard xx TCF')	
 	#plt.plot(t_arr,np.imag(Csym), label='Symmetrized xx TCF')
 	#plt.plot(t_arr,np.real(Ckubo),color='k',label='Kubo xx TCF')
 
 	plt.suptitle('Double well potential')
-	plt.title(r'$OTOC \; behaviour \; at \; T=T_c$')	
+	plt.title(r'$Kubo \; vs \; Standard \; OTOC \; at \; T=T_c$')	
 	#plt.title(r'$xp \; TCF \; behaviour \; at \; T=T_c$')
 	plt.legend()
 	plt.show()

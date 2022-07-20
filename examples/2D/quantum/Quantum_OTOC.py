@@ -25,21 +25,21 @@ start_time = time.time()
 
 if(1): #2D double well
 	L = 10.0
-	lbx = -10#-7
-	ubx = 10#7
-	lby = -5#
-	uby = 10.0#
+	lbx = -6#-7
+	ubx = 6#7
+	lby = -2.5#
+	uby = 5.0#
 	m = 0.5
 	ngrid = 100
 	ngridx = ngrid
 	ngridy = ngrid
 
 	w = 0.1	
-	D = 30.0
-	alpha = 0.363#0.81#0.255#0.41#0.175#1.165#0.255#
+	D = 9.375 # 0.569, 
+	alpha = 0.52#0.37#0.2#0.52#0.86#2.64#0.363#0.81#0.255#0.41#0.175#1.165#0.255#
 	
 	lamda = 2.0#4.0
-	g = 0.02#lamda**2/32#0.02#4.0
+	g = 0.08#lamda**2/32#0.02#4.0
 
 	z = 1.5#2.3	
 
@@ -81,24 +81,28 @@ if(1): #2D double well
 	#print('vals',vals[:30])#vals[0],vals[5],vals[16],vals[50],vals[104])
 	#print('expvals',np.exp(-beta*vals[:70]))
 	#print('vecs',vecs[:200,10])	
-	n=15#15
+	n=8#15
 	M=1
 	print('vals[n]', vals[n])
 	if(1):
 		xg = np.linspace(lbx,ubx,ngridx)
 		yg = np.linspace(lby,uby,ngridy)
 		xgr,ygr = np.meshgrid(xg,yg)
-		#plt.contour(pes.potential_xy(xgr,ygr),levels=np.arange(0,10,2))
+		#plt.contour(pes.potential_xy(xgr,ygr),levels=np.arange(0,10,0.5))
+		#fig, ax = plt.subplots(1,3)
+		#for i in range(3):
+		#	ax[i].contour(DVR.eigenstate(vecs[:,i+2])**2,levels=np.arange(0,0.1,0.005))
+		#plt.show()
 	plt.imshow(DVR.eigenstate(vecs[:,n])**2,origin='lower')
 	plt.show()
-	#plt.contour(DVR.eigenstate(vecs[:,n])**2)
+	#plt.contour(DVR.eigenstate(vecs[:,n])**2,levels=np.arange(0,0.1,0.005))
 	#plt.show()
 
 	x_arr = DVR.pos_mat(0)
 	k_arr = np.arange(basis_N) +1
 	m_arr = np.arange(basis_N) +1
 
-	t_arr = np.linspace(0.0,20.0,1000)
+	t_arr = np.linspace(0.0,5.0,1000)
 	OTOC_arr = np.zeros_like(t_arr)+0j 
 	b_arr = np.zeros_like(OTOC_arr)
 	print('time',time.time()-start_time)
@@ -127,9 +131,9 @@ if(1): #2D double well
 			lda = 0.5
 			Z = 0.0
 			coefftot = 0.0
-			for n in range(1):
+			for n in [0]:#range(2):
 				Z+= np.exp(-beta*vals[n])		
-				for M in range(10):
+				for M in range(20,25):
 					bnm =OTOC_f_2D_omp_updated.otoc_tools.quadop_matrix_arr_t(vecs,m,x_arr,DVR.dx,DVR.dy,k_arr,vals,n+1,M+1,t_arr,1,'cm',OTOC_arr)
 					coeff = 0.0
 					if(n!=M):
@@ -176,7 +180,7 @@ if(1): #2D double well
 		#plt.plot(t_arr,np.log(abs(CT)))
 		#plt.plot(t_arr,G1+G2-2*np.real(F))	
 		#plt.plot(t_arr,b_arr,color='k')
-		#plt.show()
+		plt.show()
 		
 		path = os.path.dirname(os.path.abspath(__file__))
 		fname = 'Quantum_OTOC_{}_neigen_{}_basis_{}'.format(potkey,n_eigen,basis_N)

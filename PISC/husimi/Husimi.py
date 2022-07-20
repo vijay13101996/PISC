@@ -130,8 +130,9 @@ class Husimi_2D(object):
 				norm+=dist[i,j]*dq*dp
 				if(dist[i,j]>0.0):
 					A+=dq*dp
-		print('Smax',np.log(A))
-		return norm
+		Smax = np.log(A)
+		print('Smax',Smax)
+		return norm, Smax
 
 	def Renyi_entropy(self,xbasis, pxbasis,ybasis,pybasis,dist):
 		S = 0.0	
@@ -140,10 +141,10 @@ class Husimi_2D(object):
 		
 	def Renyi_entropy_1D(self,qbasis, pbasis,dist,order):
 		S = 0.0
-		norm = self.tot_density(dist,qbasis,pbasis)	
+		norm,Smax = self.tot_density(dist,qbasis,pbasis)	
 		dist/=norm
 		S = husimi.husimi_section.renyi_entropy_1d(qbasis,pbasis,dist,order,S)
-		return -S
+		return -S#/Smax
 
 		
 

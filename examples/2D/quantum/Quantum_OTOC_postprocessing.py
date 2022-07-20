@@ -55,21 +55,21 @@ if(0): # Coupled harmonic
 
 if(1): # Double well 2D
 	L = 10.0#
-	lbx = -10.0#
-	ubx = 10.0#
-	lby = -5.0#
-	uby = 10.0
+	lbx = -6.0#-7.0
+	ubx = 6.0#7.0
+	lby = -2.5#-5.0
+	uby = 5
 	m = 0.5#8.0
 	ngrid = 100
 	ngridx = ngrid
 	ngridy = ngrid
 
 	w = 0.1	
-	D = 30.0#10.0
-	alpha = 0.363#0.81#0.175#0.41#0.255#1.165
+	D = 9.375#10.0
+	alpha = 0.52#0.148#0.42#55#0.37#0.2#0.52#2.64#0.363#0.81#0.175#0.41#0.255#1.165
 	
 	lamda = 2.0#4.0
-	g = 0.02#lamda**2/32#4.0
+	g = 0.08#0.08#lamda**2/32#4.0
 
 	print('Vb', lamda**4/(64*g))
 
@@ -128,7 +128,8 @@ if(1): # Double well 2D
 	#plt.contour(x,y,potgrid,colors='k',levels=vals[:20])#levels=np.arange(0.0,1.11,0.1))##levels=vals[:2])#np.arange(0,5,0.5))
 	#DVR = DVR2D(ngridx,ngridy,lbx,ubx,lby,uby,m,pes.potential_xy)	
 	#plt.imshow(DVR.eigenstate(vecs[:,35])**2,origin='lower')	
-	plt.contour(potgrid,colors='k',levels=np.arange(0.0,1.1*D+0.1,0.5))	
+	plt.title('De Leon-Berne potential')
+	plt.contour(x,y,potgrid,colors='k',levels=np.arange(0.0,1.1*D+0.1,0.5))	
 	#plt.contour(x,y,potgrid,colors='m',levels=np.arange(-1.0,0.0,0.001))
 	#plt.contour(x,y,hesgrid,colors='g',levels=np.arange(-5.0,0.0,0.001))	
 	plt.show()

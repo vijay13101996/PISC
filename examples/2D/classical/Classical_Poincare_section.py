@@ -5,20 +5,19 @@ from PISC.potentials.Coupled_harmonic import coupled_harmonic
 from PISC.potentials.Quartic_bistable import quartic_bistable
 from matplotlib import pyplot as plt
 from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr, read_arr
-from Saddle_point_finder import separatrix_path
+from Saddle_point_finder import separatrix_path, find_minima
 import time
 import os
 
 
 ### Potential parameters
 m=0.5#0.5
-N=20#20
-dt=0.005
+N=10#20
+dt=0.002
 
 w = 0.5
-D = 10.0
-alpha = 0.363
-
+D = 9.375#10.0
+alpha = 1.147#0.535#0.363
 lamda = 2.0
 g = 0.08
 
@@ -37,26 +36,84 @@ pes = quartic_bistable(alpha,D,lamda,g,z)
 
 pathname = os.path.dirname(os.path.abspath(__file__))
 
-E = 8.0#14.5#12.698#4.202#6.739#12.84#11.66#8.613#4.202#8.613#Vb
-xg = np.linspace(-6,6,int(1e2)+1)
-yg = np.linspace(-5,5,int(1e2)+1)
+print('w', 2*np.pi/(2*D*alpha**2/m)**0.5)
+
+w_db = np.sqrt(lamda/m)
+w_m = (2*D*alpha**2/m)**0.5
+E = 10.83#Vb + 1.5*w_m# 0.5*w_db + 0.5*w_m#
+
+minima = find_minima(m,D,alpha,lamda,g,z)
+xmin,ymin = minima
+print('xmin, ymin', xmin, ymin)
+
+xg = np.linspace(-8,8,int(1e2)+1)
+yg = np.linspace(-5,10,int(1e2)+1)
+
 xgrid,ygrid = np.meshgrid(xg,yg)
 potgrid = pes.potential_xy(xgrid,ygrid)
 
-print('pot',potgrid.shape)
 qlist = []
 
 fig,ax = plt.subplots(1)
 #ax.contour(xgrid,ygrid,potgrid,levels=np.arange(0,1.01*D,D/30))
 #plt.show()
 	
+### 'nbeads' can be set to >1 for ring-polymer simulations.
+nbeads = 1
+PSOS = Poincare_SOS('Classical',pathname,potkey,Tkey)
+PSOS.set_sysparams(pes,T,m,2)
+PSOS.set_simparams(N,dt,dt,nbeads=nbeads,rngSeed=1)	
+PSOS.set_runtime(50.0,500.0)
+if(1):
+	xg = np.linspace(xmin-2.2,xmin+2.2,int(1e2)+1)
+	yg = np.linspace(ymin-2.2,ymin+2.2,int(1e2)+1)
 
-### Choice of initial conditions
+	xgrid,ygrid = np.meshgrid(xg,yg)
+	potgrid = pes.potential_xy(xgrid,ygrid)
+
+	qlist = PSOS.find_initcondn(xgrid,ygrid,potgrid,E)
+	PSOS.bind(qcartg=qlist,E=E,sym_init=True)#pcartg=plist)#E=E)
+
+	if(0): ## Plot the trajectories that make up the Poincare section
+		xg = np.linspace(-8,8,int(1e2)+1)
+		yg = np.linspace(-5,10,int(1e2)+1)
+		xgrid,ygrid = np.meshgrid(xg,yg)
+		potgrid = pes.potential_xy(xgrid,ygrid)
+
+		ax.contour(xgrid,ygrid,potgrid,levels=np.arange(0,1.01*D,D/5))
+		PSOS.run_traj(0,ax) #(1,2,3,4,8,13 for z=1.25), (2,3) 
+		plt.show()
+	
+	if(1): ## Collect the data from the Poincare section and plot. 
+		X,PX,Y = PSOS.PSOS_X(y0=0.0)#ymin)
+		plt.scatter(X,PX,s=1)
+		
+	plt.title(r'$\alpha={}$, E=$V_b$+$3\omega_m/2$'.format(alpha) )#$N_b={}$'.format(nbeads))
+	plt.xlabel(r'x')
+	plt.ylabel(r'$p_x$')
+	
+	plt.show()
+	#fname = 'Poincare_Section_x_px_{}_T_{}'.format(potkey,T)
+	#store_1D_plotdata(X,PX,fname,'{}/Datafiles'.format(pathname))
+				
+if(0): ## Collect the data from the Poincare section and plot. 
+	Y,PY,X = PSOS.PSOS_Y(x0=xmin)
+	plt.scatter(Y,PY,s=1)	
+	#PSOS.set_simparams(N,dt,dt,nbeads=nbeads,rngSeed=1)
+	#PSOS.set_runtime(50.0,500.0)
+	#PSOS.bind(qcartg=qlist,E=E)#pcartg=plist)#E=E)
+	#Y,PY,X = PSOS.PSOS_Y(x0=0.0)
+	plt.title(r'PSOS, $N_b={}$'.format(nbeads))
+	#plt.scatter(Y,PY,s=2)
+	plt.show()
+	#fname = 'Poincare_Section_x_px_{}_T_{}'.format(potkey,T)
+	#store_1D_plotdata(X,PX,fname,'{}/Datafiles'.format(pathname))
+
 
 if(0): ## Initial conditions chosen along the 'transition path' from minima to saddle point
-	qlist,vecslist = separatrix_path()
+	qlist,vecslist = separatrix_path(m,D,alpha,lamda,g,z)
 	plist = []
-
+	print('qlist', qlist[0])
 	for i in range(len(qlist)):
 		x,y = qlist[i]
 		V = pes.potential_xy(x,y)
@@ -85,8 +142,10 @@ if(0): ## Initial conditions chosen along the 'transition path' from minima to s
 		qlist = qlist[:,:,np.newaxis]
 		plist = plist[:,:,np.newaxis]
 		print('p',qlist.shape,plist.shape)	
-		
-if(1): ## Initial conditions are chosen by scanning through the PES. 
+
+	### Choice of initial conditions
+	
+if(0): ## Initial conditions are chosen by scanning through the PES. 
 	ind = np.where(potgrid<E)
 	xind,yind = ind
 
@@ -101,37 +160,4 @@ if(1): ## Initial conditions are chosen by scanning through the PES.
 	#qlist = qlist[ind,:]
 	print('qlist',qlist.shape)
 
-### 'nbeads' can be set to >1 for ring-polymer simulations.
-nbeads = 1
-PSOS = Poincare_SOS('Classical',pathname,potkey,Tkey)
-PSOS.set_sysparams(pes,T,m,2)
-PSOS.set_simparams(N,dt,dt,nbeads=nbeads)	
-PSOS.set_runtime(20.0,500.0)
-PSOS.bind(qcartg=qlist,E=E)#pcartg=plist)#E=E)
 
-if(0): ## Plot the trajectories that make up the Poincare section
-	xg = np.linspace(-8,8,int(1e2)+1)
-	yg = np.linspace(-5,10,int(1e2)+1)
-	xgrid,ygrid = np.meshgrid(xg,yg)
-	potgrid = pes.potential_xy(xgrid,ygrid)
-
-	ax.contour(xgrid,ygrid,potgrid,levels=np.arange(0,1.01*D,D/5))
-	PSOS.run_traj(2,ax) #(1,2,3,4,8,13 for z=1.25), (2,3) 
-	plt.show()
-	
-if(0): ## Collect the data from the Poincare section and plot. 
-	X,PX,Y = PSOS.PSOS_X(y0=0.0)
-	plt.title(r'PSOS, $N_b={}$'.format(nbeads))
-	plt.scatter(X,PX,s=1)
-	plt.show()
-	#fname = 'Poincare_Section_x_px_{}_T_{}'.format(potkey,T)
-	#store_1D_plotdata(X,PX,fname,'{}/Datafiles'.format(pathname))
-			
-if(1): ## Collect the data from the Poincare section and plot. 
-	Y,PY,X = PSOS.PSOS_Y(x0=0.0)
-	plt.title(r'PSOS, $N_b={}$'.format(nbeads))
-	plt.scatter(Y,PY,s=1)
-	plt.show()
-	#fname = 'Poincare_Section_x_px_{}_T_{}'.format(potkey,T)
-	#store_1D_plotdata(X,PX,fname,'{}/Datafiles'.format(pathname))
-	

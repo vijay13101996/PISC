@@ -12,44 +12,48 @@ from PISC.engine import OTOC_f_2D
 from matplotlib import pyplot as plt
 import os 
 import time 
-
+import ast
 
 path = os.path.dirname(os.path.abspath(__file__))	
 
 if(1):#
-	L = 10.0#
-	ngrid = 100
-	ngridx = ngrid
-	ngridy = ngrid
-
 	hbar = 1.0
-
+	m=0.5
+	
 	w = 0.1	
-	D = 30.0#10.0
-	alpha = 0.363
+	D = 9.375#10.0
+	alpha = 1.147#35#
 
 	lamda = 2.0
-	g = 0.02#8
+	g = 0.08
 
 	z = 1.5
 
 	Tc = lamda*0.5/np.pi
 	T_au = Tc#10.0 
 	
-	lbx = -10#-7.0
-	ubx = 10#7.0
-	lby = -5.0
-	uby = 10.0
-	m = 0.5
-	
 	pes = quartic_bistable(alpha,D,lamda,g,z)
 	potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
-	fname_diag = 'Eigen_basis_{}_ngrid_{}'.format(potkey,ngrid)	
 	
+	with open('{}/Datafiles/Input_log_{}.txt'.format(path,potkey)) as f:	
+		for line in f:
+			pass
+		param_dict = ast.literal_eval(line)
+
+	lbx = param_dict['lbx']
+	ubx = param_dict['ubx']
+	lby = param_dict['lby']
+	uby = param_dict['uby']
+	ngridx = param_dict['ngridx']
+	ngridy = param_dict['ngridy']
+
+	DVR = DVR2D(ngridx,ngridy,lbx,ubx,lby,uby,m,pes.potential_xy)	
+	fname_diag = 'Eigen_basis_{}_ngrid_{}'.format(potkey,ngridx)	# Change ngridx!=ngridy
+
 	vals = read_arr('{}_vals'.format(fname_diag),'{}/Datafiles'.format(path))
 	vecs = read_arr('{}_vecs'.format(fname_diag),'{}/Datafiles'.format(path))
-	print('vals',vals[:20])
-
+	#print('vals',vals[:20])
+	
 if(0):
 	L = 10.0
 	lbx = -L
@@ -110,11 +114,11 @@ if(0):
 	print('vals',vals[:20])
 
 
-xgrid = np.linspace(lbx,ubx,101)#200)
-ygrid = np.linspace(lby,uby,101)#200)
+xgrid = np.linspace(lbx-1,ubx+1,201)#200)
+ygrid = np.linspace(lby,uby,201)#200)
 x,y = np.meshgrid(xgrid,ygrid)
 
-sigma = 1.0#0.75
+sigma = 1.0
 xgrid = np.linspace(lbx,ubx,ngridx+1)
 #xgrid = xgrid[1:ngridx]
 ygrid = np.linspace(lby,uby,ngridy+1)
@@ -134,21 +138,22 @@ ny = ngridy//2
 #plt.imshow(abs(coh00),origin='lower')
 #plt.show()
 
-n = 10#66#28,31,37 #93#15
+n = 5#66#28,31,37 #93#15
 neig_total = 200
 DVR = DVR2D(ngridx,ngridy,lbx,ubx,lby,uby,m,pes.potential_xy,hbar=hbar)		
 wf = DVR.eigenstate(vecs[:,n])
 
 E_wf = vals[n]
 print('E_wf', E_wf)
-
-plt.imshow(abs(wf)**2,origin='lower')
+#print('Energies around E_n', vals[n-5:n+5])
+#plt.contour(x,y,pes.potential_xy(x,y),levels=np.arange(0.0,1.1*D,D/10))
+plt.imshow(abs(wf)**2,extent=[xgrid[0],xgrid[len(xgrid)-1],ygrid[0],ygrid[len(ygrid)-1]],origin='lower')
 plt.show()
 
-xbasis = np.linspace(-8,8,101)
-pxbasis = np.linspace(-5,5,101)
-ybasis = np.linspace(-5,5,101)
-pybasis = np.linspace(-4,4,101)
+xbasis = np.linspace(-5,5,101)
+pxbasis = np.linspace(-4,4,101)
+ybasis = np.linspace(-2,2,201)
+pybasis = np.linspace(-2,2,201)
 
 start_time = time.time()
 
@@ -180,12 +185,34 @@ print('S', S)
 #dist = husimi.Husimi_section_y(ybasis,pybasis,xbasis,wf,E_wf,pes.potential_xy,m)
 #print('dist old', dist)
 
-print('time', time.time()-start_time)
+#print('time', time.time()-start_time)
 
-#plt.plot(xbasis,dist[:,100])
+#plt.plot(xbasis,dist[:,100])   ### 1D cross section of the Husimi section. 
 #plt.show()
 
 #plt.imshow(rep,origin='lower')
+plt.title(r'$\alpha={}$'.format(alpha))
 plt.imshow(dist.T,extent=[xbasis[0],xbasis[len(xbasis)-1],pxbasis[0],pxbasis[len(xbasis)-1]],origin='lower')
 plt.show()
+
+if(0):
+	entr_arr = []
+	E_arr = []
+	for n in range(5,50):
+		wf = DVR.eigenstate(vecs[:,n])
+		E_wf = vals[n]
+		dist = husimi.Husimi_section_x_fort(xbasis,pxbasis,0.0,wf,E_wf,pes.potential_xy,m)
+		S = husimi.Renyi_entropy_1D(xbasis,pxbasis,dist,1)
+		entr_arr.append(S)
+		E_arr.append(E_wf)
+		print('E,S', E_wf,S)
+		plt.imshow(abs(wf)**2,origin='lower')
+		plt.show()
+
+		plt.imshow(dist.T,extent=[xbasis[0],xbasis[len(xbasis)-1],pxbasis[0],pxbasis[len(xbasis)-1]],origin='lower')
+		plt.show()
+
+	plt.scatter(E_arr,entr_arr)
+	plt.show()
+	
 

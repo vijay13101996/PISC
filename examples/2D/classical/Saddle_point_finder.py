@@ -16,17 +16,88 @@ import time
 ### returns the 'transition path' connecting those two. This code can be modified slightly to do the 
 ### same for other potentials.
 
-def separatrix_path():
+def find_minima(m,D,alpha,lamda,g,z):
+	pes = quartic_bistable(alpha,D,lamda,g,z)
+
+	### Simulation parameters
+	T_au = 0.5*lamda*0.5/np.pi
+	beta = 1.0/T_au 
+
+	rngSeed = 1
+	N = 1
+	dim = 2
+	nbeads = 1
+	T = T_au	
+	dt = 0.005
+
+	### Plot extent and axis
+	L = 7.0
+	lbx = -L
+	ubx = L
+	lby = -5
+	uby = 10
+	ngrid = 200
+	ngridx = ngrid
+	ngridy = ngrid
+
+	xgrid = np.linspace(lbx,ubx,200)
+	ygrid = np.linspace(lby,uby,200)
+	x,y = np.meshgrid(xgrid,ygrid)
+
+	rng = np.random.RandomState(1)
+	ens = Ensemble(beta=beta,ndim=dim)
+	motion = Motion(dt = dt,symporder=2) 
+	rng = np.random.default_rng(rngSeed) 
+
+	pes = quartic_bistable(alpha,D,lamda,g,z)
+	therm = PILE_L(tau0=0.1,pile_lambda=100.0) 
+
+	propa = Symplectic_order_II()
+		
+	sim = RP_Simulation()
+
+	q = np.zeros((N,dim,nbeads))
+	x0 = 0.5
+	y0 = 0.5
+	q[...,0,0] = x0
+	q[...,1,0] = y0
+	p = rng.normal(size=q.shape)
+	p[...,0] = 0.0	
+	rp = RingPolymer(q=q,p=p,m=m)
+	sim.bind(ens,motion,rng,rp,pes,propa,therm)	
+
+	#potgrid = pes.potential_xy(x,y)
+	#plt.contour(x,y,potgrid,colors='k',levels=np.arange(0,D,D/20))
+	#print('pot',pes.potential_xy(0,0))
+
+	inst = instantonize(stepsize=1e-3,tol=1e-2)
+	inst.bind(pes,rp)
+
+	### Gradient descent to get to a minima
+	step = inst.grad_desc_step()#eigvec_follow_step(eig_dir=0)		
+	count = 0
+	while(step!="terminate"):
+		inst.slow_step_update(step)
+		step = 	inst.grad_desc_step()#inst.eigvec_follow_step(eig_dir=0)
+		#if(count%3000==0):
+		#	plt.scatter(rp.q[0,0,0],rp.q[0,1,0],color='m')
+		#	plt.pause(0.01)
+		#count+=1
+
+	minima = rp.q[0,:,0]
+	return minima
+
+def separatrix_path(m,D,alpha,lamda,g,z):
 	### Potential parameters
-	m=0.5
+	#m=0.5
 
-	D = 10.0
-	alpha = 0.363
+	#D = 10.0
+	#alpha = 0.363
 
-	lamda = 2.0
-	g = 0.08
+	#lamda = 2.0
+	#g = 0.08
 
-	z = 1.5	
+	#z = 1.5	
 
 	pes = quartic_bistable(alpha,D,lamda,g,z)
 

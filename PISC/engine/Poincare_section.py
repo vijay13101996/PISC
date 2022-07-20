@@ -38,7 +38,7 @@ class Poincare_SOS(object):
 		self.time_ens = time_ens
 		self.time_run = time_run
 	
-	def bind(self,qcartg,pcartg=None,E=None):
+	def bind(self,qcartg,pcartg=None,E=None,sym_init=False):
 		self.ens = Ensemble(beta=self.beta,ndim=self.dim)
 		self.motion = Motion(dt = self.dt,symporder=2) 
 		self.rng = np.random.default_rng(self.rngSeed) 
@@ -55,12 +55,35 @@ class Poincare_SOS(object):
 			pcartg = read_arr('Microcanonical_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(self.N,self.nbeads,self.beta,self.potkey,self.rngSeed),"{}/Datafiles".format(self.pathname)) 
 		
 		# Specific trajectories could be chosen by specifying the 'ind' and uncommenting the lines below. 
-		ind = [3]
+		ind = [2]#range(3)
 		#qcartg = qcartg[ind]
-		#pcartg = pcartg[ind]	
+		#pcartg = pcartg[ind]
+		#print('qcartg',qcartg)
+		if(sym_init):
+			qc = np.repeat(qcartg,2,axis=0)
+			pc = np.repeat(pcartg,2,axis=0)
+			qc[::2,0] = -qc[::2,0]
+			pc[::2,0] = -pc[::2,0]
+			qcartg = qc
+			pcartg = pc
+				
 		self.rp = RingPolymer(qcart=qcartg,pcart=pcartg,m=self.m)	
 		self.sim.bind(self.ens,self.motion,self.rng,self.rp,self.pes,self.propa,self.therm)
 
+	def find_initcondn(self,xgrid,ygrid,potgrid,E):
+		ind = np.where(potgrid<E)
+		xind,yind = ind
+		qlist=[]
+		#fig,ax = plt.subplots(1)
+		for x,y in zip(xind,yind):
+			#x = i[0]
+			#y = i[1]
+			#ax.scatter( xgrid[x,y],ygrid[x,y])#xgrid[x][y] , ygrid[x][y] )
+			qlist.append([xgrid[x,y],ygrid[x,y]])
+		#plt.show()
+		qlist = np.array(qlist)
+		return qlist
+	
 	def run_traj(self,ind,ax):			
 		nsteps = int(self.time_run/self.motion.dt)
 		for i in range(nsteps):
@@ -70,6 +93,7 @@ class Poincare_SOS(object):
 			y = self.rp.qcart[ind,1,:]
 			py = self.rp.pcart[ind,1,:]
 			if(i%1e1==0):
+				#ax.scatter(self.sim.t,y)
 				ax.scatter(x,y,s=7)
 				plt.pause(0.05)	
 			
