@@ -47,7 +47,6 @@ class Poincare_SOS(object):
 		self.propa = Symplectic_order_II()
 		self.sim = RP_Simulation()
 		self.E = E
-		
 		# If E is specified, the 'gen_mc_ensemble' function initializes a mc ensemble, 'ergodizes' the phase space and
 		# returns the initial conditions pcartg, qcartg to use for plotting the Poincare section. 	
 		if(E is not None):	
@@ -55,7 +54,7 @@ class Poincare_SOS(object):
 			generate_rp(self.pathname,self.m,self.dim,self.N,self.nbeads,self.ens,self.pes,self.rng,self.time_ens,self.dt,self.potkey,self.rngSeed,E,qcartg)
 			qcartg = read_arr('Microcanonical_rp_qcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(self.N,self.nbeads,self.beta,self.potkey,self.rngSeed),"{}/Datafiles".format(self.pathname))
 			pcartg = read_arr('Microcanonical_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(self.N,self.nbeads,self.beta,self.potkey,self.rngSeed),"{}/Datafiles".format(self.pathname)) 
-		
+			
 		# Specific trajectories could be chosen by specifying the 'ind' and uncommenting the lines below. 
 		if(specific_traj!=False):
 			ind= specific_traj
@@ -111,7 +110,7 @@ class Poincare_SOS(object):
 
 		return Y_list,PY_list,X_list
 	
-	def PSOS_X(self,y0,gyr=10,greater=False,hist=False,hist_data=False):
+	def PSOS_X(self,y0,gyr=10,gyr_inter=False,greater=False,hist=False,hist_data=False,Rg_of_t=False):
 		prev = self.rp.q[:,1,0] - y0
 		curr = self.rp.q[:,1,0] - y0
 		count=0
@@ -122,9 +121,8 @@ class Poincare_SOS(object):
 		PX_list = []
 		Y_list = []
 		if(hist==True or hist_data==True):
-			gyr_list = []
 			#gyr_x_list = []
-
+			gyr_list_np=np.zeros((nsteps,self.N))
 		for i in range(nsteps):
 			self.sim.step(mode="nve",var='pq')	
 			x = self.rp.q[:,0,0]/self.rp.nbeads**0.5
@@ -136,44 +134,70 @@ class Poincare_SOS(object):
 			
 			gyr_x=0
 			gyr_y=0
-			for i in range(self.rp.nbeads): 
-				gyr_x+=(x-self.rp.qcart[:,0,i])**2
-				gyr_y+=(y-self.rp.qcart[:,1,i])**2
+			for j in range(self.rp.nbeads): 
+				gyr_x+=(x-self.rp.qcart[:,0,j])**2
+				gyr_y+=(y-self.rp.qcart[:,1,j])**2
 			gyr_x/=self.rp.nbeads
 			gyr_y/=self.rp.nbeads#stays small anyways
 			gyr_tot=gyr_x+gyr_y
+			
 			###histogram
 			if(hist==True or hist_data==True):
-				gyr_list.extend(gyr_tot)
+				gyr_list_np[i,:]=gyr_tot[:]
 				#gyr_x_list.extend(gyr_x)
 
-			
 			curr = y-y0
 			if(greater==True):
-				ind = np.where( (prev*curr<0.0) & (py<0.0)& (gyr<gyr_tot))
+				#ind = np.where( (prev*curr<0.0) & (py<0.0)& (gyr<gyr_tot))				
+				ind = np.where( (prev*curr<0.0) & (py<0.0)& (gyr<np.max(gyr_list_np,axis=0)))
+
 			if(greater==False):
-				ind = np.where( (prev*curr<0.0) & (py<0.0)& (gyr>gyr_tot))
-			X_list.extend(x[ind])#.append() adds a single element to the end of the list while .extend() can add multiple individual elements to the end of the list.
-			PX_list.extend(px[ind])
-			Y_list.extend(y[ind])
+				#ind = np.where( (prev*curr<0.0) & (py<0.0)& (gyr>gyr_tot))
+				ind = np.where( (prev*curr<0.0) & (py<0.0)& (gyr>np.max(gyr_list_np,axis=0)))
+			if(gyr_inter!=False):
+				ind = np.where( (prev*curr<0.0) & (py<0.0)& (gyr_inter[0]>np.max(gyr_list_np,axis=0)>gyr_inter[1]))
+			nsteps = int(self.time_run/self.motion.dt)
+			if(10*i>=nsteps):#1/10th discarded
+				X_list.extend(x[ind])#.append() adds a single element to the end of the list while .extend() can add multiple individual elements to the end of the list.
+				PX_list.extend(px[ind])
+				Y_list.extend(y[ind])
 			prev = curr
 			count+=1
+		
+		gyr_list_max= np.zeros(self.N)
+		gyr_list_mean= np.zeros(self.N)
+		for s in range(self.N):
+			gyr_list_max[s]=np.max(gyr_list_np[:,s])
+			gyr_list_mean[s]=np.mean(gyr_list_np[:,s])
+		
+		#Rg as a function of time
+		if(Rg_of_t==True):
+			for k in range(10):
+				fig, axs =plt.subplots(3,2, sharey='all')
+				l=0
+				for ax in axs.flat: 
+					ax.plot(gyr_list_np[:,l+k*6])
+					l+=1
+			plt.show()
 		###histogram
 		if(hist==True):
+			#hist_fig, hist_ax= plt.subplots(2,sharex='all')
 			hist_fig, hist_ax= plt.subplots(2)
-			hist_ax[0].hist(gyr_list,bins=1000)
-			hist_ax[0].set_title(r'R$_g$')
-			hist_ax[1].hist(gyr_list,bins=1000,range=(0,1))
-			#hist_ax[0,1].hist(gyr_x_list,bins=1000)
-			#hist_ax[0,1].set_title('gyr_x')
-			#hist_ax[1,1].hist(gyr_x_list,bins=1000,range=(0,1))			
+			hist_fig.suptitle(r'max(R$_g)$')
+			hist_ax[0].hist(gyr_list_max,range=(0,4),bins=80)
+			#hist_ax[1].hist(gyr_list_mean,bins=50)
+			#hist_ax[1].set_title(r'mean(R$_g)$')
+			#hist_fig, hist_ax= plt.subplots(1,sharex='all')
+			hist_ax[1].hist(gyr_list_max,range=(0,1),bins=50)
+			#hist_ax[1].hist(gyr_list_mean,range=(0,1),bins=50)
+			#hist_ax[1].set_title(r'mean(R$_g)$')		
 			plt.show(block=False)
 			plt.pause(1)
 		print('shape(X):',np.array(X_list).shape,'(at x: sign of y changes and py<0)')
 		self.X.extend(X_list)
 		self.PX.extend(PX_list)
 		if(hist_data==True):
-			return X_list,PX_list,Y_list, gyr_list
+			return X_list,PX_list,Y_list, gyr_list_np
 		else:
 			return X_list,PX_list,Y_list
 		

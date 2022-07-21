@@ -1,5 +1,5 @@
 ###DVR functions
-
+from matplotlib import pyplot as plt
 import numpy as np
 from numpy import linalg as LA
 from mylib.oneD import OTOC1D
@@ -23,7 +23,7 @@ w,v = LA.eigh(H) #scipy.space.linalg.eigsh is slower
 
 #####For non-default parameters:##### 
 #grid= np.linspace(-3,3,1500,endpoint=False)[1:]
-#t=np.linspace(0,0.7,400)
+#t=np.linspace(0,7,500)
 #w,v, log_OTOC_mic,log_OTOC_T=  DVR1D_mod.DVR_all_inclusive(pot_name,grid,t,m,hbar)
 
 time_1=time.perf_counter()
@@ -65,10 +65,12 @@ print('C matrix in t = %f s ' % (time_4-time_3))
 ##########Plotting##########
 from mylib.oneD import plot_my_OTOC as plt_OTOC
 MC_other_parameters=()
+#MC_other_parameters=(10,11,50,100,110,120,130,140)
 #MC_other_parameters =  range(len(Cn_Fortran[:,1])) #(un)comment if other are (un)desired
 plt_OTOC.plot_MC_OTOC(Cn_Fortran, pot_name, t=t,log_OTOC_mic=log_OTOC_mic,other_parameters=MC_other_parameters)
-plt_OTOC.plot_Thermal_OTOC(Cn_Fortran, pot_name, t=t,Energies=Energies,log_OTOC_T=log_OTOC_T)
-
+plt_OTOC.plot_MC_OTOC(Cn_Fortran, pot_name, t=t,log_OTOC_mic=False,other_parameters=MC_other_parameters)
+plt_OTOC.plot_Thermal_OTOC(Cn_Fortran, pot_name, t=t,Energies=Energies,log_OTOC_T=log_OTOC_T)#,other_parameters=(1,5,9,30,50,100,150))
+plt.show(block=True)
 
 ####HOW Thermal OTOC is Calculated, just as a reminder what plot_Thermal_OTOC does
 def C_T(C,E,beta=1): #C is microcanonical OTOC

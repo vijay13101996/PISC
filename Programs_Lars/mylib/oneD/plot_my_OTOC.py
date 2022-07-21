@@ -26,16 +26,16 @@ def plot_MC_OTOC(Cn_Fortran, pot_name, t,log_OTOC_mic=True, other_parameters=[])
         else:
             ax.plot(t,Cn_Fortran[n,:], label = "n = %i" %n)
     if(log_OTOC_mic==True):
-        ax.set_ylabel('log( Cn(t) )')
+        ax.set_ylabel(r'log(C$_n$(t))',size=20)
     else:
-        ax.set_ylabel('Cn(t)')
+        ax.set_ylabel(r'C$_n$(t)',size=20)
         if(pot_name=='PiB'):
             ax.set_yscale('log',base=2) #PiB 
     ax.yaxis.set_major_formatter(ScalarFormatter())
-    ax.set_xlabel('t')
+    ax.set_xlabel('t',size=20)
     #ax.set_xlim([0,4])# [0,4]..DW OTOC Paper
     ax.legend()
-    plt.show()
+    plt.show(block=False)
 
 def C_T(C,E,beta=1): #C is microcanonical OTOC
     Z=0 
@@ -71,15 +71,15 @@ def plot_Thermal_OTOC(Cn_Fortran, pot_name,t,Energies, log_OTOC_T=True,other_par
         else:
             ax.plot(t,C_T(C=Cn_Fortran,E=Energies,beta=beta), label = "T = %.2f" %T)
     if(log_OTOC_T==True):
-        ax.set_ylabel('log( C(t) )')
+        ax.set_ylabel(r'log(C(t))',size=20)
     else:
-        ax.set_ylabel('C(t)')
+        ax.set_ylabel('C(t)',size=20)
         if(pot_name=='PiB'):
             ax.set_yscale('log',base=2) #PiB
     ax.yaxis.set_major_formatter(ScalarFormatter())
-    ax.set_xlabel('t')
+    ax.set_xlabel('t',size=20)
     #ax.set_xlim([0,4])
     #plt.text( x= 5,y=0.08, s=r'$\beta$')
     ax.legend()
-    plt.show()
+    plt.show(block=False)
 

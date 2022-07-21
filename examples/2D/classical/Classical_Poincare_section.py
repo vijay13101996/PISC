@@ -20,12 +20,13 @@ import io
 
 ###Potential Parameters
 m=0.5
-D = 10.0
+#D = 10.0
+D=9.375
 lamda = 2.0
 g = 0.08
 ###Parameters to be changed
-alpha = 0.363
-z = 0.5
+alpha = 0.353
+z = 1.5
 
 potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
 #Vb = lamda**4/(64*g)#Specific energy parameter which is not used at the moment # interpretation..?  

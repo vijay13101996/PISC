@@ -66,10 +66,10 @@ save_full=False
 
 ###IMPORTANT parameters for full poincare
 Full_Poincare=True
-N=2*30#20 #Number of Trajectories#times 2 since initialized also at negative N
+N=2*15#20 #Number of Trajectories#times 2 since initialized also at negative N
 dt=0.005 #0.005
-runtime_to=50.0 #500
-plot_each_full=False
+runtime_to=500.0 #500
+plot_each_full=True
 
 ###Animation
 Specific_Poincare=False#True
@@ -79,17 +79,17 @@ Nsteps=400 #2000 #(or more)#steps for animation#3000
 
 ##########Parameters to loop over##########
 alpha_range = (0.153,0.157,0.193,0.220,0.252,0.344,0.363,0.525,0.837,1.1,1.665,2.514)
-alpha_range=(0.4,)#0.363,)#,0.363,0.5)
-#z_range=(0.5,1,1.25,1.5)
-#z_range=(0.5,)
-z_range=(1.5,)
+alpha_range=(0.344,)#0.363,)#,0.363,0.5)
+z_range=(0.5,1,1.25,1.5)
+z_range=(0,)
+#z_range=(1.5,)
 
 #Energy
-option='oneD'#'twoD','cl_barrier_top'
+option='oneD'#'oneD'#'twoD','cl_barrier_top'
 Vb=lamda**4/(64*g)
-E_manually=True
+E_manually=False
 if(E_manually==True):
-	E=Vb+1.5*np.sqrt(2*D*alpha_range[0]**2/m)
+	E=np.round(Vb+1.5*np.sqrt(2*D*alpha_range[0]**2/m),3)
 ###----------End_Options----------###
 
 for alpha in alpha_range:
@@ -104,11 +104,11 @@ for alpha in alpha_range:
 		xgrid,ygrid = np.meshgrid(xg,yg)
 		potgrid = pes.potential_xy(xgrid,ygrid)
 		#potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
-		potkey = 'alpha_{}_D_{}_lamda_{}_g_{}_z_{}_beads_{}_T_by_Tc={}'.format(alpha,D,lamda,g,z,nbeads,times)
+		potkey = 'alpha_{}_D_{}_lamda_{}_g_{}_z_{}_beads_{}'.format(alpha,D,lamda,g,z,nbeads)
 
 		###ENERGIES
 		if(E_manually==False):
-			E=Energy_Barrier_Top(pes=pes,m=m,option=option)
+			E=np.round(Energy_Barrier_Top(pes=pes,m=m,option=option),3)
 		
 		### Choice of initial conditions
 		ind = np.where(potgrid<E)
@@ -147,7 +147,7 @@ for alpha in alpha_range:
 			
 			if(plot_each_full==True):#plots poincare section for each z seperately
 				fig,ax = plt.subplots(1)
-				plt.title(r'PSOS, $N_b={}$, z={}, $\alpha={}$, E={}, T/Tc={}'.format(nbeads,z,alpha,E,times))
+				plt.title(r'PSOS, $N_b={}$, z={}, $\alpha={}$, E={}'.format(nbeads,z,alpha,E))
 				plt.scatter(X,PX,s=1)
 				#fig.canvas.draw()#does not seem to make a difference
 
@@ -162,7 +162,7 @@ for alpha in alpha_range:
 		if(Specific_Poincare==True):
 			fig,ax = plt.subplots(2)
 			###########INTERACTIVE PART: Plot only Traj in ind
-			### Plot poincare of some specific trajectories.
+			### Plot poincare of some specific trajectories._T_by_Tc={}
 			for index in indx:  
 				specific_traj=[index]#[0,1]
 				start_time=time.time()
@@ -172,7 +172,7 @@ for alpha in alpha_range:
 				with contextlib.redirect_stdout(io.StringIO()):#don't want the info
 					X,PX,Y = PSOS.PSOS_X(y0=0)
 				print('.... %.2f s ' %(time.time()-start_time))
-				ax[0].set_title(r'PSOS, $N_b={}$, ind={}, z={}, $\alpha={}$, E={}, T/T$_c$={} '.format(nbeads,indx,z,alpha,E,times))
+				ax[0].set_title(r'PSOS, $N_b={}$, ind={}, z={}, $\alpha={}$, E={}'.format(nbeads,indx,z,alpha,E))
 				ax[1].scatter(X,PX,s=1,c=colours[index])
 
 			#needs to be done just once since over indx (list) and not index (integers)
@@ -189,7 +189,7 @@ for alpha in alpha_range:
 				with contextlib.redirect_stdout(io.StringIO()):#don't want the info
 					PSOS.run_traj(ind=index,ax=ax[0],nsteps=Nsteps,colour=colours[index],sample=sample)#2000 at least  #takes a long time if nsteps are not specified
 			fig.canvas.draw()
-			fname = 'Interactive_PSOS_{}_T_{}_E_{}_runtime_{}_beads_{}_T_by_Tc={}'.format(potkey,T,E,runtime_to,nbeads,times)
+			fname = 'Interactive_PSOS_{}_T_{}_E_{}_runtime_{}_beads_{}'.format(potkey,T,E,runtime_to,nbeads)
 			if(save_all==True or save_inter==True):
 				fig.savefig(('Plots/Poincare_Interactive/Fig_'+fname+'.svg'))
 				print('Fig saved!')
@@ -197,7 +197,7 @@ for alpha in alpha_range:
 	if(len(z_range)==4):
 		figz=plt.figure()
 		gs = figz.add_gridspec(2,2,hspace=0,wspace=0)
-		figz.suptitle(r'PSOS: $N_b={}$, $\alpha={}, E={}$, T={}Tc'.format(nbeads,alpha,E,times))
+		figz.suptitle(r'PSOS: $N_b={}$, $\alpha={}, E={}$'.format(nbeads,alpha,E))
 		axz=gs.subplots(sharex='col', sharey='row')
 		axz[0,0].scatter(X_z[0],PX_z[0],s=0.35,label='z=%.2f'% z_range[0])
 		#axz[0,0].text(-0.25,-2,'z=%.2f'% z_range[0],fontsize=9)
@@ -212,7 +212,7 @@ for alpha in alpha_range:
 			ax.legend(loc=8,fontsize=9,frameon=False)
 			ax.set_xlim([-4.3,4.3])
 		figz.canvas.draw()
-		fname = 'All_z_PSOS_{}_T_{}_E_{}_runtime_{}_beads_{}_T_by_Tc={}'.format(potkey,T,E,runtime_to,nbeads,times)
+		fname = 'All_z_PSOS_{}_T_{}_E_{}_runtime_{}_beads_{}'.format(potkey,T,E,runtime_to,nbeads)
 		if(save_all==True or save_full==True):
 			figz.savefig(('Plots/Poincare_all_z/Fig_'+fname+'.svg'))
 			print('Fig saved!')
