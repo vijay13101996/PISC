@@ -55,7 +55,8 @@ z_range=(1.5,)
 #z_range=(0,)
 
 #alpha_range=(0.2,0.3,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75)
-alpha_range=(0.25,0.35,0.45,0.55,0.65,0.75)
+#alpha_range=(0.25,0.35,0.45,0.55,0.65,0.75)
+alpha_range=(0.236,0.382,0.52,1.147)
 
 plot_eigenstates=False
 plot_C_n_for_eigenstates=False
@@ -124,15 +125,18 @@ if(plot_C_T==True):
     fig, ax=plt.subplots(2)
     n_eigen=50
     N_trunc=70
-    T=T_c*0.8
+    T=T_c*0.9
     print(T_c)
-    T=5
+    #T=5
     z=1.5
-    fig.suptitle(r'C$_T$, N_trunc=%i, N_eigen=%i, T=%i, z=%.1f' % (N_trunc,n_eigen,T,z),fontsize=12)
+    fig.suptitle(r'C$_T$, N_trunc=%i, N_eigen=%i, T=%.2f, z=%.1f' % (N_trunc,n_eigen,T,z),fontsize=12)
     for alpha in alpha_range:
         print()
         print('alpha = ',alpha)
-        t_arr, OTOC_arr= DMCC.get_thermal_otoc(alpha,z,D,lamda,g,ngridx,ngridy,lbx,ubx,lby,uby,m,ngrid,n_eig_tot,T=T,n_eigen=n_eigen,N_trunc=N_trunc)
+        if(alpha>=0.9):
+            t_arr, OTOC_arr= DMCC.get_thermal_otoc(alpha,z,D,lamda,g,ngridx,ngridy,lbx,ubx,-2,6,m,ngrid,n_eig_tot,T=T,n_eigen=n_eigen,N_trunc=N_trunc)
+        else:
+            t_arr, OTOC_arr= DMCC.get_thermal_otoc(alpha,z,D,lamda,g,ngridx,ngridy,lbx,ubx,lby,uby,m,ngrid,n_eig_tot,T=T,n_eigen=n_eigen,N_trunc=N_trunc)
         OTOC_arr=np.real(OTOC_arr)
         ax[0].plot(t_arr,OTOC_arr,'--',label=r'$\alpha$= %.2f'%alpha)
         ax[1].plot(t_arr,np.log(OTOC_arr),'--',label=r'$\alpha$= %.2f'%alpha)

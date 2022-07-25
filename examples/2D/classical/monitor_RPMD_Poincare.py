@@ -27,11 +27,13 @@ def Energy_Barrier_Top(pes,m,option='oneD'):
 		vals_M, vecs_M= DVR_Morse.Diagonalize()
 		vals_DW, vecs_DW= DVR_DW.Diagonalize()
 		#print(vals_M[0]+vals_DW[2]) #(alpha=0.363,z=(0.25,0.5),E=4.368)  
+		print('M0: ',vals_M[0])
+		print('DW2: ',vals_DW[2])
 		E=np.round(vals_M[0]+vals_DW[2],3)
 	elif(option=='twoD'):###2D
 		from PISC.dvr.dvr import DVR2D
 		#from mylib.twoD import DVR2D_mod
-		DVR = DVR2D(int(1e2)+1,int(1e2)+1,-4,4,-5,10,m,pes.potential_xy)
+		DVR = DVR2D(int(1e2)+1,int(1e2)+1,-4,4,-2,10,m,pes.potential_xy)
 		n_eig_tot = 20##leave it like that s.t. don't do too much work 
 		vals, vecs= DVR.Diagonalize(neig_total=n_eig_tot)
 		print(vals[0:10])##(0.363,0.5,4.368)
@@ -39,7 +41,7 @@ def Energy_Barrier_Top(pes,m,option='oneD'):
 	elif(option=='cl_barrier_top'):
 		E=pes.potential_xy(0,0)#(alpha=0.363,z=0.5,E=3.150)#Classical but we want quantum one
 	else:
-		print('Energy set Manualy')
+		print('Energy set manually!')
 		E=option
 	return E
 
@@ -60,39 +62,41 @@ save_individual=False #not so important
 save_everything=False#False saves everything irrespective of what set before
 
 ###IMPORTANT parameters for full poincare
-N=2*50#20 #Number of Trajectories#times 2 since initialized also at negative N
+N=100#20 #Number of Trajectories###actually 2*20 bc negative initialization
 dt=0.005 #0.005
-runtime_from=1#50 # modified the code s.t. not necessary anylonger
-runtime_to=400 #500
+runtime_from=10#50 # modified the code s.t. not necessary anylonger
+runtime_to=130 #500
 plot_all_4=True#recommended: True
 plot_each_full=True#recommended: False
 
 ###RP parameters
-nbeads = 8 
-Filter_gyr=True #True #Full RP means no filering for collapsed rp 
-greater=False#greater=True: higher radius of gyration than gyr
-gyr_range=(0.05,)#,0.03,0.04)#for N=8 and T=0.8 Tc: 0.03(or 0.4 is the valley)
-hist_data=True#Will plot the histogram of gyr
+nbeads = 8
+Filter_gyr=False
+hist_data=False
 hist_plt =True
-#gyr_inter=(0.5,0.1)#still need to implement if wanted/needed
+Rg_of_t=False
+gyr_lower=0.2
+gyr_upper=0.8
 
 ### Temperature, might change Energy options at some point
 Tc = 0.5*lamda/np.pi
-times_range=(0.8,)
+times_range=(0.9,)
 T=times_range[0]*Tc
 T= np.round(T,3)
 Tkey = 'T_{}Tc'.format(times_range[0]) 
 
 ###Energy
+#careful with 2D for too high alpha
 option='oneD'#'oneD','twoD','cl_barrier_top',or just number of energy
 #option='cl_barrier_top'
-#option=6# will set E=6
+#option=3.85# will set E to value which is specified
+option=3.85
 
 ##########Parameters to loop over##########
 alpha_range = (0.153,0.157,0.193,0.220,0.252,0.344,0.363,0.525,0.837,1.1,1.665,2.514)
-alpha_range=(0.193,)#0.363,)#,0.363,0.5)
+alpha_range=(0.236,)#0.363,)#,0.363,0.5)
 z_range=(0.5,1,1.25,1.5)
-z_range=(0.5,)
+z_range=(1.5,)
 #######################################################
 #############---End_Important_Options---#############
 #######################################################
@@ -101,116 +105,104 @@ z_range=(0.5,)
 if(nbeads==1):
 	Filter_gyr = False
 	hist_data=False
-if(Filter_gyr==False):
-	gyr_range=(0.5,)#since the same for all gyr (gyr is not included now)
+	hist_plt =False
+	Rg_of_t=False
 
 #loops over all specified radius of gyration, alpha and z
 for times in times_range:
 	T=times*Tc
-	for gyr in gyr_range:
-		for alpha in alpha_range:
-			X_z=[]
-			PX_z=[]
-			Rg_z=[]
-			for z in z_range:
-				if(Filter_gyr==True):
-					gyr=gyr#radius of gyration for ring polymer
+	for alpha in alpha_range:
+		X_z=[]
+		PX_z=[]
+		Rg_z=[]
+		for z in z_range:
+			###Potential, Grid
+			pes = quartic_bistable(alpha,D,lamda,g,z)
+			pathname = os.path.dirname(os.path.abspath(__file__))
+			#xg = np.linspace(-4,4,int(5*1e2)+1)
+			#yg = np.linspace(-5,10,int(5*1e2)+1)
+			xmin=2.4999
+			ymin=-1.0502
+			xg = np.linspace(xmin-2.5,xmin+2.5,int(5*1e2)+1)
+			yg = np.linspace(ymin-2.5,ymin+8.5,int(5*1e2)+1)
+			xgrid,ygrid = np.meshgrid(xg,yg)
+			potgrid = pes.potential_xy(xgrid,ygrid)
+			#potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
+			if(Filter_gyr==False):
+				potkey = 'alpha_{}_D_{}_lamda_{}_g_{}_z_{}_beads_{}_T_by_Tc={}'.format(alpha,D,lamda,g,z,nbeads,times)	
+			else:
+				potkey = 'alpha_{}_D_{}_lamda_{}_g_{}_z_{}_beads_{}_T_by_Tc={}_{}<Rg<{}'.format(alpha,D,lamda,g,z,nbeads,times,gyr_lower,gyr_upper)
 
-				###Potential, Grid
-				pes = quartic_bistable(alpha,D,lamda,g,z)
-				pathname = os.path.dirname(os.path.abspath(__file__))
-				xg = np.linspace(-4,4,int(5*1e2)+1)
-				yg = np.linspace(-5,10,int(5*1e2)+1)
-				xgrid,ygrid = np.meshgrid(xg,yg)
-				potgrid = pes.potential_xy(xgrid,ygrid)
-				#potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
+			###ENERGIES
+			E=Energy_Barrier_Top(pes=pes,m=m,option=option)
+			
+			### Choice of initial conditions
+			ind = np.where(potgrid<E)
+			xind,yind = ind #ind are two arrays with e.g. 1740 elements, which fullfil energy condition  
+			qlist = []#list of q values
+			for x,y in zip(xind,yind):
+				qlist.append([xgrid[x,y],ygrid[x,y]])
+			qlist = np.array(qlist)
+
+			#print('pot grid: ',potgrid.shape)
+			#print('qlist shape: ',qlist.shape)
+			
+			if(Filter_gyr==False):
+				print('alpha={}, z={}, beads={}, E={}, no filter'.format(alpha,z,nbeads,E))
+			else:
+				print('alpha={}, z={}, beads={}, E={}, {}<Rg<{}, T/T_c={}'.format(alpha,z,nbeads,E,gyr_lower,gyr_upper,times))
+			###Define and initialize Poincare SOS
+			PSOS = Poincare_SOS('Classical',pathname,potkey,Tkey) 
+			PSOS.set_sysparams(pes,T,m,2)
+			PSOS.set_simparams(N,dt,dt,nbeads=nbeads)#dt_ens = time step the first 20 sec (for thermalization), dt = time step for normal evolution
+			PSOS.set_runtime(runtime_from,runtime_to)#500
+			with contextlib.redirect_stdout(io.StringIO()):#don't want the info
+				PSOS.bind(qcartg=qlist,E=E,specific_traj=False,sym_init=True)#pcartg=plist)#E=E)###################some important stuff going on here
+
+			###Ploting 
+			colours=['r','g','b','c','m','y', 'k']
+
+			##########Full Poincare section
+			start_time=time.time()
+			with contextlib.redirect_stdout(io.StringIO()):#don't want the info
+				PSOS.bind(qcartg=qlist,E=E,specific_traj=False,sym_init=True)
+			print('Full Poincare section generated in ...')
+			#with contextlib.redirect_stdout(io.StringIO()):#don't want the info
+			if(Filter_gyr==False):
+				X,PX,Y = PSOS.PSOS_X(y0=0)
+			else:
+				X,PX,Y,Rg_list = PSOS.PSOS_X_gyr(y0=0,gyr_min=gyr_lower,gyr_max=gyr_upper,hist=hist_plt,Rg_of_t=Rg_of_t)
+			print('.... %.2f s ' %(time.time()-start_time))
+
+			if(plot_each_full==True):
+				fig,ax = plt.subplots(1)
 				if(Filter_gyr==False):
-					potkey = 'alpha_{}_D_{}_lamda_{}_g_{}_z_{}_beads_{}_T_by_Tc={}'.format(alpha,D,lamda,g,z,nbeads,times)
-				elif(greater==True):
-					potkey = 'alpha_{}_D_{}_lamda_{}_g_{}_z_{}_beads_{}_T_by_Tc={}_Rg>{}'.format(alpha,D,lamda,g,z,nbeads,times,gyr)
-				elif(greater==False):
-					potkey = 'alpha_{}_D_{}_lamda_{}_g_{}_z_{}_beads_{}_T_by_Tc={}_Rg<{}'.format(alpha,D,lamda,g,z,nbeads,times,gyr)
-
-				###ENERGIES
-				E=Energy_Barrier_Top(pes=pes,m=m,option=option)
+					plt.title(r'PSOS, $N_b={}$, z={}, $\alpha={}$, E={}, T/Tc={}'.format(nbeads,z,alpha,E,times))
+				else:
+					plt.title(r'PSOS, $N_b={}$, z={}, $\alpha={}$, E={}, T/Tc={}, {}<$R_g$<{} '.format(nbeads,z,alpha,E,times,gyr_lower,gyr_upper))	
+				plt.scatter(X,PX,s=1)
+				#fig.canvas.draw()
+				plt.show(block=False)
+				plt.pause(0.001)
+			X_z.append(X)
+			PX_z.append(PX)
+			if(hist_data==True):
+				Rg_z.append(Rg_list)
 				
-				### Choice of initial conditions
-				ind = np.where(potgrid<E)
-				xind,yind = ind #ind are two arrays with e.g. 1740 elements, which fullfil energy condition  
-				qlist = []#list of q values
-				for x,y in zip(xind,yind):
-					qlist.append([xgrid[x,y],ygrid[x,y]])
-				qlist = np.array(qlist)
-
-				#print('pot grid: ',potgrid.shape)
-				#print('qlist shape: ',qlist.shape)
-				print()
-				if(Filter_gyr==False):
-					print('alpha={}, z={}, beads={}, E={}, no filter'.format(alpha,z,nbeads,E))
-				elif(greater==True):
-					print('alpha={}, z={}, beads={}, E={}, Rg>{}, T/T_c={}'.format(alpha,z,nbeads,E,gyr,times))
-				elif(greater==False):
-					print('alpha={}, z={}, beads={}, E={}, Rg<{}, T/T_c={}'.format(alpha,z,nbeads,E,gyr,times))
-				else:
-					print('alpha={}, z={}, beads={}, E={}, no filter'.format(alpha,z,nbeads,E))
-				###Define and initialize Poincare SOS
-				PSOS = Poincare_SOS('Classical',pathname,potkey,Tkey) 
-				PSOS.set_sysparams(pes,T,m,2)
-				PSOS.set_simparams(N,dt,dt,nbeads=nbeads)#dt_ens = time step the first 20 sec (for thermalization), dt = time step for normal evolution
-				PSOS.set_runtime(runtime_from,runtime_to)#500
-				with contextlib.redirect_stdout(io.StringIO()):#don't want the info
-					PSOS.bind(qcartg=qlist,E=E,specific_traj=False)#pcartg=plist)#E=E)###################some important stuff going on here
-
-				###Ploting 
-				colours=['r','g','b','c','m','y', 'k']
-
-				##########Full Poincare section
-				start_time=time.time()
-				with contextlib.redirect_stdout(io.StringIO()):#don't want the info
-					PSOS.bind(qcartg=qlist,E=E,specific_traj=False)
-				print('Full Poincare section generated in ...')
-				#with contextlib.redirect_stdout(io.StringIO()):#don't want the info
-				if(Filter_gyr==False):
-					X,PX,Y,Rg_list = PSOS.PSOS_X(y0=0,hist=True,hist_data=True)
-				else:
-					#X,PX,Y = PSOS.PSOS_X(y0=0,gyr=gyr,greater=greater,hist=True)
-					X,PX,Y,Rg_list = PSOS.PSOS_X(y0=0,gyr=gyr,greater=greater,hist=hist_plt,hist_data=hist_data)
-				print('.... %.2f s ' %(time.time()-start_time))
-
-				if(plot_each_full==True):
-					fig,ax = plt.subplots(1)
-					if(Filter_gyr==False):
-						plt.title(r'PSOS, $N_b={}$, z={}, $\alpha={}$, E={}, T/Tc={}'.format(nbeads,z,alpha,E,times))
-					else:
-						if(greater==True):
-							plt.title(r'PSOS, $N_b={}$, z={}, $\alpha={}$, E={}, T/Tc={},$R_g$>{} '.format(nbeads,z,alpha,E,times,gyr))
-						if(greater==False):
-							plt.title(r'PSOS, $N_b={}$, z={}, $\alpha={}$, E={}, T/Tc={},$R_g$<{} '.format(nbeads,z,alpha,E,times,gyr))	
-					plt.scatter(X,PX,s=1)
-					#fig.canvas.draw()
-					plt.show(block=False)
-					plt.pause(0.001)
-				X_z.append(X)
-				PX_z.append(PX)
-				if(hist_data==True):
-					Rg_z.append(Rg_list)
-					
-				fname = 'PSOS_{}_T_{}_E_{}_runtime_{}_beads_{}_T_by_Tc={}'.format(potkey,T,E,runtime_to,nbeads,times)
-				if(save_everything==True or save_plotdata==True):
-					store_1D_plotdata(X,PX,fname,'{}/Datafiles/Poincare_RPMD'.format(pathname))
-				if(plot_each_full==True and (save_everything==True or save_individual==True)):
-					fig.savefig(('Plots/Poincare_RPMD/Fig_'+fname+'.svg'))
-					print('Data and Fig saved!')
+			fname = 'PSOS_{}_T_{}_E_{}_runtime_{}_beads_{}_T_by_Tc={}'.format(potkey,T,E,runtime_to,nbeads,times)
+			if(save_everything==True or save_plotdata==True):
+				store_1D_plotdata(X,PX,fname,'{}/Datafiles/Poincare_RPMD'.format(pathname))
+			if(plot_each_full==True and (save_everything==True or save_individual==True)):
+				fig.savefig(('Plots/Poincare_RPMD/Fig_'+fname+'.svg'))
+				print('Data and Fig saved!')
 			#4 plots for different z values (and one alpha value)
 			if(len(z_range)==4 and plot_all_4==True):
 				figz=plt.figure()
 				gs = figz.add_gridspec(2,2,hspace=0,wspace=0)
 				if(Filter_gyr==False):
 					figz.suptitle(r'PSOS: $N_b={}$, $\alpha={}, E={}$, T={}Tc,N_traj={} )'.format(nbeads,alpha,E,times,N))
-				elif(greater==True):
-					figz.suptitle(r'PSOS: $N_b={}$, $\alpha={}, E={}$, T={}Tc, $r_g$>{},N_traj={}'.format(nbeads,alpha,E,times,gyr,N))
 				else:
-					figz.suptitle(r'PSOS: $N_b={}$, $\alpha={}, E={}$, T={}Tc, $r_g$<{},N_traj={}'.format(nbeads,alpha,E,times,gyr,N))
+					figz.suptitle(r'PSOS: $N_b={}$, $\alpha={}, E={}$, T={}Tc, {}<$r_g$<{},N_traj={}'.format(nbeads,alpha,E,times,gyr_lower,gyr_upper,N))
 				axz=gs.subplots(sharex='col', sharey='row')
 				axz[0,0].scatter(X_z[0],PX_z[0],s=0.35,label='z=%.2f'% z_range[0])
 				#axz[0,0].text(-0.25,-2,'z=%.2f'% z_range[0],fontsize=9)

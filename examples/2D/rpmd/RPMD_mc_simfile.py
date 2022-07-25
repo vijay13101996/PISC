@@ -31,13 +31,13 @@ m = 0.5
 N = 1000
 dt_therm = 0.01
 dt = 0.005
-time_therm = 40.0
+time_therm = 100.0
 time_total = 5.0
 nbeads = 4
 
 method = 'RPMD'
 potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
-sysname = 'Selene'		
+sysname = 'Tiger'		
 Tkey = 'T_{}Tc'.format(times)
 corrkey = 'OTOC'
 enskey = 'mc'
@@ -45,9 +45,10 @@ enskey = 'mc'
 path = os.path.dirname(os.path.abspath(__file__))
 
 ### -----------------------------------------------------------------------------
-E = 4.202#8.613#Vb
-xg = np.linspace(2,4,int(1e2)+1)
-yg = np.linspace(-5,10,int(1e2)+1)
+Vb= 4.2 #find out the correct value (in fact the actual form)
+E = Vb #8.613#Vb
+xg = np.linspace(-6,6,int(1e4)+1)
+yg = np.linspace(-5,10,int(1e4)+1)
 xgrid,ygrid = np.meshgrid(xg,yg)
 potgrid = pes.potential_xy(xgrid,ygrid)
 
@@ -78,7 +79,7 @@ Sim_class.set_runtime(time_therm,time_total)
 start_time=time.time()
 func = partial(Sim_class.run_seed)
 seeds = range(1000)
-seed_split = chunks(seeds,10)
+seed_split = chunks(seeds,10)#second argument -> how many cores available
 
 param_dict = {'Temperature':Tkey,'CType':corrkey,'m':m,\
 	'therm_time':time_therm,'time_total':time_total,'nbeads':nbeads,'dt':dt,'dt_therm':dt_therm}
