@@ -4,7 +4,7 @@ from sympy import *
 x = sympy.Symbol('x')
 y = sympy.Symbol('y')
 
-if(1):
+if(0):
 	ws = sympy.Symbol('self.ws')
 	wu = sympy.Symbol('self.wu')
 	lamda = sympy.Symbol('self.lamda')
@@ -32,7 +32,7 @@ if(0):
 	print('Vxx',diff(V,x,x))
 	
 
-if(0):### Quartic Bistable potential
+if(1):### Quartic Bistable potential
 	alpha = sympy.Symbol('self.alpha')
 	lamda = sympy.Symbol('self.lamda')
 	g = sympy.Symbol('self.g')
@@ -43,17 +43,17 @@ if(0):### Quartic Bistable potential
 	quartx = (x**2 - lamda**2/(8*g))
 	vy = D*(1-eay)**2
 	vx = g*quartx**2
-	vxy = (vx-lamda**4/(64*g))*(exp(-z*alpha*y) - 1)
+	vxy = (vx-lamda**4/(256*g))*(exp(-z*alpha*y) - 1)
 
 	V = vx + vy + vxy
 
 	print('V',V)
-	print('Vx',diff(V,x))
-	print('Vy',diff(V,y))
-	print('Vxx',diff(V,x,x))
-	print('Vxy',diff(V,x,y))
-	print('Vyx',diff(V,y,x))
-	print('Vyy',diff(V,y,y))
+	print('Vx =',diff(V,x))
+	print('Vy =',diff(V,y))
+	print('Vxx = ',diff(V,x,x))
+	print('Vxy =',diff(V,x,y))
+	#print('Vyx',diff(V,y,x))
+	print('Vyy =',diff(V,y,y))
 
 	print('hess',diff(V,x,x)*diff(V,y,y) - diff(V,x,y)**2) 
 

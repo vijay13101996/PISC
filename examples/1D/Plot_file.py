@@ -7,20 +7,20 @@ from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr,
 
 dim = 1
 lamda = 2.0
-g = 0.175#0.13#lamda**2/32
+g = 0.08#0.13#lamda**2/32
 
 Tc = lamda*(0.5/np.pi)
-times = 0.5
+times = 1.0
 T = times*Tc
 
 m = 0.5
 N = 1000
 dt = 0.005
 
-nbeads = 8
+nbeads = 16
 gamma = 16
 
-potkey = 'tst2_harmonic_lambda_{}_g_{}'.format(lamda,g)
+potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
 
 #Path extensions
 path = os.path.dirname(os.path.abspath(__file__))	
@@ -49,14 +49,17 @@ if(0):
 	#ax.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k')
 
 if(1):
-	ext = 'RPMD_mc_OTOC_{}_T_{}Tc_nbeads_{}_dt_0.005'.format(potkey,times,nbeads)
-	l3_t1 = rpext + ext.format(2.0,0.175,1.0)
-	print('fname',l3_t1)
-	plot_1D(ax,l3_t1, label=r'$RPMD,T=Tc,\; N_b=32$',color='g', log=True,linewidth=1)
-	slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(l3_t1,1.75,3.0)#3.26,4.08)
-	ax.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k')
-	print('2pi/beta', 2*np.pi*T,slope/2)
-	
+	for times,c in zip([0.7,0.9,1.0],['r','g','b']):
+		ext = 'RPMD_mc_OTOC_{}_T_{}Tc_nbeads_{}_dt_0.002'.format(potkey,times,nbeads)
+		l3_t1 = rpext + ext
+		slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(l3_t1,1.,2.)#3.26,4.08)
+		ax.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k')
+		print('2pi/beta', 2*np.pi*T,slope/2)
+		print('fname',l3_t1)
+		plot_1D(ax,l3_t1, label=r'$RPMD,T={}Tc,\; N_b={}, \lambda={:.3f}$'.format(times,nbeads,np.real(slope/2)),color=c, log=True,linewidth=1)
+		
+	plt.title('RPMD microcanonical OTOCs for the 1D double well')	
+
 if(0):
 	ext = 'CMD_OTOC_{}_T_1.0Tc_nbeads_4_gamma_32_dt_0.005'.format(potkey)
 	l3_t1 = cext + ext.format(1.5,0.035,1.0)

@@ -55,9 +55,9 @@ if(0): # Coupled harmonic
 
 if(1): # Double well 2D
 	L = 10.0#
-	lbx = -6.0#-7.0
-	ubx = 6.0#7.0
-	lby = -2.5#-5.0
+	lbx = -7.0#-7.0
+	ubx = 7.0#7.0
+	lby = -1#-5.0
 	uby = 5
 	m = 0.5#8.0
 	ngrid = 100
@@ -66,7 +66,7 @@ if(1): # Double well 2D
 
 	w = 0.1	
 	D = 9.375#10.0
-	alpha = 0.52#0.148#0.42#55#0.37#0.2#0.52#2.64#0.363#0.81#0.175#0.41#0.255#1.165
+	alpha = 1.147#0.148#0.42#55#0.37#0.2#0.52#2.64#0.363#0.81#0.175#0.41#0.255#1.165
 	
 	lamda = 2.0#4.0
 	g = 0.08#0.08#lamda**2/32#4.0
@@ -94,29 +94,6 @@ if(1): # Double well 2D
 	ygrid = np.linspace(lby,uby,101)#200)
 	x,y = np.meshgrid(xgrid,ygrid)
 
-	if(0): #Husimi section
-		sigma = 1.0#0.5
-		xgrid = np.linspace(lbx,ubx,ngridx+1)
-		#xgrid = xgrid[1:ngridx]
-		ygrid = np.linspace(lby,uby,ngridy+1)
-		#ygrid = ygrid[1:ngridy]	
-		husimi = Husimi_2D(xgrid,sigma,ygrid,sigma)
-
-		n = 6
-		DVR = DVR2D(ngridx,ngridy,lbx,ubx,lby,uby,m,pes.potential_xy)		
-		wf = DVR.eigenstate(vecs[:,n])
-		E_wf = vals[n]
-		print('E_wf', E_wf)
-		#print('len',len(wf),len(qgrid))
-		
-		xbasis = np.linspace(-6,6,100)
-		pxbasis = np.linspace(-4,4,100)
-
-		dist = husimi.Husimi_section_x(xbasis,pxbasis,0.0,1,wf,E_wf,pes.potential_xy,m)
-
-		plt.imshow(dist,origin='lower')
-		plt.show()
-		
 	potgrid = pes.potential_xy(x,y)
 	hesgrid = ( -16*alpha**2*g**2*x**2*z**2*(x**2 - lamda**2/(8*g))**2*np.exp(-2*alpha*y*z) 
 				+ 4*alpha**2*g*(-2*D*(1 - np.exp(-alpha*y))*np.exp(-alpha*y) + 2*D*np.exp(-2*alpha*y)  
@@ -134,80 +111,4 @@ if(1): # Double well 2D
 	#plt.contour(x,y,hesgrid,colors='g',levels=np.arange(-5.0,0.0,0.001))	
 	plt.show()
 
-if(0):
-	fig,ax = plt.subplots()	
-	
-	for N,c in zip([50,70,90,120,140],['c','m','g','r','b']):
-		potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)			
-		fname = '{}/Datafiles/Quantum_mc_n_1_qqTCF_{}_T_{}_basis_{}_n_eigen_{}'.format(path,potkey,T_au,N,15)
-		plot_1D(ax,fname,label='N={}'.format(N),color=c,log=False)
-		
-	plt.legend()
-	plt.show()
-
-if(1):
-	fig,ax = plt.subplots()	
-	
-	if(0):
-		for N,c in zip([20,50,70,100,140],['c','m','g','r','b','k','y']):
-			potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)		
-			fname = '{}/Datafiles/Quantum_mc_n_1_OTOC_{}_basis_{}'.format(path,potkey,N)	
-			plot_1D(ax,fname,label='N={}'.format(N),color=c,log=True)
-		
-	if(1):
-		for z,c in zip([0.0,1.5],['c','m','g','r','b']):
-			potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)		
-			fname = '{}/Datafiles/Quantum_mc_n_1_OTOC_{}_basis_{}'.format(path,potkey,140)	
-			plot_1D(ax,fname,label='z={}'.format(z),color=c,log=True)
-	
-	if(0):
-		for n,c in zip([1,2],['m','k']):
-			fname = '{}/Datafiles/Quantum_mc_n_{}_OTOC_{}_T_{}_basis_{}_n_eigen_{}'.format(path,n,potkey,T_au,120,15)	
-			plot_1D(ax,fname,label='n={}'.format(n),color=c,log=True)
-
-	plt.legend()
-	plt.show()
-	
-if(0): # Double well 2D OTOC files
-	potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,0.0)		
-	fname1 = '{}/Datafiles/Quantum_mc_n_5_OTOC_{}_T_{}_basis_{}_n_eigen_{}'.format(path,potkey,T_au,70,10)
-
-	#potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,2.0)		
-	#fname2 = '{}/Datafiles/Quantum_OTOC_{}_T_{}_basis_{}_n_eigen_{}'.format(path,potkey,T_au,100,25)
-
-	potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,1.0)		
-	fname3 = '{}/Datafiles/Quantum_OTOC_{}_mc_n_2_T_{}_basis_{}_n_eigen_{}'.format(path,potkey,T_au,70,10)
-
-	potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,1.25)		
-	fname4 = '{}/Datafiles/Quantum_mc_n_2_OTOC_{}_T_{}_basis_{}_n_eigen_{}'.format(path,potkey,T_au,70,10)
-
-	potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,1.5)		
-	fname5 = '{}/Datafiles/Quantum_mc_n_5_OTOC_{}_T_{}_basis_{}_n_eigen_{}'.format(path,potkey,T_au,70,10)
-
-	data = read_1D_plotdata('{}.txt'.format(fname5))
-	t_arr = data[:,0]
-	OTOC_arr = data[:,1]
-			
-	ist =  120
-	iend = 220
-
-	t_trunc = t_arr[ist:iend]
-	OTOC_trunc = (np.log(OTOC_arr))[ist:iend]
-	slope,ic = np.polyfit(t_trunc,OTOC_trunc,1)
-	print('slope',slope,2*np.pi/beta)
-
-	a = -OTOC_arr
-	x = np.where(np.r_[True, a[1:] < a[:-1]] & np.r_[a[:-1] < a[1:], True])
-	#print('min max',t_arr[124],t_arr[281])
-		
-	fig,ax = plt.subplots()	
-	#plt.plot(t_trunc,slope*t_trunc+ic,linewidth=4,color='k')
-	#plt.plot(t_arr,slope*t_arr+ic,'--',color='k')
-	plot_1D(ax,fname1,label='z=0.0',color='m',log=True)
-	#plot_1D(ax,fname2,label='z=2.0',log=True)
-	#plot_1D(ax,fname3,label='z=1.0',color='c',log=True)
-	#plot_1D(ax,fname4,label='z=1.25',color='b',log=True)
-	plot_1D(ax,fname5,label='z=1.5',color='r',log=True)
-	plt.legend()
-	plt.show()
 

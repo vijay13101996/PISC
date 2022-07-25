@@ -127,8 +127,8 @@ class Poincare_SOS(object):
 		return Y_list,PY_list,X_list
 	
 	def PSOS_X(self,y0):
-		prev = self.rp.q[:,1,0] - y0
-		curr = self.rp.q[:,1,0] - y0
+		prev = self.rp.q[:,1,0]/self.rp.nbeads**0.5 - y0
+		curr = self.rp.q[:,1,0]/self.rp.nbeads**0.5 - y0
 		count=0
 
 		nsteps = int(self.time_run/self.motion.dt)
@@ -136,16 +136,17 @@ class Poincare_SOS(object):
 		X_list = []
 		PX_list = []
 		Y_list = []
-		
+	
 		for i in range(nsteps):
 			self.sim.step(mode="nve",var='pq')	
 			x = self.rp.q[:,0,0]/self.rp.nbeads**0.5
-			px = self.rp.p[:,0,0]
+			px = self.rp.p[:,0,0]/self.rp.nbeads**0.5
 			y = self.rp.q[:,1,0]/self.rp.nbeads**0.5
-			py = self.rp.p[:,1,0]
+			py = self.rp.p[:,1,0]/self.rp.nbeads**0.5
 			cent_E = np.sum(self.rp.p[:,:,0]**2/self.rp.nbeads,axis=1) + self.pes.potential(self.rp.q[:,:,0]/self.rp.nbeads**0.5)
 			#print('t, cent E',self.sim.t,cent_E.shape)		
 			curr = y-y0
+			#Rg = np.sum((self.rp.qcart-self.rp.q[:,:,0])**2, axis=1)
 			ind = np.where( (prev*curr<0.0) & (py<0.0))# & (cent_E>0.95*self.E))# & (cent_E>0.8*self.E))
 			#if(len(np.array(ind)[0])>0):
 			#	print('py',py[ind])
@@ -154,7 +155,7 @@ class Poincare_SOS(object):
 			Y_list.extend(y[ind])
 			prev = curr
 			count+=1
-
+			
 		print('X',np.array(X_list).shape)
 		self.X.extend(X_list)
 		self.PX.extend(PX_list)

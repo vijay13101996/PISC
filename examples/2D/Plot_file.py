@@ -7,8 +7,8 @@ from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr,
 
 dim=2
 
-alpha = 0.363
-D = 10.0 
+alpha = 0.382
+D = 9.375 
 
 lamda = 2.0
 g = 0.08
@@ -22,11 +22,11 @@ T = times*Tc
 m = 0.5
 N = 1000
 dt_therm = 0.01
-dt = 0.005
+dt = 0.002
 time_therm = 40.0
-time_total = 10.0
+time_total = 5.0
 
-nbeads = 4
+nbeads = 16
 
 potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
 	
@@ -58,12 +58,17 @@ if(0):
 
 
 if(1):
-	ext ='RPMD_mc_{}_{}_{}_nbeads_{}_dt_{}'.format(corrkey,potkey,Tkey,nbeads,dt)
-	extclass = rpext + ext
-	print('fname',extclass)
-	plot_1D(ax,extclass, label=r'$RPMD,T={}Tc, N_b={}$'.format(times,nbeads),color='g', log=True,linewidth=1)
-	slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(extclass,1,3)
-	ax.plot(t_trunc, slope*t_trunc+ic,linewidth=2,color='k')
+	for times,c in zip([0.7,0.9,1.0],['r','g','b']):	
+		Tkey = 'T_{}Tc'.format(times)
+		ext ='RPMD_mc_{}_{}_{}_nbeads_{}_dt_{}'.format(corrkey,potkey,Tkey,nbeads,dt)
+		extclass = rpext + ext
+		print('fname',extclass)
+		slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(extclass,1,2)
+		print('2pi/beta', 2*np.pi*T,slope/2)	
+		plot_1D(ax,extclass, label=r'$RPMD,T={}Tc,\; N_b={}, \lambda={:.3f}$'.format(times,nbeads,np.real(slope/2)),color=c, log=True,linewidth=1)	
+		ax.plot(t_trunc, slope*t_trunc+ic,linewidth=2,color='k')
+	
+	plt.title('RPMD microcanonical OTOCs for the 2D double well')	
 
 plt.legend()
 plt.show()

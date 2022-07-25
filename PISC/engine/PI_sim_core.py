@@ -44,7 +44,7 @@ class SimUniverse(object):
 		self.time_ens = time_ens
 		self.time_run = time_run
 	
-	def set_ensparams(self,tau0 = 1.0, pile_lambda=1000.0, E=None, qlist= None):
+	def set_ensparams(self,tau0 = 1.0, pile_lambda=100.0, E=None, qlist= None):
 		self.tau0 = tau0 
 		self.pile_lambda = pile_lambda
 		self.E = E

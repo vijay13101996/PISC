@@ -42,51 +42,34 @@ enskey = 'mc'
 	
 path = os.path.dirname(os.path.abspath(__file__))
 
+#--------------------------------------------------------------------
 E = Vb
 qgrid = np.linspace(-10,10,int(1e5)+1)
 potgrid = pes.potential(qgrid)
 
 qlist = qgrid[np.where(potgrid<E)]
 qlist = qlist[:,np.newaxis]
+#--------------------------------------------------------------------
 
-if(1):
-	Sim_class = SimUniverse(method,path,sysname,potkey,corrkey,enskey,Tkey)
-	Sim_class.set_sysparams(pes,T,m,dim)
-	Sim_class.set_simparams(N,dt_therm,dt)
-	Sim_class.set_methodparams(nbeads=nbeads)
-	Sim_class.set_ensparams(E=E,qlist=qlist)
-	Sim_class.set_runtime(time_therm,time_total)
+Sim_class = SimUniverse(method,path,sysname,potkey,corrkey,enskey,Tkey)
+Sim_class.set_sysparams(pes,T,m,dim)
+Sim_class.set_simparams(N,dt_therm,dt)
+Sim_class.set_methodparams(nbeads=nbeads)
+Sim_class.set_ensparams(E=E,qlist=qlist)
+Sim_class.set_runtime(time_therm,time_total)
 
-	start_time=time.time()
-	func = partial(Sim_class.run_seed)
-	seeds = range(1000)
-	seed_split = chunks(seeds,2)
+start_time=time.time()
+func = partial(Sim_class.run_seed)
+seeds = range(1000)
+seed_split = chunks(seeds,2)
 
-	param_dict = {'Temperature':Tkey,'CType':corrkey,'m':m,\
-		'therm_time':time_therm,'time_total':time_total,'nbeads':nbeads,'dt':dt,'dt_therm':dt_therm}
-			
-	with open('{}/Datafiles/RPMD_input_log_{}.txt'.format(path,potkey),'a') as f:	
-		f.write('\n'+str(param_dict))
-
-	batching(func,seed_split,max_time=1e6)
-	print('time', time.time()-start_time)
-
-if(0):
-
-	def begin_simulation(rngSeed):
-		Classical_core.main(path,sysname,potkey,pes,Tkey,T,m,dim,\
-												N,dt_therm,dt,rngSeed,time_therm,time_total,corrkey)
+param_dict = {'Temperature':Tkey,'CType':corrkey,'m':m,\
+	'therm_time':time_therm,'time_total':time_total,'nbeads':nbeads,'dt':dt,'dt_therm':dt_therm}
 		
-	start_time=time.time()
-	func = partial(begin_simulation)
-	seeds = range(10)
-	seed_split = chunks(seeds,10)
+with open('{}/Datafiles/RPMD_input_log_{}.txt'.format(path,potkey),'a') as f:	
+	f.write('\n'+str(param_dict))
 
-	param_dict = {'Temperature':Tkey,'CType':corrkey,'m':m,\
-		'therm_time':time_therm,'time_total':time_total,'dt':dt,'dt_therm':dt_therm}
-			
-	with open('{}/Datafiles/Classical_input_log_{}.txt'.format(path,potkey),'a') as f:	
-		f.write('\n'+str(param_dict))
+batching(func,seed_split,max_time=1e6)
+print('time', time.time()-start_time)
 
-	batching(func,seed_split,max_time=1e6)
-	print('time', time.time()-start_time)
+

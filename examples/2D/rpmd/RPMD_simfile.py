@@ -7,13 +7,14 @@ import multiprocessing as mp
 from functools import partial
 from PISC.utils.mptools import chunks, batching
 from PISC.potentials.Quartic_bistable import quartic_bistable
+from PISC.engine.PI_sim_core import SimUniverse
 import time
 import os 
 
 dim=2
 
-alpha = 0.363
-D = 10.0 
+alpha = 0.382
+D = 9.375 
 
 lamda = 2.0
 g = 0.08
@@ -30,25 +31,28 @@ m = 0.5
 N = 1000
 dt_therm = 0.01
 dt = 0.005
-time_therm = 40.0
-time_total = 8.0
+time_therm = 1.0
+time_total = 3.0
+nbeads = 4
 
+method = 'RPMD'
 potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
 sysname = 'Selene'		
-Tkey = '{}Tc'.format(times)
+Tkey = 'T_{}Tc'.format(times)
 corrkey = 'OTOC'
+enskey = 'thermal'
 	
 path = os.path.dirname(os.path.abspath(__file__))
 
-def begin_simulation(nbeads,rngSeed):
-	RPMD_core.main(path,sysname,potkey,pes,Tkey,T,m,dim,\
-											N,nbeads,dt_therm,dt,rngSeed,time_therm,time_total,corrkey)
-	
-nbeads = 4
+Sim_class = SimUniverse(method,path,sysname,potkey,corrkey,enskey,Tkey)
+Sim_class.set_sysparams(pes,T,m,dim)
+Sim_class.set_simparams(N,dt_therm,dt)
+Sim_class.set_methodparams(nbeads=nbeads)
+Sim_class.set_ensparams(tau0=1.0,pile_lambda=100.0)
+Sim_class.set_runtime(time_therm,time_total)
 
 start_time=time.time()
-
-func = partial(begin_simulation, nbeads)
+func = partial(Sim_class.run_seed)
 seeds = range(1000)
 seed_split = chunks(seeds,10)
 

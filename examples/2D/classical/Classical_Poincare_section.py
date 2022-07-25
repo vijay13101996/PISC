@@ -15,13 +15,13 @@ m=0.5#0.5
 N=10#20
 dt=0.002
 
-w = 0.5
-D = 9.375#10.0
-alpha = 1.147#0.535#0.363
 lamda = 2.0
 g = 0.08
-
 Vb = lamda**4/(64*g)
+D = 3*Vb#9.375#10.0
+alpha = 0.25
+
+print('Vb',Vb, 'D', D)
 
 z = 1.5
 potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
@@ -40,24 +40,28 @@ print('w', 2*np.pi/(2*D*alpha**2/m)**0.5)
 
 w_db = np.sqrt(lamda/m)
 w_m = (2*D*alpha**2/m)**0.5
-E = 10.83#Vb + 1.5*w_m# 0.5*w_db + 0.5*w_m#
+E = Vb #+ 0.5*w_m# 0.5*w_db + 0.5*w_m#10.83#
 
 minima = find_minima(m,D,alpha,lamda,g,z)
 xmin,ymin = minima
-print('xmin, ymin', xmin, ymin)
+print('xmin, ymin,alpha*ymin', xmin, ymin,alpha*ymin)
+print('pot at min', pes.potential_xy(xmin,ymin), pes.potential_xy(0.0,0.0))
 
 xg = np.linspace(-8,8,int(1e2)+1)
-yg = np.linspace(-5,10,int(1e2)+1)
+yg = np.linspace(-5,20,int(1e2)+1)
 
 xgrid,ygrid = np.meshgrid(xg,yg)
 potgrid = pes.potential_xy(xgrid,ygrid)
+
+#print('potmin', np.min(potgrid))
 
 qlist = []
 
 fig,ax = plt.subplots(1)
 #ax.contour(xgrid,ygrid,potgrid,levels=np.arange(0,1.01*D,D/30))
 #plt.show()
-	
+
+
 ### 'nbeads' can be set to >1 for ring-polymer simulations.
 nbeads = 1
 PSOS = Poincare_SOS('Classical',pathname,potkey,Tkey)
@@ -65,8 +69,8 @@ PSOS.set_sysparams(pes,T,m,2)
 PSOS.set_simparams(N,dt,dt,nbeads=nbeads,rngSeed=1)	
 PSOS.set_runtime(50.0,500.0)
 if(1):
-	xg = np.linspace(xmin-2.2,xmin+2.2,int(1e2)+1)
-	yg = np.linspace(ymin-2.2,ymin+2.2,int(1e2)+1)
+	xg = np.linspace(xmin-1.75,xmin+1.75,int(1e2)+1)
+	yg = np.linspace(ymin-1.75,ymin+1.75,int(1e2)+1)
 
 	xgrid,ygrid = np.meshgrid(xg,yg)
 	potgrid = pes.potential_xy(xgrid,ygrid)

@@ -32,14 +32,14 @@ if(0):
 	potkey = 'triple_well_lambda_{}_g_{}'.format(lamda,g)
 
 if(1):
-	lb = -3.0
-	ub = 20.0
+	lb = -10.0
+	ub = 30.0
 	m = 0.5
 
 	w = 17.5/3#2.2#5.7,9.5,29
 	D = 9.375#9.375#4.36
-	alpha = 0.8#(0.5*m*w**2/D)**0.5#0.363
-	print('alpha', alpha, 1.5*(2*D*alpha**2/m)**0.5)
+	alpha = 0.44#(0.5*m*w**2/D)**0.5#0.363
+	print('alpha', alpha, (2*D*alpha**2/m)**0.5)
 	#0.81#0.41#0.175#0.255#1.165
 	pes = morse(D,alpha)
 	Tc = 1.0

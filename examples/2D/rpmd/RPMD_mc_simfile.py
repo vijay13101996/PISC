@@ -13,13 +13,15 @@ import os
 
 dim=2
 
-alpha = 0.363
-D = 10.0 
+alpha = 0.382
+D = 9.375 
 
 lamda = 2.0
 g = 0.08
 
 z = 1.5
+
+Vb = lamda**4/(64*g)
  
 pes = quartic_bistable(alpha,D,lamda,g,z)
 
@@ -45,9 +47,9 @@ enskey = 'mc'
 path = os.path.dirname(os.path.abspath(__file__))
 
 ### -----------------------------------------------------------------------------
-E = 4.202#8.613#Vb
-xg = np.linspace(2,4,int(1e2)+1)
-yg = np.linspace(-5,10,int(1e2)+1)
+E = Vb
+xg = np.linspace(-6,6,int(1e4)+1)
+yg = np.linspace(-5,10,int(1e4)+1)
 xgrid,ygrid = np.meshgrid(xg,yg)
 potgrid = pes.potential_xy(xgrid,ygrid)
 
