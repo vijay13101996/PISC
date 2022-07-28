@@ -9,7 +9,10 @@ import numpy as np
 
 class Ensemble(object):
     
-    def __init__(self, beta, ndim=3):
+    def __init__(self, beta, ndim=3,theta=None,E=None,qlist=None):
         self.beta = 1.0*beta
         self.ndim = ndim
+        self.theta=theta
+        self.E = E
+        self.qlist = qlist
         

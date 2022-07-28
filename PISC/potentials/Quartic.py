@@ -1,22 +1,19 @@
 import numpy as np
 from PISC.potentials.base import PES
 
-class Quartic(PES):
-	def __init__(self):
-		super(Quartic).__init__()	
+class quartic(PES):
+	def __init__(self,a):
+		super(quartic).__init__()	
+		self.a = a
 		
 	def bind(self,ens,rp):
-		super(Quartic,self).bind(ens,rp)
-		#self.ddpot_cart=self.ddpotmat*(-self.lamda**2/2.0)   	
+		super(quartic,self).bind(ens,rp)
+		
+	def potential(self,q):
+		return 0.25*self.a*q**4 
 	
-	def compute_potential(self):
-		self.pot = 0.25*self.rp.qcart**4 
-		return self.pot
-	
-	def compute_force(self):
-		self.dpot_cart = self.rp.qcart**3
-		return self.dpot_cart
+	def dpotential(self,q):
+		return self.a*q**3
 
-	def compute_hessian(self):
-		self.ddpot_cart = 3*(self.rp.qcart**2)[:,:,None,:,np.newaxis]*self.ddpotmat
-		return self.ddpot_cart
+	def ddpotential(self,q):
+		return 3*self.a*q**2
