@@ -130,7 +130,7 @@ class SimUniverse(object):
 		return tarr,tcf
 		
 	def run_seed(self,rngSeed):
-		print('T, nbeads',self.T,self.nbeads)	
+		print('Seed {} : T {}, nbeads {}'.format(rngSeed,self.T,self.nbeads))	
 		rng = np.random.default_rng(rngSeed)
 		ens = Ensemble(beta=1/self.T,ndim=self.dim)
 		qcart,pcart = self.gen_ensemble(ens,rng,rngSeed)

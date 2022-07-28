@@ -14,7 +14,8 @@ def batching(func,inst_split,max_time=1e7):
 		ctx = mp.get_context('fork')	
 	except RuntimeError:
 		pass
-	for inst_batch in inst_split:
+	for i,inst_batch in enumerate(inst_split):
+			print('\nBatch #{}\n'.format(i))
 			procs = []
 			for i in inst_batch:
 				p = mp.Process(target=func, args=(i,),daemon=True)
