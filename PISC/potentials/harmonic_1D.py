@@ -13,7 +13,7 @@ class harmonic(PES):
 		return  (self.omega**2/2.0)*q**2
 	
 	def dpotential(self,q):
-		return (self.omega**2)*self.q
+		return (self.omega**2)*q
 
 	def ddpotential(self,q):
 		return self.omega**2
