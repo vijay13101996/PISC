@@ -4,6 +4,7 @@ import multiprocessing as mp
 #mp.set_start_method('fork')
 #mp.freeze_support()
 #import os
+from functools import partial
 
 def chunks(L, n): 
 	return [L[x: x+n] for x in range(0, len(L), n)]
