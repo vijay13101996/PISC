@@ -21,10 +21,16 @@ class SimUniverse(object):
 		self.enskey = enskey
 		self.Tkey = Tkey
 	
-	def set_sysparams(self,pes,T,m,dim):
+	def set_sysparams(self,pes,T,mass,dim):
+		''' Set system paramenters 
+		    pes = potential energy surface
+		    T = temperature
+		    mass = particle mass
+		    dim = dimensionality of the classical system '''
+
 		self.pes = pes
 		self.T = T
-		self.m = m
+		self.m = mass
 		self.dim = dim 
 		
 	def set_simparams(self,N,dt_ens,dt):	
