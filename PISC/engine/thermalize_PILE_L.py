@@ -48,7 +48,7 @@ def thermalize_rp(pathname,m,dim,N,nbeads,ens,pes,rng,time_therm,dt_therm,potkey
 	#plt.hist(E,bins=50)
 	#plt.show()
 	#print('E',E.shape)
-	print('End of thermalization. Seed: {} Classical Kinetic energy {:5.3f} Target value {:5.3f} '.format(rngSeed,rp.kin.sum()/rp.nsys,0.5*rp.ndim*rp.nbeads/ens.beta))	
+	print('End of thermalization. Seed: {} Classical Kinetic energy {:5.3f} Target value {:5.3f} '.format(rngSeed,rp.kin.sum()/rp.nsys,0.5*rp.ndim*rp.nbeads**2/ens.beta))	
 
 	store_arr(rp.qcart,'Thermalized_rp_qcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(rp.nsys,rp.nbeads,ens.beta,potkey,rngSeed),"{}/Datafiles".format(pathname))
 	store_arr(rp.pcart,'Thermalized_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(rp.nsys,rp.nbeads,ens.beta,potkey,rngSeed),"{}/Datafiles".format(pathname)) 
