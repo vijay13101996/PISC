@@ -16,4 +16,4 @@ class harmonic(PES):
 		return (self.omega**2)*q
 
 	def ddpotential(self,q):
-		return self.omega**2
+		return np.ones(q.shape)*self.omega**2
