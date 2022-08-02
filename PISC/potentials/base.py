@@ -80,13 +80,14 @@ class PES(object):
 		dpot = (-const/Rsq**2)*pairwise_swap(self.rp.matsfreqs[...,:self.rp.nmats],self.rp.nmats)**2*self.rp.q[...,:self.rp.nmats]
 		return dpot 
 
-	def update(self):
+	def update(self,update_hess=True):
 		if(self.rp.mode=='rp'):
 			self.compute_potential()
 			self.compute_force()
-			self.compute_hessian()
 			self.dpot = self.nmtrans.cart2mats(self.dpot_cart)
-			self.ddpot = self.nmtrans.cart2mats_hessian(self.ddpot_cart)	
+			if(update_hess):
+				self.compute_hessian()	
+				self.ddpot = self.nmtrans.cart2mats_hessian(self.ddpot_cart)	
 		elif(self.rp.mode=='rp/mats'):
 			self.compute_mats_potential()
 			self.compute_mats_force()

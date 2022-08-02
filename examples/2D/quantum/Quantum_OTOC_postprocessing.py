@@ -55,22 +55,27 @@ if(0): # Coupled harmonic
 
 if(1): # Double well 2D
 	L = 10.0#
-	lbx = -7.0#-7.0
-	ubx = 7.0#7.0
-	lby = -1#-5.0
-	uby = 5
+	lbx = -6.0#-7.0
+	ubx = 6.0#7.0
+	lby = -3#-5.0
+	uby = 7
 	m = 0.5#8.0
 	ngrid = 100
 	ngridx = ngrid
 	ngridy = ngrid
 
 	w = 0.1	
-	D = 9.375#10.0
-	alpha = 1.147#0.148#0.42#55#0.37#0.2#0.52#2.64#0.363#0.81#0.175#0.41#0.255#1.165
 	
 	lamda = 2.0#4.0
-	g = 0.08#0.08#lamda**2/32#4.0
+	g = 0.09#0.08#lamda**2/32#4.0
 
+	Vb = lamda**4/(64*g)
+
+	D = 3*Vb
+	alpha = 0.37#
+
+	k = 1.0	
+		
 	print('Vb', lamda**4/(64*g))
 
 	z = 1.5#1.25#2.3	
@@ -78,7 +83,7 @@ if(1): # Double well 2D
 	Tc = lamda*0.5/np.pi
 	T_au = Tc#10.0 
 	
-	pes = quartic_bistable(alpha,D,lamda,g,z)
+	pes = quartic_bistable(alpha,D,lamda,g,z,k)
 
 	path = os.path.dirname(os.path.abspath(__file__))	
 	#print('pes', pes.potential_xy(0.0,0.0))

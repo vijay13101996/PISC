@@ -22,7 +22,7 @@ def generate_rp(pathname,m,dim,N,nbeads,ens,pes,rng,time_relax,dt_relax,potkey,r
 		pot= pot[:,np.newaxis,:]	
 	V = np.sum(pot,axis=2) ##May need to be changed for 2D
 	V = V[:,0]
-	#print('V',V,E*nbeads)
+	#print('V',E*nbeads)
 
 	pcoeff = rng.dirichlet(np.ones(dim*nbeads),size=1)
 	pcoeff=pcoeff[0]
@@ -49,7 +49,6 @@ def generate_rp(pathname,m,dim,N,nbeads,ens,pes,rng,time_relax,dt_relax,potkey,r
 
 	nthermsteps = int(time_relax/motion.dt)
 
-	print('m',m)
 	print('rp E', E*nbeads,np.sum(rp.pcart[0]**2/(2*m)) +np.sum(pot[0]))
 	#print('V', pes.pot[0],rp.qcart[0])
 	#print('E tot', np.sum(rp.pcart**2/(2*m),axis=2) + np.sum(pes.potential(rp.qcart),axis=2 ) )
@@ -62,11 +61,12 @@ def generate_rp(pathname,m,dim,N,nbeads,ens,pes,rng,time_relax,dt_relax,potkey,r
 			#print('t, cent E',sim.t,np.sum(rp.p[0,:,0]**2/nbeads) + pes.potential(rp.q[:,:,0]/nbeads**0.5)[0],E )
 			#print('rp',rp.qcart[0],rp.p[0])
 			#print('Energy', np.sum(pes.potential(rp.qcart[0]) +  rp.pcart[0]**2))
-			#plt.scatter(rp.qcart[0,0],np.ones(nbeads)*E)
-			#plt.pause(0.2)
+			#n = 1
+			#plt.scatter(rp.qcart[n,0],np.ones(nbeads)*pes.potential(rp.q[n,0,0]/nbeads**0.5))
+			#plt.pause(0.02)
 		#tarr.append(i*dt)
 		#kinarr.append((rp.pcart**2).sum())#kin.sum())
-
+	
 	#plt.scatter(rp.qcart[0,0,:],rp.qcart[0,1,:])
 	#plt.show()
 	store_arr(rp.qcart,'Microcanonical_rp_qcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(rp.nsys,rp.nbeads,ens.beta,potkey,rngSeed),"{}/Datafiles".format(pathname))

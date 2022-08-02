@@ -45,7 +45,7 @@ if(1):
 	Tc = 1.0
 	potkey = 'morse'#_lambda_{}_g_{}'
 	
-if(0):
+if(1):
 	L = 10.0#10.0
 	lb = -L
 	ub = L

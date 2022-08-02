@@ -13,17 +13,17 @@ import os
 ### Potential parameters
 m=0.5#0.5
 N=10#20
-dt=0.002
+dt=0.005
 
 lamda = 2.0
 g = 0.08
 Vb = lamda**4/(64*g)
 D = 3*Vb#9.375#10.0
-alpha = 0.25
-
+alpha = 0.37
+k=1.0
 print('Vb',Vb, 'D', D)
 
-z = 1.5
+z = 1.
 potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
 
 ### Temperature is only relevant for the ring-polymer Poincare section
@@ -32,7 +32,7 @@ times = 1.0
 T = times*Tc
 Tkey = 'T_{}Tc'.format(times) 
 
-pes = quartic_bistable(alpha,D,lamda,g,z)
+pes = quartic_bistable(alpha,D,lamda,g,z,k)
 
 pathname = os.path.dirname(os.path.abspath(__file__))
 
@@ -40,7 +40,7 @@ print('w', 2*np.pi/(2*D*alpha**2/m)**0.5)
 
 w_db = np.sqrt(lamda/m)
 w_m = (2*D*alpha**2/m)**0.5
-E = Vb #+ 0.5*w_m# 0.5*w_db + 0.5*w_m#10.83#
+E = 1.001*Vb# + 0.5*w_m# 0.5*w_db + 0.5*w_m#10.83#
 
 minima = find_minima(m,D,alpha,lamda,g,z)
 xmin,ymin = minima
@@ -69,8 +69,14 @@ PSOS.set_sysparams(pes,T,m,2)
 PSOS.set_simparams(N,dt,dt,nbeads=nbeads,rngSeed=1)	
 PSOS.set_runtime(50.0,500.0)
 if(1):
-	xg = np.linspace(xmin-1.75,xmin+1.75,int(1e2)+1)
-	yg = np.linspace(ymin-1.75,ymin+1.75,int(1e2)+1)
+	#xg = np.linspace(xmin-2.5,xmin+2.5,int(1e2)+1)
+	#yg = np.linspace(ymin-2.5,ymin+2.5,int(1e3)+1)
+
+	#xg = np.linspace(0,2*xmin,int(1e2)+1)
+	#yg = np.linspace(-2*abs(ymin),4*abs(ymin),int(1e3)+1)
+
+	xg = np.linspace(0.0,0.75,int(1e2)+1)
+	yg = np.linspace(-0.08,0.08,int(1e2)+1)
 
 	xgrid,ygrid = np.meshgrid(xg,yg)
 	potgrid = pes.potential_xy(xgrid,ygrid)

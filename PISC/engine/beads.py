@@ -58,7 +58,7 @@ class RingPolymer(object):
 			self.nmodes = nbeads
 			self.nbeads = nbeads
 			self.nsys = len(self.qcart)	 	
-			
+		
 		self.m = m	
 		self.mode = mode 	
 		if Mpp is None:
@@ -298,7 +298,11 @@ class RingPolymer(object):
 	@property
 	def pot(self):
 		return np.sum(0.5*self.dynm3*self.dynfreq2*self.q**2)
-	
+
+	@property
+	def pot_cart(self):
+		return np.sum(0.5*self.omegan**2*(self.qcart-np.roll(self.qcart,1,axis=-1))**2)
+
 	@property	
 	def dpot(self):
 		return self.dynm3*self.dynfreq2*self.q

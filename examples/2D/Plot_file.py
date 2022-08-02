@@ -7,13 +7,13 @@ from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr,
 
 dim=2
 
-alpha = 0.382
+alpha = 0.37
 D = 9.375 
 
 lamda = 2.0
 g = 0.08
 
-z = 1.5
+z = 0.0
  
 Tc = 0.5*lamda/np.pi
 times = 1.0
@@ -22,7 +22,7 @@ T = times*Tc
 m = 0.5
 N = 1000
 dt_therm = 0.01
-dt = 0.002
+dt = 0.005
 time_therm = 40.0
 time_total = 5.0
 
@@ -48,16 +48,15 @@ syskey = 'Selene'
 
 fig,ax = plt.subplots()
 
-if(0):	
+if(1):	
 	ext = 'Classical_OTOC_{}_T_{}Tc_dt_{}'.format(potkey,times,dt)
 	extclass = Cext + ext
 	print('fname',extclass)
 	plot_1D(ax,extclass, label=r'$Classical,T={}Tc$'.format(times),color='g', log=True,linewidth=1)
-	slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(extclass,6.2,8.)
+	slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(extclass,2,3.)
 	ax.plot(t_trunc, slope*t_trunc+ic,linewidth=2,color='k')
 
-
-if(1):
+if(0):
 	for times,c in zip([0.7,0.9,1.0],['r','g','b']):	
 		Tkey = 'T_{}Tc'.format(times)
 		ext ='RPMD_mc_{}_{}_{}_nbeads_{}_dt_{}'.format(corrkey,potkey,Tkey,nbeads,dt)

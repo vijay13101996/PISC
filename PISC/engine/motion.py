@@ -7,7 +7,7 @@ import numpy as np
 
 class Motion(object):
 
-	def __init__(self,dt,symporder):
+	def __init__(self,dt=1e-2,symporder=2):
 		self.dt=dt
 		self.order = symporder
 		if(self.order==2):

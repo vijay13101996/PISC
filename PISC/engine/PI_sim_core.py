@@ -27,7 +27,7 @@ class SimUniverse(object):
 		self.m = m
 		self.dim = dim 
 		
-	def set_simparams(self,N,dt_ens,dt):	
+	def set_simparams(self,N,dt_ens=1e-2,dt=5e-3):	
 		self.N = N
 		self.dt_ens = dt_ens
 		self.dt = dt
@@ -40,7 +40,7 @@ class SimUniverse(object):
 		if(self.method=='CMD'):
 			self.gamma = gamma
 
-	def set_runtime(self,time_ens,time_run):
+	def set_runtime(self,time_ens=100.0,time_run=5.0):
 		self.time_ens = time_ens
 		self.time_run = time_run
 	
@@ -52,7 +52,7 @@ class SimUniverse(object):
 		
 	def gen_ensemble(self,ens,rng,rngSeed):
 		if(self.enskey== 'thermal'):
-			thermalize_rp(self.pathname,self.m,self.dim,self.N,self.nbeads,ens,self.pes,rng,self.time_ens,self.dt_ens,self.potkey,rngSeed)	
+			thermalize_rp(self.pathname,self.m,self.dim,self.N,self.nbeads,ens,self.pes,rng,self.time_ens,self.dt_ens,self.potkey,rngSeed,self.qlist)	
 			qcart = read_arr('Thermalized_rp_qcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(self.N,self.nbeads,ens.beta,self.potkey,rngSeed),"{}/Datafiles".format(self.pathname))
 			pcart = read_arr('Thermalized_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(self.N,self.nbeads,ens.beta,self.potkey,rngSeed),"{}/Datafiles".format(self.pathname))
 			return qcart,pcart	
@@ -139,7 +139,7 @@ class SimUniverse(object):
 			motion = Motion(dt = self.dt,symporder=4)	
 			propa = Symplectic_order_IV()
 		else:
-			motion = Motion(dt=dt,symporder=2)
+			motion = Motion(dt=self.dt,symporder=2)
 			propa = Symplectic_order_II()
 			
 		sim = RP_Simulation()
@@ -147,21 +147,25 @@ class SimUniverse(object):
 	
 		if(self.corrkey =='OTOC'):
 			tarr, Carr = self.run_OTOC(sim)
+		elif('TCF' in self.corrkey):
+			tarr, Carr = self.run_TCF(sim)
 		else:
-			tarr, Carr = self.run_TCF(sim)	
+			return	
 	
 		self.store_data(tarr,Carr,rngSeed)
 
-	def store_data(self,tarr,Carr,rngSeed): 
-		key = [self.method,self.enskey,self.corrkey,self.sysname,self.potkey,self.Tkey,'{}'.format(self.N),'{}'.format(self.dt)]
+	def store_data(self,tarr,Carr,rngSeed,ext_kwlist=None): 
+		key = [self.method,self.enskey,self.corrkey,self.sysname,self.potkey,self.Tkey,'N_{}'.format(self.N),'dt_{}'.format(self.dt)]
 		fext = '_'.join(key)
 		if(self.method=='Classical'):
-			methext	= ''
+			methext	= '_'
 		elif(self.method=='RPMD'):
-			methext = 'nbeads_{}'.format(self.nbeads)
+			methext = '_nbeads_{}_'.format(self.nbeads)
 		elif(self.method=='CMD'):
-			methext = 'nbeads_{}_gamma_{}'.format(self.nbeads,self.gamma)
+			methext = '_nbeads_{}_gamma_{}_'.format(self.nbeads,self.gamma)
 		seedext = 'seed_{}'.format(rngSeed)
 
-		fname = '_'.join([fext,methext,seedext])	
+		if(ext_kwlist is None):
+			fname = ''.join([fext,methext,seedext])	
+		
 		store_1D_plotdata(tarr,Carr,fname,'{}/Datafiles'.format(self.pathname))		

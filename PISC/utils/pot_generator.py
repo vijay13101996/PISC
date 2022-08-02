@@ -38,12 +38,15 @@ if(1):### Quartic Bistable potential
 	g = sympy.Symbol('self.g')
 	D = sympy.Symbol('self.D')
 	z = sympy.Symbol('self.z')
+	k = sympy.Symbol('self.k')
+	eta = sympy.Symbol('self.eta')
 
 	eay = exp(-alpha*y)
 	quartx = (x**2 - lamda**2/(8*g))
+	Vb = lamda**4/(64*g)
 	vy = D*(1-eay)**2
 	vx = g*quartx**2
-	vxy = (vx-lamda**4/(256*g))*(exp(-z*alpha*y) - 1)
+	vxy = eta*(vx-k*Vb)*(exp(-z*alpha*y) - 1)
 
 	V = vx + vy + vxy
 

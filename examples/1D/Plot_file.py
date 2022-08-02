@@ -7,7 +7,7 @@ from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr,
 
 dim = 1
 lamda = 2.0
-g = 0.08#0.13#lamda**2/32
+g = 0.08
 
 Tc = lamda*(0.5/np.pi)
 times = 1.0
@@ -15,9 +15,9 @@ T = times*Tc
 
 m = 0.5
 N = 1000
-dt = 0.005
+dt = 0.002
 
-nbeads = 16
+nbeads = 8
 gamma = 16
 
 potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
@@ -30,6 +30,28 @@ Cext = '{}/classical/Datafiles/'.format(path)
 rpext = '{}/rpmd/Datafiles/'.format(path)
 
 fig,ax = plt.subplots()
+
+if(0):
+	corrkey = 'OTOC'
+	enskey ='thermal'
+	Tkey = 'T_{}Tc'.format(times)
+
+	ext = 'Classical_{}_{}_{}_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,dt)
+	ext = Cext+ext
+	plot_1D(ax,ext, label=r'$Classical, T=T_c$',color='c', log=True,linewidth=1)
+	slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,3.5,4.5)
+	ax.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k')
+
+if(1):
+	corrkey = 'OTOC'
+	enskey ='mc'
+	Tkey = 'T_{}Tc'.format(times)
+
+	ext = 'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,nbeads,dt)
+	ext = rpext+ext
+	plot_1D(ax,ext, label=r'$RPMD, T=T_c$',color='c', log=True,linewidth=1)
+	slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,1,2)
+	ax.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k')
 	
 if(0):
 	ext = 'Quantum_OTOC_inv_harmonic_lambda_{}_g_{}_T_{}Tc_basis_140_n_eigen_50'
@@ -48,7 +70,7 @@ if(0):
 	slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(l3_t1,1.1,1.9)#1.63,2.67)
 	#ax.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k')
 
-if(1):
+if(0):
 	for times,c in zip([0.7,0.9,1.0],['r','g','b']):
 		ext = 'RPMD_mc_OTOC_{}_T_{}Tc_nbeads_{}_dt_0.002'.format(potkey,times,nbeads)
 		l3_t1 = rpext + ext

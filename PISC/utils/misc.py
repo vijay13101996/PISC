@@ -1,7 +1,7 @@
 import numpy as np
 from PISC.utils.readwrite import read_1D_plotdata
 import os
-#import execnet
+from pathlib import Path
 
 def pairwise_swap(a,l):
 	tempodd = a[...,1:l:2].copy()
@@ -44,7 +44,26 @@ def seed_collector(kwlist,datapath,tarr,Carr,allseeds=True,seedcount=None):
 
 	print('count',count)
 	Carr/=count
-	return tarr,Carr
+	return tarr,Carr	
+
+def seed_finder(kwlist,datapath,allseeds=True,sort=True,dropext=False):
+	flist = []
+	print('kwlist',kwlist)
+	count=0
+	for fname in os.listdir(datapath):
+		if all(kw in fname for kw in kwlist):
+			if(dropext is True):
+				fname= os.path.splitext(fname)[0]
+				flist.append(fname)
+			else:
+				flist.append(fname)
+			count+=1
+	print('count',count)	
+	if(sort is True):
+		flist.sort()
+		return flist
+	else:
+		return flist
 	
 def call_python_version(Version, Path, Module, Function, ArgumentList):
     gw      = execnet.makegateway("popen//python=python{}//chdir={}".format(Version,Path))

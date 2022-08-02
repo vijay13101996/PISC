@@ -25,23 +25,28 @@ start_time = time.time()
 
 if(1): #2D double well
 	L = 10.0
-	lbx = -7#-7
-	ubx = 7#7
-	lby = -1#
-	uby = 5.0#
+	lbx = -6#-7
+	ubx = 6#7
+	lby = -3.0#
+	uby = 7
 	m = 0.5
 	ngrid = 100
 	ngridx = ngrid
 	ngridy = ngrid
 
 	w = 0.1	
-	D = 9.375 # 0.569, 
-	alpha = 1.147#0.37#0.2#0.52#0.86#2.64#0.363#0.81#0.255#0.41#0.175#1.165#0.255#
 	
-	lamda = 2.0#4.0
-	g = 0.08#lamda**2/32#0.02#4.0
+	lamda = 2.0
+	g = 0.08
 
-	z = 1.5#2.3	
+	Vb = lamda**4/(64*g)
+
+	D = 3*Vb
+	alpha = 0.37
+	
+	k = 1.0
+
+	z = 1.0#2.3	
 
 	Tc = lamda*0.5/np.pi
 	times = 1.0
