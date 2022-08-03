@@ -2,13 +2,12 @@ import numpy as np
 from matplotlib import pyplot as plt
 import time
 import pickle
-from PISC.engine import Classical_core
 from PISC.engine.PI_sim_core import SimUniverse
 import multiprocessing as mp
 from functools import partial
 from PISC.utils.mptools import chunks, batching
 from PISC.potentials.double_well_potential import double_well
-from PISC.potentials.Morse_1D import morse
+from PISC.potentials.harmonic_1D import harmonic
 import time
 import os 
 
@@ -21,7 +20,7 @@ Vb = lamda**4/(64*g)
 pes = double_well(lamda,g)
 
 Tc = 0.5*lamda/np.pi
-times = 0.8
+times = 1.0
 T = times*Tc
 Tkey = 'T_{}Tc'.format(times)
 
@@ -30,20 +29,20 @@ potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
 #------------------------------------------------------
 N = 1000
 dt_therm = 0.05
-time_therm = 500.0
+time_therm = 100.0
 nbeads = 8
 method = 'RPMD'
 
 #------------------------------------------------------
 sysname = 'Selene'
 corrkey = ''
-enskey = 'mc'#'thermal'
+enskey = 'thermal'
 
 #-----------------------------------------------------
-qgrid = np.linspace(-0.1,0.1,int(1e5)+1)
+qgrid = np.linspace(-10.0,10.0,int(1e5)+1)
 potgrid = pes.potential(qgrid) 
 
-E=Vb
+E=1.5*Vb
 qlist = qgrid[np.where(potgrid<E)]
 qlist = qlist[:,np.newaxis]
 
@@ -55,7 +54,7 @@ Sim_class = SimUniverse(method,path,sysname,potkey,corrkey,enskey,Tkey)
 Sim_class.set_sysparams(pes,T,m,dim)
 Sim_class.set_simparams(N,dt_therm)
 Sim_class.set_methodparams(nbeads=nbeads)
-Sim_class.set_ensparams(tau0=1.0, pile_lambda=1e4,E=E,qlist=qlist)
+Sim_class.set_ensparams(tau0=1.0, pile_lambda=1e2,E=E,qlist=qlist)
 Sim_class.set_runtime(time_therm)
 
 start_time=time.time()

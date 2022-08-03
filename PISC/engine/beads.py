@@ -301,7 +301,7 @@ class RingPolymer(object):
 
 	@property
 	def pot_cart(self):
-		return np.sum(0.5*self.omegan**2*(self.qcart-np.roll(self.qcart,1,axis=-1))**2)
+		return np.sum(0.5*self.m3*self.omegan**2*(self.qcart-np.roll(self.qcart,1,axis=-1))**2)
 
 	@property	
 	def dpot(self):

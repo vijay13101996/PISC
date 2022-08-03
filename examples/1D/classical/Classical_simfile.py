@@ -10,7 +10,7 @@ import os
 
 dim=1
 lamda = 2.0
-g = 0.08
+g = 0.09
 
 pes = double_well(lamda,g)
 
@@ -23,7 +23,7 @@ N = 1000
 dt_therm = 0.05
 dt = 0.002
 time_therm = 100.0
-time_total = 5.0
+time_total = 6.0
 
 path = os.path.dirname(os.path.abspath(__file__))
 
@@ -45,8 +45,8 @@ Sim_class.set_runtime(time_therm,time_total)
 
 start_time=time.time()
 func = partial(Sim_class.run_seed)
-seeds = range(1000)
-seed_split = chunks(seeds,10)
+seeds = range(10000)
+seed_split = chunks(seeds,6)
 
 param_dict = {'Temperature':Tkey,'CType':corrkey,'m':m,\
 	'therm_time':time_therm,'time_total':time_total,'dt':dt,'dt_therm':dt_therm}

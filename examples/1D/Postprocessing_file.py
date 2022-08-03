@@ -4,12 +4,13 @@ from PISC.utils.misc import find_OTOC_slope,seed_collector,seed_finder
 from matplotlib import pyplot as plt
 import os
 from PISC.potentials.double_well_potential import double_well
+from PISC.potentials.harmonic_1D import harmonic
 from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr, read_arr
 from PISC.utils.nmtrans import FFT
 
 dim = 1
 lamda = 2.0#
-g = 0.08#
+g = 0.09#
 Vb = lamda**4/(64*g)
 
 Tc = lamda*(0.5/np.pi)
@@ -24,7 +25,7 @@ dt = 0.002
 nbeads = 8
 gamma = 16
 
-time_total = 5.0#10.0
+time_total = 6.0#10.0
 
 tarr = np.arange(0.0,time_total,dt)
 OTOCarr = np.zeros_like(tarr) +0j
@@ -45,7 +46,7 @@ beadkey = 'nbeads_{}_'.format(nbeads)
 Tkey = 'T_{}Tc'.format(times)
 syskey = 'Selene'
 
-if(1):#RPMD
+if(0):#RPMD
 	if(0):
 		methodkey = 'RPMD'
 
@@ -60,7 +61,7 @@ if(1):#RPMD
 		plt.show()
 		store_1D_plotdata(tarr,OTOCarr,'RPMD_{}_{}_{}_nbeads_{}_dt_{}'.format(corrkey,potkey,Tkey,nbeads,dt),rpext)
 
-	if(0):
+	if(1):
 		kwqlist = ['Thermalized_rp_qcart','nbeads_{}'.format(nbeads), 'beta_{}'.format(beta), potkey]
 		kwplist = ['Thermalized_rp_pcart','nbeads_{}'.format(nbeads), 'beta_{}'.format(beta), potkey]
 		
@@ -70,6 +71,7 @@ if(1):#RPMD
 		E=[]
 		V=[]
 		K=[]
+				
 		for qfile,pfile in zip(fqlist,fplist):
 			qcart = read_arr(qfile,rpext)
 			pcart = read_arr(pfile,rpext)
@@ -79,12 +81,14 @@ if(1):#RPMD
 			p = fft.cart2mats(pcart)
 		
 			#print('qfile,pfile', qfile,pfile)
-
-			#pot = np.sum(np.sum(pes.potential(qcart),axis=1),axis=1)
-			#kin = np.sum(np.sum(pcart**2/(2*m),axis=1),axis=1)	
-		
-			pot = pes.potential(q[:,0,0]/nbeads**0.5)
-			kin = p[:,0,0]**2/(2*m*nbeads**0.5)
+			omegan = nbeads/beta
+			potsys = np.sum(pes.potential(qcart)[:,0],axis=1)
+			potspr = np.sum(0.5*m*omegan**2*(qcart-np.roll(qcart,1,axis=-1))**2,axis=2)[:,0]
+			pot = potsys+potspr
+			kin = np.sum(np.sum(pcart**2/(2*m),axis=1),axis=1)	
+						
+			#pot = pes.potential(q[:,0,0]/nbeads**0.5)
+			#kin = p[:,0,0]**2/(2*m*nbeads**0.5)
 	
 			Etot = pot+kin
 			E.extend(Etot)
@@ -94,11 +98,11 @@ if(1):#RPMD
 		E=np.array(E)
 		V=np.array(V)
 		K=np.array(K)
-		#E/=nbeads
-		#V/=nbeads
-		#K/=nbeads
+		E/=nbeads
+		V/=nbeads
+		K/=nbeads
 		
-		bins = np.linspace(0.0,10.0,200)
+		bins = np.linspace(0.0,5.0,200)
 		dE = bins[1]-bins[0]
 		#countsV, bin_edgeV = np.histogram(V,bins=200)
 		#countsK, bin_edgeK = np.histogram(K,bins=200)
@@ -107,14 +111,14 @@ if(1):#RPMD
 		#print('counts K', countsK[:80], bin_edgeK[80])
 
 		Ehist = plt.hist(x=E, bins=bins,density=True,color='r')
-		#Vhist = plt.hist(x=V, bins=bins,density=True,color='g',alpha=0.5)
-		#Khist = plt.hist(x=K, bins=bins,density=True,color='b',alpha=0.5)
+		Vhist = plt.hist(x=V, bins=bins,density=True,color='g',alpha=0.5)
+		Khist = plt.hist(x=K, bins=bins,density=True,color='b',alpha=0.5)
 		
-		#plt.axvline(x=nbeads*T/2,ymin=0.0, ymax = 1.0,linestyle='--',color='k',linewidth=4)	
-		#plt.axvline(x=nbeads*T,ymin=0.0, ymax = 1.0,linestyle='--',color='k',linewidth=4)		
-		plt.axvline(x=V.mean(),ymin=0.0, ymax = 1.0,linestyle='--',color='c')
-		plt.axvline(x=K.mean(),ymin=0.0, ymax = 1.0,linestyle='--',color='y')		
-		plt.axvline(x=E.mean(),ymin=0.0, ymax = 1.0,linestyle='--',color='lime')			
+		plt.axvline(x=nbeads*T/2,ymin=0.0, ymax = 1.0,linestyle='--',color='k',linewidth=4)	
+		plt.axvline(x=nbeads*T,ymin=0.0, ymax = 1.0,linestyle='--',color='k',linewidth=4)		
+		plt.axvline(x=V.mean(),ymin=0.0, ymax = 1.0,linestyle='--',color='g')
+		plt.axvline(x=K.mean(),ymin=0.0, ymax = 1.0,linestyle='--',color='b')		
+		plt.axvline(x=E.mean(),ymin=0.0, ymax = 1.0,linestyle='--',color='r')			
 		plt.axvline(x=Vb,ymin=0.0, ymax = 1.0,linestyle='--',color='m')
 		plt.show()
 
@@ -140,9 +144,7 @@ if(1):#RPMD
 		RGhist = plt.hist(x=RG, bins=bins,density=True)
 		plt.show()
 
-
-
-if(1):#RPMD/mc
+if(0):#RPMD/mc
 	methodkey = 'RPMD'
 	enskey  = 'mc'
 	kwlist = [enskey,methodkey,corrkey,syskey,potkey,Tkey,beadkey]
@@ -168,7 +170,7 @@ if(0):#CMD
 	plt.show()
 	store_1D_plotdata(tarr,OTOCarr,'CMD_{}_{}_{}_nbeads_{}_dt_{}_gamma_{}'.format(corrkey,potkey,Tkey,nbeads,dt,gamma),cext)
 
-if(0):#Classical
+if(1):#Classical
 	if(1):
 		methodkey = 'Classical'
 		enskey = 'thermal'

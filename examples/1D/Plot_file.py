@@ -7,7 +7,7 @@ from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr,
 
 dim = 1
 lamda = 2.0
-g = 0.08
+g = 0.085
 
 Tc = lamda*(0.5/np.pi)
 times = 1.0
@@ -31,7 +31,7 @@ rpext = '{}/rpmd/Datafiles/'.format(path)
 
 fig,ax = plt.subplots()
 
-if(0):
+if(1):
 	corrkey = 'OTOC'
 	enskey ='thermal'
 	Tkey = 'T_{}Tc'.format(times)
@@ -39,10 +39,10 @@ if(0):
 	ext = 'Classical_{}_{}_{}_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,dt)
 	ext = Cext+ext
 	plot_1D(ax,ext, label=r'$Classical, T=T_c$',color='c', log=True,linewidth=1)
-	slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,3.5,4.5)
+	slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,3.9,5.2)
 	ax.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k')
 
-if(1):
+if(0):
 	corrkey = 'OTOC'
 	enskey ='mc'
 	Tkey = 'T_{}Tc'.format(times)

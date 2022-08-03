@@ -31,7 +31,7 @@ if(0):
 	pes = triple_well(lamda,g)
 	potkey = 'triple_well_lambda_{}_g_{}'.format(lamda,g)
 
-if(1):
+if(0):
 	lb = -10.0
 	ub = 30.0
 	m = 0.5
@@ -55,7 +55,7 @@ if(1):
 	#2.0: 0.08,0.172,0.31
 
 	lamda = 2.0#1.5#3.0#2.5#2.0#1.5
-	g = 0.08#0.035#0.13#0.265#0.155#0.08#0.035
+	g = 0.085#0.035#0.13#0.265#0.155#0.08#0.035
 	Tc = lamda*(0.5/np.pi)    
 	pes = double_well(lamda,g)
 	potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
@@ -96,7 +96,7 @@ if(1):
 	ax = plt.gca()
 	ax.set_ylim([0,50])
 	plt.plot(qgrid,potgrid)
-	plt.plot(qgrid,abs(vecs[:,6])**2)	
+	plt.plot(qgrid,abs(vecs[:,2])**2)	
 	#plt.plot(qgrid,potgrid1,color='k')
 	#plt.plot(qgrid,-0.16*qgrid**2 + 0.32)
 	for i in range(20):
