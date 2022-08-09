@@ -19,8 +19,6 @@ if(0):
 	print('Vyx=',diff(V,y,x))
 	print('Vyy=',diff(V,y,y))
 
-	
-
 if(0):
 	g = sympy.Symbol('self.g')
 	lamda = sympy.Symbol('self.lamda')
@@ -31,8 +29,37 @@ if(0):
 	print('Vx',diff(V,x))
 	print('Vxx',diff(V,x,x))
 	
+if(1):### Double-double well potential
+	lamdax = sympy.Symbol('self.lamdax')	
+	gx = sympy.Symbol('self.gx')
+	lamday = sympy.Symbol('self.lamday')	
+	gy = sympy.Symbol('self.gy')
+	
+	z = sympy.Symbol('self.z')
 
-if(1):### Quartic Bistable potential
+	quartx = (x**2 - lamdax**2/(8*gx))
+	Vbx = lamdax**4/(64*gx)
+
+	quarty = (y**2 - lamday**2/(8*gy))
+	Vby = lamday**4/(64*gy)
+		
+	vx = gx*quartx**2
+	vy = gy*quarty**2
+	vxy = z*x**2*y**2
+
+	V = vx + vy + vxy
+
+	print('V',V)
+	print('Vx =',diff(V,x))
+	print('Vy =',diff(V,y))
+	print('Vxx = ',diff(V,x,x))
+	print('Vxy =',diff(V,x,y))
+	#print('Vyx',diff(V,y,x))
+	print('Vyy =',diff(V,y,y))
+
+
+
+if(0):### Quartic Bistable potential
 	alpha = sympy.Symbol('self.alpha')
 	lamda = sympy.Symbol('self.lamda')
 	g = sympy.Symbol('self.g')

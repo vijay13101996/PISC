@@ -10,7 +10,7 @@ import os
 
 dim=1
 lamda = 2.0
-g = 0.09
+g = 0.084
 
 pes = double_well(lamda,g)
 
@@ -22,7 +22,7 @@ m = 0.5
 N = 1000
 dt_therm = 0.05
 dt = 0.002
-time_therm = 100.0
+time_therm = 40.0
 time_total = 6.0
 
 path = os.path.dirname(os.path.abspath(__file__))
@@ -39,16 +39,16 @@ path = os.path.dirname(os.path.abspath(__file__))
 Sim_class = SimUniverse(method,path,sysname,potkey,corrkey,enskey,Tkey)
 Sim_class.set_sysparams(pes,T,m,dim)
 Sim_class.set_simparams(N,dt_therm,dt)
-Sim_class.set_methodparams(nbeads=1)
-Sim_class.set_ensparams(tau0=1.0,pile_lambda=100.0)
+Sim_class.set_methodparams()
+Sim_class.set_ensparams(tau0=1.0)
 Sim_class.set_runtime(time_therm,time_total)
 
 start_time=time.time()
 func = partial(Sim_class.run_seed)
-seeds = range(10000)
-seed_split = chunks(seeds,6)
+seeds = range(1000)
+seed_split = chunks(seeds,12)
 
-param_dict = {'Temperature':Tkey,'CType':corrkey,'m':m,\
+param_dict = {'Temperature':Tkey,'CType':corrkey,'Ensemble':enskey,'m':m,\
 	'therm_time':time_therm,'time_total':time_total,'dt':dt,'dt_therm':dt_therm}
 		
 with open('{}/Datafiles/Classical_input_log_{}.txt'.format(path,potkey),'a') as f:	

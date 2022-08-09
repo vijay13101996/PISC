@@ -2,7 +2,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 import time
 import pickle
-from PISC.engine import Classical_core
 from PISC.engine.PI_sim_core import SimUniverse
 import multiprocessing as mp
 from functools import partial
@@ -13,7 +12,7 @@ import os
 
 dim=1
 lamda = 2.0
-g = 0.09
+g = 0.085
 
 Vb = lamda**4/(64*g)
 

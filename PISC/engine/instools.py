@@ -95,6 +95,7 @@ def find_saddle(m,pes,qinit,ax,plt,plot=False,dim=2,scale=1.0):
 
 	sp = rp.q[0,:,0]	
 	vals,vecs = insta.diag_hess()
+	print('rp',np.around(pes.ddpot[0,:,:,0,0],3))
 	return sp, vals, vecs
 
 def find_extrema(m,pes,qinit,ax,plt,plot=False,dim=2,stepsize=1e-3,tol=1e-2):
@@ -206,7 +207,7 @@ def inst_double_nm(instanton,dim=2,per_dev=2): #Needs to be redefined for higher
 	
 	return rp_init
 
-def find_instanton(m,pes,qinit,beta,nbeads,ax,plt,plot=False,dim=2,scale=1.0,stepsize=1e-4,tol=1e-3):
+def find_instanton(m,pes,qinit,beta,nbeads,ax,plt,plot=False,dim=2,scale=1.0,stepsize=1e-4,tol=1e-2):
 	start_time = time.time()
 	ens = Ensemble(beta=beta,ndim=dim)
 	motion = Motion(symporder=2) 
@@ -249,7 +250,7 @@ def find_instanton(m,pes,qinit,beta,nbeads,ax,plt,plot=False,dim=2,scale=1.0,ste
 			#grad = rp.dpot_cart+pes.dpot_cart
 			#print('grad norm', np.sum(insta.grad**2)**0.5)
 			ax.scatter(rp.qcart[0,0,:],rp.qcart[0,1,:])
-			#plt.pause(0.01)
+			plt.pause(0.01)
 			#print('count',count)
 		count+=1
 

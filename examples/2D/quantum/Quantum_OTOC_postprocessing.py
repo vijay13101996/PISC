@@ -67,7 +67,7 @@ if(1): # Double well 2D
 	w = 0.1	
 	
 	lamda = 2.0#4.0
-	g = 0.09#0.08#lamda**2/32#4.0
+	g = 0.085#0.08#lamda**2/32#4.0
 
 	Vb = lamda**4/(64*g)
 
@@ -78,7 +78,7 @@ if(1): # Double well 2D
 		
 	print('Vb', lamda**4/(64*g))
 
-	z = 1.5#1.25#2.3	
+	z = 1.0#1.25#2.3	
 
 	Tc = lamda*0.5/np.pi
 	T_au = Tc#10.0 

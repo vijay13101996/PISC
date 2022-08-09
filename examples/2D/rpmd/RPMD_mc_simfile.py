@@ -2,7 +2,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 import time
 import pickle
-from PISC.engine import RPMD_core
 from PISC.engine.PI_sim_core import SimUniverse
 import multiprocessing as mp
 from functools import partial
@@ -33,7 +32,7 @@ m = 0.5
 N = 1000
 dt_therm = 0.01
 dt = 0.005
-time_therm = 40.0
+time_therm = 100.0
 time_total = 5.0
 nbeads = 4
 
@@ -74,7 +73,7 @@ Sim_class = SimUniverse(method,path,sysname,potkey,corrkey,enskey,Tkey)
 Sim_class.set_sysparams(pes,T,m,dim)
 Sim_class.set_simparams(N,dt_therm,dt)
 Sim_class.set_methodparams(nbeads=nbeads)
-Sim_class.set_ensparams(E=E,qlist=qlist)
+Sim_class.set_ensparams(E=E,qlist=qlist,filt_func=cross_filt)
 Sim_class.set_runtime(time_therm,time_total)
 
 start_time=time.time()
@@ -91,4 +90,8 @@ with open('{}/Datafiles/RPMD_input_log_{}.txt'.format(path,potkey),'a') as f:
 batching(func,seed_split,max_time=1e6)
 print('time', time.time()-start_time)
 
-
+def cross_filt(rp,rp0):
+	q0 = rp0.q[:,0,0]
+	qt = rp.q[:,0,0]
+	ind = np.where(q0*qt < 0.0)
+	return ind	

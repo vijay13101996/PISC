@@ -7,7 +7,7 @@ from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr,
 
 dim = 1
 lamda = 2.0
-g = 0.085
+g = 0.08
 
 Tc = lamda*(0.5/np.pi)
 times = 1.0
@@ -17,7 +17,7 @@ m = 0.5
 N = 1000
 dt = 0.002
 
-nbeads = 8
+nbeads = 16
 gamma = 16
 
 potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
@@ -33,24 +33,24 @@ fig,ax = plt.subplots()
 
 if(1):
 	corrkey = 'OTOC'
-	enskey ='thermal'
+	enskey = 'mc'#'thermal'
 	Tkey = 'T_{}Tc'.format(times)
 
-	ext = 'Classical_{}_{}_{}_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,dt)
+	ext = 'Classical_{}_{}_{}_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,0.002)#dt)
 	ext = Cext+ext
 	plot_1D(ax,ext, label=r'$Classical, T=T_c$',color='c', log=True,linewidth=1)
-	slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,3.9,5.2)
+	slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,1,2.)
 	ax.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k')
 
 if(0):
 	corrkey = 'OTOC'
-	enskey ='mc'
+	enskey = 'thermal'
 	Tkey = 'T_{}Tc'.format(times)
 
 	ext = 'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,nbeads,dt)
 	ext = rpext+ext
-	plot_1D(ax,ext, label=r'$RPMD, T=T_c$',color='c', log=True,linewidth=1)
-	slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,1,2)
+	plot_1D(ax,ext, label=r'$RPMD, T=T_c$',color='m', log=True,linewidth=1)
+	slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,0.8,1.8)#3.2,4.5)
 	ax.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k')
 	
 if(0):

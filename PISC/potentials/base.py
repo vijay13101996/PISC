@@ -12,7 +12,7 @@ Matsubara coordinates.
 # Store all the Matsubara potentials with a 'Matsubara' tag 
 
 class PES(object):
-	def __init__():
+	def __init__(self):
 		self.pot = None	
 		self.dpot_cart = None
 		self.dpot = None
@@ -49,7 +49,7 @@ class PES(object):
 	
 	def compute_potential(self):
 		self.pot = self.potential(self.rp.qcart)
-		return self.potential
+		return self.pot
 	
 	def compute_force(self): # Work out a standard way to do this for higher dimensions
 		self.dpot_cart = self.dpotential(self.rp.qcart)

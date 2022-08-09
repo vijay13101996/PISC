@@ -4,6 +4,7 @@ from PISC.potentials.Coupled_harmonic import coupled_harmonic
 from PISC.potentials.Quartic_bistable import quartic_bistable
 from PISC.potentials.Heller_Davis import heller_davis
 from PISC.potentials.harmonic_2D import Harmonic
+from PISC.potentials.Four_well import four_well
 from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr, read_arr
 from PISC.engine import OTOC_f_1D
 from PISC.engine import OTOC_f_2D_omp_updated
@@ -23,7 +24,7 @@ Don't forget to set export OMP_NUM_THREADS=#thread_count in the .bashrc file!
 
 start_time = time.time()
 
-if(1): #2D double well
+if(0): #2D double well
 	L = 10.0
 	lbx = -6#-7
 	ubx = 6#7
@@ -37,7 +38,7 @@ if(1): #2D double well
 	w = 0.1	
 	
 	lamda = 2.0
-	g = 0.08
+	g = 0.085
 
 	Vb = lamda**4/(64*g)
 
@@ -46,7 +47,7 @@ if(1): #2D double well
 	
 	k = 1.0
 
-	z = 1.0#2.3	
+	z = 1.5#2.3	
 
 	Tc = lamda*0.5/np.pi
 	times = 1.0
@@ -196,7 +197,63 @@ if(1): #2D double well
 		#print('otoc', OTOC_arr[0])
 		
 		print('time',time.time()-start_time)
-			
+		
+if(1): #Four well
+	L = 5.0
+	lbx = -L
+	ubx = L
+	lby = -L
+	uby = L
+	m = 0.5
+	ngrid = 100
+	ngridx = ngrid
+	ngridy = ngrid
+
+	lamdax = 2.0
+	gx = 0.08
+	Vbx = lamdax**4/(64*gx)
+	lamday = 2.0
+	gy = 0.08
+	Vby = lamday**4/(64*gy)
+
+	z=0.1
+
+	Vb = Vbx+Vby
+	print('Vb',Vb)
+
+	potkey = 'four_well_lamdax_{}_gx_{}_lamday_{}_gy_{}_z_{}'.format(lamdax,gx,lamday,gy,z)
+
+	### Temperature is only relevant for the ring-polymer Poincare section
+	Tc = 0.5*lamdax/np.pi
+	times = 1.0
+	T = times*Tc
+	Tkey = 'T_{}Tc'.format(times) 
+
+	pes = four_well(lamdax,gx,lamday,gy,z)
+
+	print('pot',pes.potential_xy(0,0))
+	fname = 'Eigen_basis_{}_ngrid_{}'.format(potkey,ngrid)	
+	path = os.path.dirname(os.path.abspath(__file__))
+
+	DVR = DVR2D(ngridx,ngridy,lbx,ubx,lby,uby,m,pes.potential_xy)
+	n_eig_tot = 200
+	print('potential',potkey)	
+	if(1): #Diagonalization
+		param_dict = {'lbx':lbx,'ubx':ubx,'lby':lby,'uby':uby,'m':m,'ngridx':ngridx,'ngridy':ngridy,'n_eig':n_eig_tot}
+		with open('{}/Datafiles/Input_log_{}.txt'.format(path,potkey),'a') as f:	
+			f.write('\n'+str(param_dict))#print(param_dict,file=f)
+		
+		vals,vecs = DVR.Diagonalize()#_Lanczos(n_eig_tot)
+
+		store_arr(vecs[:,:n_eig_tot],'{}_vecs'.format(fname),'{}/Datafiles'.format(path))
+		store_arr(vals[:n_eig_tot],'{}_vals'.format(fname),'{}/Datafiles'.format(path))
+
+	n=2
+	plt.imshow(DVR.eigenstate(vecs[:,n])**2,origin='lower')
+	plt.show()
+	
+
+	
 if(0):
 	L = 4.0
 	lbx = -L

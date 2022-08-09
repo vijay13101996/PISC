@@ -20,7 +20,7 @@ class inst(object):
 		if(cart is False):
 			self.q = (self.rp.q).flatten() 
 			self.grad = (self.rp.dpot+self.pes.dpot).flatten()
-			self.hess = self.flatten_hess(self.rp.ddpot+self.pes.ddpot)
+			self.hess = self.flatten_hess(self.rp.ddpot+self.pes.ddpot)	
 		else:
 			self.q = (self.rp.qcart).flatten() 
 			self.grad = (self.rp.dpot_cart+self.pes.dpot_cart).flatten()
@@ -66,14 +66,14 @@ class inst(object):
 		#print('vals',np.around(vals,4))
 		F = np.matmul(vecs.T,self.grad)
 		if((abs(F)<self.tol).all()):
-			print('F',F,self.rp.qcart)
+			print('F,q,vals,vecs',F,self.rp.qcart,vals,vecs)
 			return "terminate"
 		lamda = 0.0
 		alpha = 1.0
 		if(vals[0]>0.0 and vals[1]/2 > vals[0]):
 			alpha=1.0
 			lamda=(vals[0]+vals[1]/2)/2
-		elif(vals[0]>0.0 and vals[1]/2 < vals[0]):
+		elif(vals[0]>0.0 and vals[1]/2 <= vals[0]):
 			alpha=(vals[1]-vals[0])/vals[1]
 			lamda=(vals[0]+(vals[0]+vals[1])/2)/2
 		elif(vals[0]<0.0):
@@ -124,19 +124,19 @@ class inst(object):
 		vals,vecs = np.linalg.eigh(self.hess)
 		F = np.matmul(vecs.T,self.grad)
 		if((abs(F)<self.tol).all()):
-			print('F, terminating',F)
+			print('F,vals, terminating',F,vals)
 			return "terminate"
 		lamda = 0.0
 		alpha = 1.0
 		step = alpha*F/(lamda-vals)	
 		if((np.dot(step,step)>self.stepsize**2 or vals[0]<0.0)):
 			lamda = vals[0] - abs(F[0]/step.size)
-			alpha = 1.0		
+			alpha = 1.0	
 		step = alpha*F/(lamda-vals)
 		h = np.matmul(vecs, step)
 		hnorm = np.sum(h**2)**0.5
 		if(hnorm>self.stepsize):
-			h/=(hnorm/self.stepsize)	
+			h/=(hnorm/self.stepsize)
 		return h
 	
 	def slow_step_update(self,step,cart=False):

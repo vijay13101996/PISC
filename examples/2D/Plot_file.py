@@ -13,7 +13,7 @@ D = 9.375
 lamda = 2.0
 g = 0.08
 
-z = 0.0
+z = 1.0
  
 Tc = 0.5*lamda/np.pi
 times = 1.0
@@ -48,13 +48,18 @@ syskey = 'Selene'
 
 fig,ax = plt.subplots()
 
-if(1):	
-	ext = 'Classical_OTOC_{}_T_{}Tc_dt_{}'.format(potkey,times,dt)
-	extclass = Cext + ext
-	print('fname',extclass)
-	plot_1D(ax,extclass, label=r'$Classical,T={}Tc$'.format(times),color='g', log=True,linewidth=1)
-	slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(extclass,2,3.)
-	ax.plot(t_trunc, slope*t_trunc+ic,linewidth=2,color='k')
+
+if(1):
+	corrkey = 'OTOC'
+	enskey ='mc'#'thermal'
+	Tkey = 'T_{}Tc'.format(times)
+
+	ext = 'Classical_{}_{}_{}_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,dt)
+	ext = Cext+ext
+	plot_1D(ax,ext, label=r'$Classical, T=T_c$',color='c', log=True,linewidth=1)
+	slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,1.,2.)
+	print('slope',slope/2)
+	ax.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k')
 
 if(0):
 	for times,c in zip([0.7,0.9,1.0],['r','g','b']):	

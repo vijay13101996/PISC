@@ -55,7 +55,7 @@ class Poincare_SOS(object):
 			pcartg = read_arr('Microcanonical_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(self.N,self.nbeads,self.beta,self.potkey,self.rngSeed),"{}/Datafiles".format(self.pathname)) 
 		
 		# Specific trajectories could be chosen by specifying the 'ind' and uncommenting the lines below. 
-		ind = [2]#range(3)
+		ind = [1]#range(3)
 		#qcartg = qcartg[ind]
 		#pcartg = pcartg[ind]
 		#print('qcartg',qcartg)

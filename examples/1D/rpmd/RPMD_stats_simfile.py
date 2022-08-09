@@ -18,13 +18,15 @@ lamda = 2.0
 g = 0.08
 Vb = lamda**4/(64*g)
 pes = double_well(lamda,g)
+potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
+
+#pes = harmonic(m,1.0) ###To be used only for testing
+#potkey='harmonic'
 
 Tc = 0.5*lamda/np.pi
 times = 1.0
 T = times*Tc
 Tkey = 'T_{}Tc'.format(times)
-
-potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
 
 #------------------------------------------------------
 N = 1000
@@ -42,7 +44,7 @@ enskey = 'thermal'
 qgrid = np.linspace(-10.0,10.0,int(1e5)+1)
 potgrid = pes.potential(qgrid) 
 
-E=1.5*Vb
+E=Vb
 qlist = qgrid[np.where(potgrid<E)]
 qlist = qlist[:,np.newaxis]
 
@@ -60,7 +62,7 @@ Sim_class.set_runtime(time_therm)
 start_time=time.time()
 func = partial(Sim_class.run_seed)
 seeds = range(1000)
-seed_split = chunks(seeds,10)
+seed_split = chunks(seeds,6)
 
 param_dict = {'Temperature':Tkey,'CType':corrkey,'m':m,\
 	'therm_time':time_therm,'dt_therm':dt_therm}

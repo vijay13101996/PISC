@@ -2,7 +2,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 import time
 import pickle
-from PISC.engine import RPMD_core
 from PISC.engine.PI_sim_core import SimUniverse
 import multiprocessing as mp
 from functools import partial
@@ -13,7 +12,7 @@ import os
 
 dim=1
 lamda = 2.0#
-g = 0.08#
+g = 0.085#
 
 Vb=lamda**4/(64*g)
 
@@ -28,10 +27,10 @@ T = times*Tc
 m = 0.5
 N = 1000
 dt_therm = 0.05
-dt = 0.002
+dt = 0.005
 time_therm = 100.0
 time_total = 5.0
-nbeads = 8
+nbeads = 16
 
 method = 'RPMD'
 potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
@@ -43,7 +42,7 @@ enskey = 'mc'
 path = os.path.dirname(os.path.abspath(__file__))
 
 #--------------------------------------------------------------------
-E = 1.5*Vb
+E = 1.001*Vb
 qgrid = np.linspace(-10.0,10.0,int(1e5)+1)
 potgrid = pes.potential(qgrid)
 
@@ -63,7 +62,7 @@ func = partial(Sim_class.run_seed)
 seeds = range(1000)
 seed_split = chunks(seeds,10)
 
-param_dict = {'Temperature':Tkey,'CType':corrkey,'m':m,\
+param_dict = {'Temperature':Tkey,'CType':corrkey,'Ensemble':enskey,'m':m,\
 	'therm_time':time_therm,'time_total':time_total,'nbeads':nbeads,'dt':dt,'dt_therm':dt_therm}
 		
 with open('{}/Datafiles/RPMD_input_log_{}.txt'.format(path,potkey),'a') as f:	

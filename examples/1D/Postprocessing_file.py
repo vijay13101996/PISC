@@ -10,7 +10,7 @@ from PISC.utils.nmtrans import FFT
 
 dim = 1
 lamda = 2.0#
-g = 0.09#
+g = 0.08#
 Vb = lamda**4/(64*g)
 
 Tc = lamda*(0.5/np.pi)
@@ -22,16 +22,19 @@ m = 0.5
 N = 1000
 dt = 0.002
 
-nbeads = 8
+nbeads = 16
 gamma = 16
 
-time_total = 6.0#10.0
+time_total = 5.0#
 
 tarr = np.arange(0.0,time_total,dt)
 OTOCarr = np.zeros_like(tarr) +0j
 
 potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
 pes = double_well(lamda,g)
+
+#potkey='harmonic'
+#pes = harmonic(m,1.0)
 
 #Path extensions
 path = os.path.dirname(os.path.abspath(__file__))	
@@ -47,10 +50,11 @@ Tkey = 'T_{}Tc'.format(times)
 syskey = 'Selene'
 
 if(0):#RPMD
-	if(0):
+	if(1):
 		methodkey = 'RPMD'
+		enskey = 'thermal'
 
-		kwlist = [methodkey,corrkey,syskey,potkey,Tkey,beadkey]
+		kwlist = [methodkey,corrkey,syskey,potkey,Tkey,beadkey,'dt_{}'.format(dt)]
 		
 		tarr,OTOCarr = seed_collector(kwlist,rpext,tarr,OTOCarr)
 
@@ -59,9 +63,9 @@ if(0):#RPMD
 		#plt.plot(tarr,OTOCarr)
 		plt.plot(tarr,np.log(abs(OTOCarr)))
 		plt.show()
-		store_1D_plotdata(tarr,OTOCarr,'RPMD_{}_{}_{}_nbeads_{}_dt_{}'.format(corrkey,potkey,Tkey,nbeads,dt),rpext)
+		store_1D_plotdata(tarr,OTOCarr,'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,nbeads,dt),rpext)
 
-	if(1):
+	if(0):
 		kwqlist = ['Thermalized_rp_qcart','nbeads_{}'.format(nbeads), 'beta_{}'.format(beta), potkey]
 		kwplist = ['Thermalized_rp_pcart','nbeads_{}'.format(nbeads), 'beta_{}'.format(beta), potkey]
 		
@@ -88,7 +92,7 @@ if(0):#RPMD
 			kin = np.sum(np.sum(pcart**2/(2*m),axis=1),axis=1)	
 						
 			#pot = pes.potential(q[:,0,0]/nbeads**0.5)
-			#kin = p[:,0,0]**2/(2*m*nbeads**0.5)
+			#kin = p[:,0,0]**2/(2*m*nbeads)
 	
 			Etot = pot+kin
 			E.extend(Etot)
@@ -102,7 +106,7 @@ if(0):#RPMD
 		V/=nbeads
 		K/=nbeads
 		
-		bins = np.linspace(0.0,5.0,200)
+		bins = np.linspace(0.0,8.0,200)
 		dE = bins[1]-bins[0]
 		#countsV, bin_edgeV = np.histogram(V,bins=200)
 		#countsK, bin_edgeK = np.histogram(K,bins=200)
@@ -119,7 +123,7 @@ if(0):#RPMD
 		plt.axvline(x=V.mean(),ymin=0.0, ymax = 1.0,linestyle='--',color='g')
 		plt.axvline(x=K.mean(),ymin=0.0, ymax = 1.0,linestyle='--',color='b')		
 		plt.axvline(x=E.mean(),ymin=0.0, ymax = 1.0,linestyle='--',color='r')			
-		plt.axvline(x=Vb,ymin=0.0, ymax = 1.0,linestyle='--',color='m')
+		#plt.axvline(x=Vb,ymin=0.0, ymax = 1.0,linestyle='--',color='m')
 		plt.show()
 
 	if(0):
@@ -130,7 +134,7 @@ if(0):#RPMD
 		fplist = seed_finder(kwplist,rpext,dropext=True)
 	
 		RG = []
-		bins = np.linspace(0.0,2.0,200)	
+		bins = np.linspace(0.0,1.5,200)	
 		for qfile,pfile in zip(fqlist,fplist):
 			qcart = read_arr(qfile,rpext)
 			pcart = read_arr(pfile,rpext)
@@ -173,7 +177,7 @@ if(0):#CMD
 if(1):#Classical
 	if(1):
 		methodkey = 'Classical'
-		enskey = 'thermal'
+		enskey = 'mc'#'thermal'
 
 		kwlist = [enskey,methodkey,corrkey,syskey,potkey,Tkey]
 		
@@ -205,8 +209,8 @@ if(1):#Classical
 			V.extend(pot)
 			K.extend(kin)
 
-		plt.hist(x=E, bins=50,color='r')
-		plt.hist(x=V, bins=50,color='g')
-		plt.hist(x=K, bins=50,color='b',alpha=0.25)
+		plt.hist(x=E, bins=50,density=True,color='r')
+		#plt.hist(x=V, bins=50,color='g')
+		#plt.hist(x=K, bins=50,color='b',alpha=0.25)
 		plt.axvline(x=Vb,ymin=0.0, ymax = 1.0,linestyle='--',color='k')
 		plt.show()	
