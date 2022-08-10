@@ -38,7 +38,8 @@ class Poincare_SOS(object):
 		self.time_ens = time_ens
 		self.time_run = time_run
 	
-	def bind(self,qcartg,pcartg=None,E=None,specific_traj=False,sym_init=False):
+	def bind(self,qcartg,pcartg=None,E=None,specific_traj=None,sym_init=False):
+		"""Has the option of using a specific trajectory and symmetric initialization."""
 		self.ens = Ensemble(beta=self.beta,ndim=self.dim)
 		self.motion = Motion(dt = self.dt,symporder=2) 
 		self.rng = np.random.default_rng(self.rngSeed) 
@@ -50,17 +51,14 @@ class Poincare_SOS(object):
 		# If E is specified, the 'gen_mc_ensemble' function initializes a mc ensemble, 'ergodizes' the phase space and
 		# returns the initial conditions pcartg, qcartg to use for plotting the Poincare section. 	
 		if(E is not None):	
-			#####look at generate rp (in gen_mc_ens)!!!!!!!###################### print( wie viele beads(und das es kein rp ist))
 			generate_rp(self.pathname,self.m,self.dim,self.N,self.nbeads,self.ens,self.pes,self.rng,self.time_ens,self.dt,self.potkey,self.rngSeed,E,qcartg)
 			qcartg = read_arr('Microcanonical_rp_qcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(self.N,self.nbeads,self.beta,self.potkey,self.rngSeed),"{}/Datafiles".format(self.pathname))
 			pcartg = read_arr('Microcanonical_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(self.N,self.nbeads,self.beta,self.potkey,self.rngSeed),"{}/Datafiles".format(self.pathname)) 
 			
 		# Specific trajectories could be chosen by specifying the 'ind' and uncommenting the lines below. 
-		if(specific_traj!=False):
-			ind= specific_traj
-			#ind = [0,1]# how do I make them colourful???
-			qcartg = qcartg[ind]
-			pcartg = pcartg[ind]
+		if(specific_traj is not None):
+			qcartg = qcartg[specific_traj]
+			pcartg = pcartg[specific_traj]
 		if(sym_init):
 			qc = np.repeat(qcartg,2,axis=0)
 			pc = np.repeat(pcartg,2,axis=0)
@@ -85,7 +83,7 @@ class Poincare_SOS(object):
 				if(colour==False):
 					ax.scatter(x,y,s=5)
 				else:
-					ax.scatter(x,y,s=5,c=colour)#s=marker size
+					ax.scatter(x,y,s=5,c=colour)
 				plt.pause(0.005)	
 			
 	def PSOS_Y(self,x0):
@@ -96,14 +94,14 @@ class Poincare_SOS(object):
 		nsteps = int(self.time_run/self.motion.dt)
 		print('E,kin,pot',self.rp.kin+self.pes.pot,self.rp.kin,self.pes.pot)
 		Y_list = []
-		PY_list = []###dont I also have to create X_list
+		PY_list = []
 		X_list = []
 		for i in range(nsteps):
 			self.sim.step(mode="nve",var='pq')	
-			x = self.rp.q[0,0,0]/self.rp.nbeads**0.5#normal mode: 0th entry gives that
-			px = self.rp.p[0,0,0]
+			x = self.rp.q[0,0,0]/self.rp.nbeads**0.5
+			px = self.rp.p[0,0,0]/self.rp.nbeads**0.5
 			y = self.rp.q[0,1,0]/self.rp.nbeads**0.5
-			py = self.rp.p[0,1,0]
+			py = self.rp.p[0,1,0]/self.rp.nbeads**0.5
 			curr = x-x0
 			if( prev*curr<0.0 and px>0.0 ):
 				Y_list.append(y)
@@ -117,7 +115,9 @@ class Poincare_SOS(object):
 
 		return Y_list,PY_list,X_list
 	
-	def PSOS_X_gyr(self,y0,gyr_min,gyr_max,hist=False,Rg_of_t=False):
+	def PSOS_X_gyr(self,y0,gyr_min,gyr_max):
+		""" Same as PSOS_X but with a filter of the radius of gyration.
+		Returns an extra np array with all radii of gyration, so these can be used for histogramming/ passing to other functions."""
 		prev = self.rp.q[:,1,0] - y0
 		curr = self.rp.q[:,1,0] - y0
 		count=0
@@ -135,23 +135,17 @@ class Poincare_SOS(object):
 			px = self.rp.p[:,0,0]/self.rp.nbeads**0.5
 			y = self.rp.q[:,1,0]/self.rp.nbeads**0.5
 			py = self.rp.p[:,1,0]/self.rp.nbeads**0.5
-			#cent_E = np.sum(self.rp.p[:,:,0]**2/self.rp.nbeads,axis=1) + self.pes.potential(self.rp.q[:,:,0]/self.rp.nbeads**0.5)
 			
-			gyr_x=0
-			gyr_y=0
-			for j in range(self.rp.nbeads): 
-				gyr_x+=(x-self.rp.qcart[:,0,j])**2
-				gyr_y+=(y-self.rp.qcart[:,1,j])**2
-			gyr_x/=self.rp.nbeads
-			gyr_y/=self.rp.nbeads#stays small anyways
-			gyr_tot=gyr_x+gyr_y
+			gyr_x=np.mean((x-self.rp.qcart[:,0,:])**2,axis=1)
+			gyr_y=np.mean((y-self.rp.qcart[:,1,:])**2,axis=1)
+			gyr_tot=np.sqrt(gyr_x+gyr_y)
 			gyr_list_np[i,:]=gyr_tot[:]
 
 			curr = y-y0
 			ind = np.where( (prev*curr<0.0) & (py<0.0)& (gyr_min<np.max(gyr_list_np,axis=0))&(np.max(gyr_list_np,axis=0)<gyr_max))
 			nsteps = int(self.time_run/self.motion.dt)
-			if(10*i>=nsteps and i>therm_steps):#1/10th discarded
-				X_list.extend(x[ind])#.append() adds a single element to the end of the list while .extend() can add multiple individual elements to the end of the list.
+			if(10*i>=nsteps and i>therm_steps):#1/10th discarded, ring polymer relaxation is needed to get an estimate of the max_Rg
+				X_list.extend(x[ind])
 				PX_list.extend(px[ind])
 				Y_list.extend(y[ind])
 			prev = curr
@@ -161,38 +155,6 @@ class Poincare_SOS(object):
 		for s in range(2*self.N):
 			gyr_list_max[s]=np.max(gyr_list_np[:,s])
 		
-		#Rg as a function of time
-		print(self.N)
-		if(Rg_of_t==True):
-			for k in range(int(self.N/6)):
-				fig, axs =plt.subplots(3,2, sharey='all')
-				l=0
-				for ax in axs.flat: 
-					ax.plot(gyr_list_np[:,l+k*6])
-					l+=1
-			plt.show(block=False)
-			plt.pause(1)
-		###histogram
-		if(hist==True):#hist iwth max and mean Rg
-			#hist_fig, hist_ax= plt.subplots(2,sharex='all')
-			hist_fig, hist_ax= plt.subplots(2)
-			hist_fig.suptitle(r'max(R$_g)$')
-			hist_ax[0].hist(gyr_list_max,range=(0,4),bins=80)
-			#hist_ax[1].hist(gyr_list_mean,bins=50)
-			#hist_ax[1].set_title(r'mean(R$_g)$')
-			#hist_fig, hist_ax= plt.subplots(1,sharex='all')
-			hist_ax[1].hist(gyr_list_max,range=(0,1),bins=50)
-			#hist_ax[1].hist(gyr_list_mean,range=(0,1),bins=50)
-			#hist_ax[1].set_title(r'mean(R$_g)$')		
-			plt.show(block=False)
-			plt.pause(1)
-		if(hist==True):#Hist with all Rg
-			hist_fig, hist_ax= plt.subplots(2)
-			hist_fig.suptitle(r'R$_g$')
-			hist_ax[0].hist(gyr_list_np.flatten(),range=(0,1),bins=100)
-			hist_ax[1].hist(gyr_list_np.flatten(),range=(0,0.5),bins=1000)	
-			plt.show(block=False)
-			plt.pause(1)
 		print('shape(X):',np.array(X_list).shape,'(at x: sign of y changes and py<0)')
 		self.X.extend(X_list)
 		self.PX.extend(PX_list)
@@ -214,15 +176,13 @@ class Poincare_SOS(object):
 			px = self.rp.p[:,0,0]/self.rp.nbeads**0.5
 			y = self.rp.q[:,1,0]/self.rp.nbeads**0.5
 			py = self.rp.p[:,1,0]/self.rp.nbeads**0.5
-			#cent_E = np.sum(self.rp.p[:,:,0]**2/self.rp.nbeads,axis=1) + self.pes.potential(self.rp.q[:,:,0]/self.rp.nbeads**0.5)
-			#print(len(x))
-			
+
 			curr = y-y0
 			
 			ind = np.where( (prev*curr<0.0) & (py<0.0))
 
 			nsteps = int(self.time_run/self.motion.dt)
-			X_list.extend(x[ind])#.append() adds a single element to the end of the list while .extend() can add multiple individual elements to the end of the list.
+			X_list.extend(x[ind])
 			PX_list.extend(px[ind])
 			Y_list.extend(y[ind])
 			prev = curr
