@@ -38,7 +38,7 @@ class RP_Simulation(Simulation):
 	
 	def bind(self,ens,motion,rng,rp,pes,propa,therm):
 		super(RP_Simulation,self).bind(ens,motion,rng,rp,pes,propa,therm)
-	
+		
 	def NVE_pqstep(self):
 		self.propa.pq_step()
 		self.rp.mats2cart()	

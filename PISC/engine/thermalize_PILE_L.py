@@ -9,10 +9,20 @@ from matplotlib import pyplot as plt
 from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr, read_arr
 import time
 
-def thermalize_rp(pathname,m,dim,N,nbeads,ens,pes,rng,time_therm,dt_therm,potkey,rngSeed,tau0=1.0,pile_lambda=100.0):	
-	qcart = rng.normal(size=(N,dim,nbeads))
-	qcart[:N//2,:,0]-=1.0 #These two lines need to be checked.
-	qcart[N//2:,:,0]+=1.0 
+def thermalize_rp(pathname,m,dim,N,nbeads,ens,pes,rng,time_therm,dt_therm,potkey,rngSeed,qlist=None,tau0=1.0,pile_lambda=100.0):	
+	if(qlist is None):
+		qcart = np.zeros((N,dim,nbeads))
+		qcart[:N//2,0,:]-=2.0 #These two lines are specific to the 2D double well. 
+		qcart[N//2:,0,:]+=2.0 
+	else:
+		if(dim==1):
+			expbeta = np.exp(-ens.beta*pes.potential(qlist))[:,0]
+			probgrid = expbeta/np.sum(expbeta) 
+			index_arr = rng.choice(len(qlist),N, p=probgrid)  # Choose N points at random from the qlist
+			qcart = np.zeros((N,dim,nbeads))
+			for i in range(nbeads):
+				qcart[:,:,i] = qlist[index_arr]  # Initialize ring polymers with collapsed configuration at these points	
+			
 	rp = RingPolymer(qcart=qcart,m=m) 
 		
 	motion = Motion(dt = dt_therm,symporder=2)
@@ -38,17 +48,8 @@ def thermalize_rp(pathname,m,dim,N,nbeads,ens,pes,rng,time_therm,dt_therm,potkey
 		#tarr.append(sim.t)
 		#kinarr.append((rp.pcart**2).sum())#kin.sum())
 
-	#plt.plot(tarr,kinarr)
-	#plt.show()
-
-	#qar = rp.q[:,0,0]
-	#E = pes.potential(rp.qcart) + rp.pcart**2/(2*m) + 0.5*rp.dynm3*rp.dynfreq2*rp.q**2
-	#E = np.sum(E,axis=2)
-	#E = E[:,0]/nbeads
-	#plt.hist(E,bins=50)
-	#plt.show()
-	#print('E',E.shape)
 	print('End of thermalization. Seed: {} Classical Kinetic energy {:5.3f} Target value {:5.3f} '.format(rngSeed,rp.kin.sum()/rp.nsys,0.5*rp.ndim*rp.nbeads**2/ens.beta))	
+
 
 	store_arr(rp.qcart,'Thermalized_rp_qcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(rp.nsys,rp.nbeads,ens.beta,potkey,rngSeed),"{}/Datafiles".format(pathname))
 	store_arr(rp.pcart,'Thermalized_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(rp.nsys,rp.nbeads,ens.beta,potkey,rngSeed),"{}/Datafiles".format(pathname)) 

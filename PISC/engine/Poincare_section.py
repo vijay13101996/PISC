@@ -38,7 +38,8 @@ class Poincare_SOS(object):
 		self.time_ens = time_ens
 		self.time_run = time_run
 	
-	def bind(self,qcartg,pcartg=None,E=None,sym_init=False):
+	def bind(self,qcartg,pcartg=None,E=None,specific_traj=None,sym_init=False):
+		# Specific trajectories could be chosen by specifying the 'ind' 
 		self.ens = Ensemble(beta=self.beta,ndim=self.dim)
 		self.motion = Motion(dt = self.dt,symporder=2) 
 		self.rng = np.random.default_rng(self.rngSeed) 
@@ -54,11 +55,9 @@ class Poincare_SOS(object):
 			qcartg = read_arr('Microcanonical_rp_qcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(self.N,self.nbeads,self.beta,self.potkey,self.rngSeed),"{}/Datafiles".format(self.pathname))
 			pcartg = read_arr('Microcanonical_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(self.N,self.nbeads,self.beta,self.potkey,self.rngSeed),"{}/Datafiles".format(self.pathname)) 
 		
-		# Specific trajectories could be chosen by specifying the 'ind' and uncommenting the lines below. 
-		ind = [2]#range(3)
-		#qcartg = qcartg[ind]
-		#pcartg = pcartg[ind]
-		#print('qcartg',qcartg)
+		if(specific_traj is not None):
+			qcartg = qcartg[specific_traj]
+			pcartg = pcartg[specific_traj]
 		if(sym_init):
 			qc = np.repeat(qcartg,2,axis=0)
 			pc = np.repeat(pcartg,2,axis=0)
@@ -110,9 +109,9 @@ class Poincare_SOS(object):
 		for i in range(nsteps):
 			self.sim.step(mode="nve",var='pq')	
 			x = self.rp.q[:,0,0]/self.rp.nbeads**0.5
-			px = self.rp.p[:,0,0]
+			px = self.rp.p[:,0,0]/self.rp.nbeads**0.5
 			y = self.rp.q[:,1,0]/self.rp.nbeads**0.5
-			py = self.rp.p[:,1,0]
+			py = self.rp.p[:,1,0]/self.rp.nbeads**0.5
 			curr = x-x0
 			ind = np.where( (prev*curr<0.0) & (px>0.0))
 			Y_list.extend(y[ind])
@@ -162,6 +161,53 @@ class Poincare_SOS(object):
 
 		return X_list,PX_list,Y_list			
 
+	def PSOS_X_gyr(self,y0,gyr_min,gyr_max):
+		""" Same as PSOS_X but with a filter of the radius of gyration.
+		Returns an extra np array with all radii of gyration, so these can be used for histogramming/ passing to other functions."""
+		prev = self.rp.q[:,1,0] - y0
+		curr = self.rp.q[:,1,0] - y0
+		count=0
+
+		nsteps = int(self.time_run/self.motion.dt)
+		therm_steps=int(30/self.motion.dt)
+		#print('E,kin,pot',np.sum(self.rp.pcart**2/(2*self.m),axis=1)+self.pes.pot,self.rp.kin,self.pes.pot)
+		X_list = []
+		PX_list = []
+		Y_list = []
+		gyr_list_np=np.zeros((nsteps,2*self.N))
+		for i in range(nsteps):
+			self.sim.step(mode="nve",var='pq')	
+			x = self.rp.q[:,0,0]/self.rp.nbeads**0.5
+			px = self.rp.p[:,0,0]/self.rp.nbeads**0.5
+			y = self.rp.q[:,1,0]/self.rp.nbeads**0.5
+			py = self.rp.p[:,1,0]/self.rp.nbeads**0.5
+			
+			gyr_x=np.mean((x-self.rp.qcart[:,0,:])**2,axis=1)
+			gyr_y=np.mean((y-self.rp.qcart[:,1,:])**2,axis=1)
+			gyr_tot=np.sqrt(gyr_x+gyr_y)
+			gyr_list_np[i,:]=gyr_tot[:]
+
+			curr = y-y0
+			ind = np.where( (prev*curr<0.0) & (py<0.0)& (gyr_min<np.max(gyr_list_np,axis=0))&(np.max(gyr_list_np,axis=0)<gyr_max))
+			nsteps = int(self.time_run/self.motion.dt)
+			
+			#Initial 10% of the steps discarded, ring polymer relaxation is needed to get an estimate of the max_Rg
+			if(10*i>=nsteps and i>therm_steps):
+				X_list.extend(x[ind])
+				PX_list.extend(px[ind])
+				Y_list.extend(y[ind])
+			prev = curr
+			count+=1
+		
+		gyr_list_max= np.zeros(2*self.N)
+		for s in range(2*self.N):
+			gyr_list_max[s]=np.max(gyr_list_np[:,s])
+		
+		print('shape(X):',np.array(X_list).shape,'(at x: sign of y changes and py<0)')
+		self.X.extend(X_list)
+		self.PX.extend(PX_list)
+		return X_list,PX_list,Y_list, gyr_list_np
+		
 	def store_data(self,coord): 
 		key = [self.method,'Poincare_section',self.potkey,self.Tkey,'{}'.format(self.N)]
 		fext = '_'.join(key)	
