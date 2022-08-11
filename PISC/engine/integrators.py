@@ -40,18 +40,38 @@ class Symplectic_order_II(Integrator):
 		self.rp.q+=self.rp.p*self.motion.qdt/self.rp.dynm3
 		self.force_update()	
 
+	def Av(self):
+		self.rp.dq+=self.rp.dp*self.motion.qdt/self.rp.dynm3
+	
 	def B(self,centmove=True):
 		if(centmove):
 			self.rp.p-=self.pes.dpot*self.motion.pdt	
 		else:
 			self.rp.p[...,1:]-=self.pes.dpot[...,1:]*self.motion.pdt
-		
+
+	def Bv(self,centmove=True):
+		hess = self.pes.ddpot.swapaxes(2,3).reshape(-1,self.ndim*self.nbeads,self.ndim*self.nbeads)
+		dpc= (np.matmul(hess,rp.dq.reshape(-1,self.ndim*self.nbeads)).reshape(-1,ndim,nbeads)
+		if(centmove):
+			self.rp.dp-=dpc*self.motion.pdt	
+		else:
+			self.rp.dp[...,1:]-=dpc[...,1:]*self.motion.pdt
+
 	def b(self):
 		if self.rp.nmats is None:
 			self.rp.p-=self.rp.dpot*self.motion.pdt
 		else:
 			self.rp.p[...,self.rp.nmats:]-=self.rp.dpot[...,self.rp.nmats:]*self.motion.pdt
-		
+
+	def bv(self):
+		hess = self.rp.ddpot.swapaxes(2,3).reshape(-1,self.ndim*self.nbeads,self.ndim*self.nbeads)
+		dpc= (np.matmul(hess,rp.dq.reshape(-1,self.ndim*self.nbeads)).reshape(-1,ndim,nbeads)
+		self.rp.dp-=dpc*self.motion.pdt
+		if self.rp.nmats is None:	
+			self.rp.dp-=dpc*self.motion.pdt
+		else:
+			self.rp.p[...,self.rp.nmats:]-=dpc[...,self.rp.nmats:]*self.motion.pdt
+
 	def M1(self):
 		self.rp.Mpp-=(self.pes.ddpot)*self.motion.pdt*self.rp.Mqp
 	
@@ -88,6 +108,22 @@ class Symplectic_order_II(Integrator):
 		self.A()	
 		self.B(centmove)
 	
+	def var_step(self,centmove=True):
+		self.B(centmove)
+		self.Bv(centmove)
+		self.b()
+		self.bv()
+		
+		self.A()
+		self.Av()
+		
+		self.b()
+		self.bv()
+		self.B(centmove)
+		self.Bv(centmove)
+	
+#	def var_step_nosprings (think about var_step_RSP)
+
 	def Monodromy_step_nosprings(self):	
 		self.B()
 		self.M1()
@@ -143,7 +179,8 @@ class Symplectic_order_IV(Integrator):
 			self.rp.p-=self.rp.dpot*self.motion.pdt[k]
 		else:
 			self.rp.p[...,self.rp.nmats:]-=self.pes.dpot[...,self.rp.nmats:]*self.motion.pdt[k]
-		
+	
+	# def Av, Bv in the same format as above
 	def M1(self,k):
 		self.rp.Mpp-=(self.pes.ddpot)*self.motion.pdt[k]*self.rp.Mqp
 		
@@ -171,6 +208,9 @@ class Symplectic_order_IV(Integrator):
 		self.B(k)
 		self.A(k)
 
+	#def var_kstep
+	# Define var_kstep along the same lines as pq_kstep
+
 	def Monodromy_kstep(self,k):
 		self.B(k)
 		self.b(k)
@@ -197,6 +237,9 @@ class Symplectic_order_IV(Integrator):
 	def pq_step_nosprings(self):	
 		for k in range(4):
 			self.pq_kstep_nosprings(k)
+
+	#def var_step
+	#Loop over the 4 var_ksteps 
 
 	def Monodromy_step(self):	
 		for k in range(4):

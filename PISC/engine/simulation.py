@@ -42,9 +42,7 @@ class RP_Simulation(Simulation):
 	def NVE_pqstep(self):
 		self.propa.pq_step()
 		self.rp.mats2cart()	
-		# q has already been converted at the A update step. 
-		# So, p and M needs to be converted
-
+		
 	def NVE_pqstep_RSP(self):
 		self.propa.pq_step_RSP()
 		self.rp.mats2cart()	
@@ -52,7 +50,10 @@ class RP_Simulation(Simulation):
 	def NVE_Monodromystep(self):
 		self.propa.Monodromy_step()
 		self.rp.mats2cart()
-		
+
+	# def NVE_varstep(self):
+	#	call propa's varstep and convert from mats to cart
+	
 	def NVT_pqstep(self,pc,centmove=True):
 		self.propa.O(pc)
 		self.propa.pq_step(centmove)
@@ -91,6 +92,7 @@ class RP_Simulation(Simulation):
 			elif(var=='monodromy'):
 				for i in range(ndt):
 					self.NVE_Monodromystep()
+			# self.NVE_varstep() for var=='variation'
 		elif mode == "nvt":
 			if(var=='pq'):
 				if RSP is False:
