@@ -9,7 +9,7 @@ class harmonic(PES):
 		
 	def bind(self,ens,rp):
 		super(harmonic,self).bind(ens,rp)
-		
+
 	def potential(self,q):
 		return (self.m*self.omega**2/2.0)*q**2
 
