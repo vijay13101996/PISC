@@ -80,11 +80,31 @@ class SimUniverse(object):
 		else:
 			dt = self.dt
 			nsteps = int(self.time_run/dt)
+			filt_condn = np.array([False for i in range(self.N)])
+			q0 = sim.rp.q[:,0,0].copy() 	
 			for i in range(nsteps):
 				sim.step(mode="nve",var='monodromy',pc=False)	
-				Mqq = np.mean(abs(sim.rp.Mqq[:,0,0,0,0]**2)) 
+				Mqq = abs(sim.rp.Mqq[:,0,0,0,0]**2)
+				qt = sim.rp.q[:,0,0]
+				ind = np.where(q0*qt < -1)
+				filt_condn[ind] = True
 				tarr.append(sim.t)
 				Mqqarr.append(Mqq)
+			
+			ind_arr = np.where(filt_condn)[0]
+			print('indarr',len(ind_arr))
+			Mqqarr = np.array(Mqqarr)
+			Mqqarr = np.mean(Mqqarr[:,ind_arr],axis=1)
+
+			if(0):
+				dt = self.dt
+				nsteps = int(self.time_run/dt)
+				for i in range(nsteps):
+					sim.step(mode="nve",var='monodromy',pc=False)	
+					Mqq = np.mean(abs(sim.rp.Mqq[:,0,0,0,0]**2))
+					tarr.append(sim.t)
+					Mqqarr.append(Mqq)
+
 		return tarr, Mqqarr
 
 	def run_TCF(self,sim):
@@ -123,8 +143,8 @@ class SimUniverse(object):
 		elif(self.corrkey=='pq_TCF'):		
 			tarr,tcf = gen_tcf(parr,qarr,tarr)
 		
-		return tarr,tcf
-		
+		return tarr,tcf	
+	
 	def run_seed(self,rngSeed):
 		print('T, nbeads',self.T,self.nbeads)	
 		rng = np.random.default_rng(rngSeed)

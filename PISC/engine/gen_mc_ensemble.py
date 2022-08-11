@@ -19,14 +19,14 @@ def generate_rp(pathname,m,dim,N,nbeads,ens,pes,rng,time_relax,dt_relax,potkey,r
 		if(plist is not None):
 			pcart[:,:,i] = plist[index_arr]	
 
-	if(plist is None): # Initialize (randomly) momenta if plist is None
-		pot = pes.potential(qcart)
-		if(dim>1):
-			pot= pot[:,np.newaxis,:]	
-		V = np.sum(pot,axis=2)
-		V = V[:,0]
-		#print('V',V,E*nbeads)
+	pot = pes.potential(qcart)
+	if(dim>1):
+		pot= pot[:,np.newaxis,:]	
+	V = np.sum(pot,axis=2)
+	V = V[:,0]
+	#print('V',V,E*nbeads)
 
+	if(plist is None): # Initialize (randomly) momenta if plist is None	
 		pcoeff = rng.dirichlet(np.ones(dim*nbeads),size=1)
 		pcoeff=pcoeff[0]
 		count=0
@@ -87,4 +87,69 @@ def generate_rp(pathname,m,dim,N,nbeads,ens,pes,rng,time_relax,dt_relax,potkey,r
 	#plt.show()
 	store_arr(rp.qcart[ind_arr],'Microcanonical_rp_qcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(rp.nsys,rp.nbeads,ens.beta,potkey,rngSeed),"{}/Datafiles".format(pathname))
 	store_arr(rp.pcart[ind_arr],'Microcanonical_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(rp.nsys,rp.nbeads,ens.beta,potkey,rngSeed),"{}/Datafiles".format(pathname)) 
-	
+
+def generate_rp_gyr(pathname,m,dim,N,nbeads,ens,pes,rng,time_relax,dt_relax,potkey,rngSeed,E,qlist,gyr_lower=0,gyr_upper=0.2,hist=False):
+	#=============================================
+	# Title:  Generator of Rg filtered mc ensemble
+	# Author: Lars Meuser
+	# Date:   10 August 2022
+	#=============================================
+	#hist=True
+	index_arr = rng.choice(len(qlist),N)  # Choose N points at random from the qlist
+	qcart = np.zeros((N,dim,nbeads))
+	pcart = np.zeros((N,dim,nbeads))
+	for i in range(nbeads):
+		qcart[:,:,i] = qlist[index_arr]  # Initialize ring polymers with collapsed configuration at these points	
+
+	pot = pes.potential(qcart)
+	if(dim>1):
+		pot= pot[:,np.newaxis,:]	
+	V = np.sum(pot,axis=2) ##May need to be changed for 2D
+	V = V[:,0]
+	#print('V',E*nbeads)
+
+	pcoeff = rng.dirichlet(np.ones(dim*nbeads),size=1)
+	pcoeff=pcoeff[0]
+	count=0
+	# Initialize the centroid momenta along each component to the appropriate value so that the total energy is E	
+	for d in range(dim):
+		for b in range(nbeads):
+			pcart[:,d,b] = (np.sqrt(2*m*pcoeff[count]*(E*nbeads-V))) 
+			count+=1	
+
+	rp = RingPolymer(qcart=qcart,pcart=pcart,m=m) 	
+	motion = Motion(dt = dt_relax,symporder=2)
+	rp.bind(ens,motion,rng)
+
+	therm = PILE_L(tau0=1.0,pile_lambda=1000.0) 
+	therm.bind(rp,motion,rng,ens)
+
+	propa = Symplectic_order_II()
+	propa.bind(ens, motion, rp, pes, rng, therm)
+
+	sim = RP_Simulation()
+	sim.bind(ens,motion,rng,rp,pes,propa,therm)
+
+	nthermsteps = int(time_relax/motion.dt)
+
+	print('rp E', E*nbeads,np.sum(rp.pcart[0]**2/(2*m)) +np.sum(pot[0]))
+	# Run NVE steps until time_therm
+	#max_gyr=np.zeros(len(rp.qcart[:,0,0]))
+	#if(hist==True):
+	#	all_gyr=np.zeros((len(rp.qcart[:,0,0]),nthermsteps))#only_for hist	
+
+	f=Rg_Filter(gyr_lower, gyr_upper,N,nthermsteps)
+
+	for i in range(nthermsteps):
+		sim.step(mode="nve",var='pq',RSP=True)
+		f.filter(rp)
+		#calculate radius of gyration
+	logic_filter=f.index_array()
+
+	#plt.scatter(rp.qcart[0,0,:],rp.qcart[0,1,:])
+	#plt.show()
+
+	store_arr(rp.qcart[logic_filter,:,:],'Filtered_MC_rp_qcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}_rg_min{}_rg_max{}'.format\
+				(rp.nsys,rp.nbeads,ens.beta,potkey,rngSeed,gyr_lower,gyr_upper),"{}/Datafiles".format(pathname))
+	store_arr(rp.qcart[logic_filter,:,:],'Filtered_MC_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}_rg_min{}_rg_max{}'.format\
+				(rp.nsys,rp.nbeads,ens.beta,potkey,rngSeed,gyr_lower,gyr_upper),"{}/Datafiles".format(pathname)) 	

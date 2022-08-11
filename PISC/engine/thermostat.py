@@ -50,7 +50,17 @@ class PILE_L(Thermostat):
                 p[...,1:] = sp[...,1:]*sm3[...,1:]
             else:
                 p[...,self.rp.nmats:] = sp[...,self.rp.nmats:]*sm3[...,self.rp.nmats:]
-        
+       
+class Andersen(Thermostat):
+    def __init__(self,N): 
+        self.N=N  
+
+    def bind(self,rp,motion,rng,ens):
+        super(Andersen,self).bind(rp,motion,rng,ens)
+
+    def generate_p(self):
+        return self.rng.normal(0,np.sqrt(self.rp.m*self.rp.nbeads/(self.ens.beta)),(self.N,self.ens.ndim,self.rp.nbeads))
+ 
 class Constrain_theta(Thermostat): #Need to be upgraded for 2D simulations
     def __init__(self,theta=None):
         self.theta=theta
