@@ -59,6 +59,10 @@ class RingPolymer(object):
 			self.nbeads = nbeads
 			self.nsys = len(self.qcart)	 	
 		
+		# Create variables dq,dp, dqcart, dpcart default set to None
+		# If not None, they can be passed in cartesian/Matsubara coordinates.
+		# Like with q/p, qcart/pcart, these variables need to be interconverted.
+
 		self.m = m	
 		self.mode = mode 	
 		if Mpp is None:
@@ -80,7 +84,7 @@ class RingPolymer(object):
 			self.Mqq = None
 		else:
 			self.Mqq = Mqq
-
+				
 		if scaling is None:
 			self.scaling="none"
 			self._sgamma = None
@@ -199,8 +203,7 @@ class RingPolymer(object):
 		qpvector[:,0] = (self.p/self.sqdynm3).T
 		qpvector[:,1] = (self.q*self.sqdynm3).T
 
-		qpvector[:] = np.einsum('ijk,ik...->ij...',self.RSP_coeffs,qpvector)#np.matmul(self.RSP_coeffs,qpvector)#
-		#np.einsum is working perfectly, no issue there.		
+		qpvector[:] = np.einsum('ijk,ik...->ij...',self.RSP_coeffs,qpvector)
 		
 		self.p[:] = qpvector[:,0].T*self.sqdynm3
 		self.q[:] = qpvector[:,1].T/self.sqdynm3 
@@ -238,7 +241,7 @@ class RingPolymer(object):
 			mat[1,0] = np.sinc(self.dynfreqs[n]*self.dt/np.pi)*self.dt
 			self.RSP_coeffs[n] = mat
 				
-	def nm_matrix(self): # Delete this. It is redundant.
+	def nm_matrix(self):
 			narr = [0]
 			for i in range(1,self.nmodes//2+1):
 				narr.append(-i)
@@ -250,18 +253,12 @@ class RingPolymer(object):
 			self.nm_matrix[:,0] = 1/np.sqrt(self.nmodes)
 			for l in range(self.nbeads):
 				for n in range(1,len(narr)):
-					#print('n',narr,self.nmodes//2)
 					if(narr[n]<0):
-							self.nm_matrix[l,n] = np.sqrt(2/self.nmodes)*np.cos(2*np.pi*(l)*narr[n]/self.nmodes)
-							#self.nm_matrix[narr[n],l] = np.sqrt(2/self.nbeads)*np.cos(2*np.pi*(l+1)*narr[n]/self.nmodes)
-							#print('l,n',l,n,narr[n],self.nm_matrix[l,n])
+							self.nm_matrix[l,n] = np.sqrt(2/self.nmodes)*np.cos(2*np.pi*(l)*narr[n]/self.nmodes)							
 					else:
-							self.nm_matrix[l,n] = np.sqrt(2/self.nmodes)*np.sin(2*np.pi*(l)*narr[n]/self.nmodes)
-							#self.nm_matrix[narr[n],l] = np.sqrt(2/self.nbeads)*np.sin(2*np.pi*(l+1)*narr[n]/self.nmodes)
-							#print('l,n',l,n,narr[n],self.nm_matrix[l,n],2*l*narr[n]/self.nmodes)
+							self.nm_matrix[l,n] = np.sqrt(2/self.nmodes)*np.sin(2*np.pi*(l)*narr[n]/self.nmodes)							
 				if(self.nmodes%2==0):
 					self.nm_matrix[l,self.nmodes-1] =(-1)**l/np.sqrt(self.nmodes)
-			#self.nm_matrix = self.nm_matrix.T	
 		
 	def mats_beads(self):
 		if self.nmats is None: 
@@ -273,18 +270,18 @@ class RingPolymer(object):
 	def mats2cart(self):
 		self.qcart = self.nmtrans.mats2cart(self.q)
 		self.pcart = self.nmtrans.mats2cart(self.p)
+
+		# If dq,dp are not None, convert them too
 	
 	def cart2mats(self):
 		self.q = self.nmtrans.cart2mats(self.qcart)
 		self.p = self.nmtrans.cart2mats(self.pcart)
 
+		# If dqcart,dpcart are not None, convert them too
+
 	@property
-	def theta(self): # Change for more than 1D
+	def theta(self): # Check for more than 1D
 		ret = self.matsfreqs*misc.pairwise_swap(self.q[...,:self.nmats],self.nmats)*self.p[...,:self.nmats]
-		#print(self.q[...,1]*self.p[...,2],self.q[...,2]*self.p[...,1])
-		#print('ret', ret.shape)
-		#print('freq', self.matsfreqs)
-		#print('q',self.q[...,:self.nmats], misc.pairwise_swap(self.q[...,:self.nmats],self.nmats))
 		return np.sum(ret,axis=2)
 		
 	@property
