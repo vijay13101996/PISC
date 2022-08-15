@@ -4,6 +4,7 @@ discretized imaginary time path-integrals. This class can be used
 to run CMD, RPMD, Matsubara and mean-field Matsubara simulations
 """
 
+from turtle import setundobuffer
 import numpy as np
 from PISC.utils import nmtrans,misc
 ### Work left:
@@ -26,7 +27,7 @@ class RingPolymer(object):
 	sqm3 : Square root of m3
 	"""
 
-	def __init__(self,p=None,q=None,pcart=None,qcart=None,
+	def __init__(self,p=None,dp=None,q=None,dq=None,pcart=None,dpcart=None,qcart=None,dqcart=None,
 		  Mpp=None,Mpq=None,Mqp=None,Mqq=None,
 		  m=None,labels=None,nbeads=None,nmodes=None,
 		  scaling=None,sgamma=None,sfreq=None,freqs=None,mode='rp',nmats = None):
@@ -59,6 +60,25 @@ class RingPolymer(object):
 			self.nbeads = nbeads
 			self.nsys = len(self.qcart)	 	
 		
+		if dqcart is not None:
+			self.dqcart=dqcart
+			if dpcart is not None:
+				self.dpcart=dpcart
+			else:
+				self.dpcart=0.0
+		else:
+			self.dqcart=None
+			self.dpcart=None
+		if dq is not None:
+			self.dq=dq
+			if dp is not None:
+				self.dp=dp
+			else:
+				self.dp=0.0
+		else:
+			self.dq=None
+			self.dp=None
+
 		# Create variables dq,dp, dqcart, dpcart default set to None
 		# If not None, they can be passed in cartesian/Matsubara coordinates.
 		# Like with q/p, qcart/pcart, these variables need to be interconverted.
@@ -130,6 +150,13 @@ class RingPolymer(object):
 			self.qcart = self.nmtrans.mats2cart(self.q)
 		elif(self.q is None):
 			self.q = self.nmtrans.cart2mats(self.qcart)
+		
+		if(self.qcart is not None):
+			self.dq = self.nmtrans.cart2mats(self.dqcart)
+			self.dp = self.nmtrans.cart2mats(self.dpcart)
+		elif(self.dq is not None):
+			self.dqcart = self.nmtrans.mats2cart(self.dq)
+			self.dpcart = self.nmtrans.mats2cart(self.dp)
 
 		self.m3 = np.ones_like(self.q)*self.m	
 		self.sqm3 = np.sqrt(self.m3)
@@ -270,13 +297,17 @@ class RingPolymer(object):
 	def mats2cart(self):
 		self.qcart = self.nmtrans.mats2cart(self.q)
 		self.pcart = self.nmtrans.mats2cart(self.p)
-
+		if(self.dq is not None):
+			self.dqcart = self.nmtrans.mats2cart(self.dq)
+			self.dpcart = self.nmtrans.mats2cart(self.dp)
 		# If dq,dp are not None, convert them too
 	
 	def cart2mats(self):
 		self.q = self.nmtrans.cart2mats(self.qcart)
 		self.p = self.nmtrans.cart2mats(self.pcart)
-
+		if(self.dqcart is not None):
+			self.dq = self.nmtrans.cart2mats(self.dqcart)
+			self.dp = self.nmtrans.cart2mats(self.dpcart)
 		# If dqcart,dpcart are not None, convert them too
 
 	@property

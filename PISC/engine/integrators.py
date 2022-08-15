@@ -50,8 +50,11 @@ class Symplectic_order_II(Integrator):
 			self.rp.p[...,1:]-=self.pes.dpot[...,1:]*self.motion.pdt
 
 	def Bv(self,centmove=True):
-		hess = self.pes.ddpot.swapaxes(2,3).reshape(-1,self.ndim*self.nbeads,self.ndim*self.nbeads)
-		dpc= (np.matmul(hess,rp.dq.reshape(-1,self.ndim*self.nbeads)).reshape(-1,ndim,nbeads)
+		hess = self.pes.ddpot.swapaxes(2,3).reshape(-1,self.pes.ndim*self.rp.nbeads,\
+			self.pes.ndim*self.rp.nbeads)
+		dq=self.rp.dq.reshape(-1,self.pes.ndim*self.rp.nbeads)
+		dpc= np.einsum('ijk,ik->ik',hess,dq)
+		dpc=dpc.reshape(-1,self.pes.ndim,self.rp.nbeads)
 		if(centmove):
 			self.rp.dp-=dpc*self.motion.pdt	
 		else:
@@ -64,8 +67,10 @@ class Symplectic_order_II(Integrator):
 			self.rp.p[...,self.rp.nmats:]-=self.rp.dpot[...,self.rp.nmats:]*self.motion.pdt
 
 	def bv(self):
-		hess = self.rp.ddpot.swapaxes(2,3).reshape(-1,self.ndim*self.nbeads,self.ndim*self.nbeads)
-		dpc= (np.matmul(hess,rp.dq.reshape(-1,self.ndim*self.nbeads)).reshape(-1,ndim,nbeads)
+		hess = self.rp.ddpot.swapaxes(2,3).reshape(-1,self.rp.ndim*self.rp.nbeads,self.rp.ndim*self.rp.nbeads)
+		dq=self.rp.dq.reshape(-1,self.pes.ndim*self.rp.nbeads)
+		dpc= np.einsum('ijk,ik->ik',hess,dq)
+		dpc=dpc.reshape(-1,self.pes.ndim,self.rp.nbeads)
 		self.rp.dp-=dpc*self.motion.pdt
 		if self.rp.nmats is None:	
 			self.rp.dp-=dpc*self.motion.pdt
@@ -180,7 +185,28 @@ class Symplectic_order_IV(Integrator):
 		else:
 			self.rp.p[...,self.rp.nmats:]-=self.pes.dpot[...,self.rp.nmats:]*self.motion.pdt[k]
 	
-	# def Av, Bv in the same format as above
+	def Av(self,k):
+		self.rp.dq+=self.rp.dp*self.motion.qdt[k]/self.rp.dynm3
+	def Bv(self,k,centmove=True):
+		hess = self.pes.ddpot.swapaxes(2,3).reshape(-1,self.pes.ndim*self.rp.nbeads,self.rp.ndim*self.rp.nbeads)
+		dq=self.rp.dq.reshape(-1,self.pes.ndim*self.rp.nbeads)
+		dpc= np.einsum('ijk,ik->ik',hess,dq)
+		dpc=dpc.reshape(-1,self.pes.ndim,self.rp.nbeads)
+		if(centmove):
+			self.rp.dp-=dpc*self.motion.pdt[k]
+		else:
+			self.rp.dp[...,1:]-=dpc[...,1:]*self.motion.pdt[k]
+
+	def bv(self,k):
+		hess = self.rp.ddpot.swapaxes(2,3).reshape(-1,self.rp.ndim*self.rp.nbeads,self.rp.ndim*self.rp.nbeads)
+		dq=self.rp.dq.reshape(-1,self.pes.ndim*self.rp.nbeads)
+		dpc= np.einsum('ijk,ik->ik',hess,dq)
+		dpc=dpc.reshape(-1,self.pes.ndim,self.rp.nbeads)
+		self.rp.dp-=dpc*self.motion.pdt[k]
+		if self.rp.nmats is None:	
+			self.rp.dp-=dpc*self.motion.pdt[k]
+		else:
+			self.rp.p[...,self.rp.nmats:]-=dpc[...,self.rp.nmats:]*self.motion.pdt[k]
 	def M1(self,k):
 		self.rp.Mpp-=(self.pes.ddpot)*self.motion.pdt[k]*self.rp.Mqp
 		
@@ -208,8 +234,13 @@ class Symplectic_order_IV(Integrator):
 		self.B(k)
 		self.A(k)
 
-	#def var_kstep
-	# Define var_kstep along the same lines as pq_kstep
+	def var_kstep(self,k,centmove=True):
+		self.B(k,centmove)
+		self.Bv(k,centmove)
+		self.b(k)
+		self.bv(k)
+		self.A(k)
+		self.Av(k)
 
 	def Monodromy_kstep(self,k):
 		self.B(k)
@@ -238,8 +269,9 @@ class Symplectic_order_IV(Integrator):
 		for k in range(4):
 			self.pq_kstep_nosprings(k)
 
-	#def var_step
-	#Loop over the 4 var_ksteps 
+	def var_step(self):
+		for k in range(4):
+			self.var_kstep(k,centmove=True)
 
 	def Monodromy_step(self):	
 		for k in range(4):
