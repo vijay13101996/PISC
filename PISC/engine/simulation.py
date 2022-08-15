@@ -51,8 +51,9 @@ class RP_Simulation(Simulation):
 		self.propa.Monodromy_step()
 		self.rp.mats2cart()
 
-	# def NVE_varstep(self):
-	#	call propa's varstep and convert from mats to cart
+	def NVE_varstep(self):
+		self.propa.var_step()
+		self.rp.mats2cart()
 	
 	def NVT_pqstep(self,pc,centmove=True):
 		self.propa.O(pc)
@@ -92,7 +93,9 @@ class RP_Simulation(Simulation):
 			elif(var=='monodromy'):
 				for i in range(ndt):
 					self.NVE_Monodromystep()
-			# self.NVE_varstep() for var=='variation'
+			elif(var=='variation'):
+				for i in range(ndt):
+					self.NVE_varstep()
 		elif mode == "nvt":
 			if(var=='pq'):
 				if RSP is False:
