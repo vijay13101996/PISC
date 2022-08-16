@@ -30,7 +30,7 @@ D = 3*Vb
 alpha = 0.37
 print('Vb',Vb, 'D', D)
 
-z = 1.0
+z = 0
 
 pes = quartic_bistable(alpha,D,lamda,g,z)
 #Only for RP and Canonic simulations important
@@ -59,22 +59,22 @@ if(False):
     qlist = np.array(qlist)
     plist = np.array(plist)	
 #random initialization of p and q
-q=0.003*np.ones((1,dim,nbeads))#todo:vary
-p=0.001*np.ones((1,dim,nbeads))#todo:vary
+q=0.000000*np.ones((1,dim,nbeads))#todo:vary
+p=0.00000*np.ones((1,dim,nbeads))#todo:vary
 ### ------------------------------------------------------------------------------
 #normalization of deviation
-norm=0.001#CONVERGENCE PARAMETER#todo:vary
-dt=0.001#CONVERGENCE PARAMETER#todo:vary
-time_run=10#CONVERGENCE PARAMETER#todo:vary
-tau=0.01#CONVERGENCE PARAMETER#todo:vary
-def norm_dp_dq(dp,dq,norm=0.001):
+norm=0.00001#CONVERGENCE PARAMETER#todo:vary
+dt=0.0001#CONVERGENCE PARAMETER#todo:vary
+time_run=20#CONVERGENCE PARAMETER#todo:vary
+tau=0.05#CONVERGENCE PARAMETER#todo:vary
+def norm_dp_dq(dp,dq,norm=norm):
     div=(1/norm)*np.linalg.norm(dp+dq)
     return dp/div,dq/div
 def run_var(sim,dt,time_run,tau):
     tarr=[]
-    varp=[]
-    varq=[]
     mLCE=[]
+    qx=[]
+    #qy=[]
     alpha = []
     nsteps = int(tau/dt)
     N=int(time_run/tau)
@@ -82,22 +82,24 @@ def run_var(sim,dt,time_run,tau):
         for i in range(nsteps):
             sim.step(mode="nve",var='variation')#pc=False?
         tarr.append(sim.t)
-        varp.append(sim.rp.dp)
-        varq.append(sim.rp.dq)
         dp_new,dq_new=norm_dp_dq(sim.rp.dp,sim.rp.dq)
-        print(np.linalg.norm(sim.rp.dp[0]+sim.rp.dq[0]))
+        #print(np.linalg.norm(sim.rp.dp[0]+sim.rp.dq[0]))
         alpha.append((1/norm)*np.linalg.norm(sim.rp.dp[0]+sim.rp.dq[0]))
         sim.rp.dp=dp_new
         sim.rp.dq=dq_new
         #print(alpha)
         mLCE.append((1/sim.t)*np.sum(np.log(alpha)))
-    return tarr, mLCE
+        qx.append(sim.rp.q[0,0,0])
+
+        
+        #qy.append(sim.rp.q[0,1,0])
+    return tarr, mLCE,qx
 
     
 
 #initialize small deviation
 dq=0.001*np.ones_like(q)#todo:vary
-dp=0.5*np.ones_like(p)#todo:vary
+dp=0.005*np.ones_like(p)#todo:vary
 dp,dq=norm_dp_dq(dp,dq,norm)
 #set up the simulation
 sim=RP_Simulation()
@@ -111,8 +113,10 @@ rp.bind(ens,motion,rng)
 therm = PILE_L(tau0=1.0,pile_lambda=100.0)#only important due to initalization 
 sim.bind(ens,motion,rng,rp,pes,propa,therm)
 
-tarr,mLCE=run_var(sim,dt,time_run,tau)
-plt.plot(tarr,mLCE)
+tarr,mLCE,qx=run_var(sim,dt,time_run,tau)
+fig,ax=plt.subplots(2)
+ax[0].plot(tarr,mLCE)
+ax[1].plot(tarr,qx)
 plt.show()
 #Initialize trajectory at saddle point with almost zero velocity
 #Set dq, dp to a certain predefined norm (dp and dq are together w so consider that when normalizing)
