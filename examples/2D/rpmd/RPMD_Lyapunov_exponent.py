@@ -5,7 +5,6 @@ from PISC.potentials.Quartic_bistable import quartic_bistable
 from PISC.engine.PI_sim_core import SimUniverse
 from matplotlib import pyplot as plt
 from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr, read_arr
-from Saddle_point_finder import separatrix_path, find_minima
 import time
 from PISC.engine.ensemble import Ensemble
 from PISC.engine.motion import Motion
@@ -14,6 +13,7 @@ from PISC.engine.simulation import RP_Simulation
 from PISC.engine.integrators import Symplectic_order_II, Symplectic_order_IV
 from PISC.engine.beads import RingPolymer
 import os
+from DW_Instanton import find_instanton_DW
 
 
 ### Potential parameters
@@ -31,32 +31,15 @@ print('Vb',Vb, 'D', D)
 z = 1.0
 
 pes = quartic_bistable(alpha,D,lamda,g,z)
+
 #Only relevant for ring polymer and canonical simulations
 Tc = 0.5*lamda/np.pi
-times = 1.0
+times = 0.9
 T = times*Tc
+beta = 1/T
 
 #Initialize p and q
 E = 1.001*Vb 
-if(False):
-    xg = np.linspace(-1e-2,1e-2,int(5e2)+1)
-    yg = np.linspace(-1e-2,1e-2,int(5e2)+1)
-    xgrid,ygrid = np.meshgrid(xg,yg)
-    potgrid = pes.potential_xy(xgrid,ygrid)
-
-    print('pot',potgrid.shape)
-    ind = np.where(potgrid<E)
-    xind,yind = ind
-    qlist= []
-    plist= []
-    for x,y in zip(xind,yind):
-        qlist.append([xgrid[x,y],ygrid[x,y]])
-        V = pes.potential_xy(xgrid[x,y],ygrid[x,y])
-        p = np.sqrt(2*m*(E-V))
-        plist.append([p,0.0])
-    qlist = np.array(qlist)
-    plist = np.array(plist)	
-
 
 #random initialization of p and q
 q=0.003*np.ones((1,dim,nbeads))#todo:vary
@@ -71,6 +54,7 @@ tau=0.01#CONVERGENCE PARAMETER#todo:vary
 def norm_dp_dq(dp,dq,norm=0.001):
     div=(1/norm)*np.linalg.norm(dp+dq)
     return dp/div,dq/div
+
 def run_var(sim,dt,time_run,tau):
     tarr=[]
     varp=[]
@@ -93,7 +77,23 @@ def run_var(sim,dt,time_run,tau):
         mLCE.append((1/sim.t)*np.sum(np.log(alpha)))
     return tarr, mLCE
 
-    
+#-------------------------------------------------------------------------------------------
+fig,ax = plt.subplots()
+xg = np.linspace(-5,5,int(1e2)+1)
+yg = np.linspace(-3,7,int(1e2)+1)
+xgrid,ygrid = np.meshgrid(xg,yg)
+potgrid = pes.potential_xy(xgrid,ygrid)
+
+ax.contour(xgrid,ygrid,potgrid,levels=np.arange(0.0,D,D/20))
+nbeads = 32
+
+#Gives a slightly unconverged instanton configuration
+instanton = find_instanton_DW(nbeads,m,pes,beta,ax,plt,plot=True) 
+
+#Gives instanton configuration upto an accuracy of 1e-4
+inst_opt = find_instanton_DW(32,m,pes,beta,ax,plt,plot=True,step=1e-6,tol=1e-4,nb_start=32) 
+
+#--------------------------------------------------------------------------------------------
 
 #initialize small deviation
 dq=0.001*np.ones_like(q)#todo:vary
