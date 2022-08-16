@@ -207,7 +207,7 @@ def inst_double_nm(instanton,dim=2,per_dev=2): #Needs to be redefined for higher
 	
 	return rp_init
 
-def find_instanton(m,pes,qinit,beta,nbeads,ax,plt,plot=False,dim=2,scale=1.0,stepsize=1e-4,tol=1e-2):
+def find_instanton(m,pes,qinit,beta,nbeads,ax=None,plt=None,plot=False,dim=2,scale=1.0,stepsize=1e-4,tol=1e-2):
 	start_time = time.time()
 	ens = Ensemble(beta=beta,ndim=dim)
 	motion = Motion(symporder=2) 

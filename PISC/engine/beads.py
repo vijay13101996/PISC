@@ -151,7 +151,7 @@ class RingPolymer(object):
 		elif(self.q is None):
 			self.q = self.nmtrans.cart2mats(self.qcart)
 		
-		if(self.qcart is not None):
+		if(self.dqcart is not None):
 			self.dq = self.nmtrans.cart2mats(self.dqcart)
 			self.dp = self.nmtrans.cart2mats(self.dpcart)
 		elif(self.dq is not None):
