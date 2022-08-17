@@ -31,8 +31,8 @@ m = 0.5
 N = 1000
 dt_therm = 0.01
 dt = 0.005
-time_therm = 1.0
-time_total = 3.0
+time_therm = 50.0
+time_total = 5.0
 nbeads = 4
 
 method = 'RPMD'

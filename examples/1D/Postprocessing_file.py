@@ -20,9 +20,9 @@ beta=1/T
 
 m = 0.5
 N = 1000
-dt = 0.002
+dt = 0.005
 
-nbeads = 16
+nbeads = 8
 gamma = 16
 
 time_total = 5.0#
@@ -49,10 +49,10 @@ beadkey = 'nbeads_{}_'.format(nbeads)
 Tkey = 'T_{}Tc'.format(times)
 syskey = 'Selene'
 
-if(0):#RPMD
+if(1):#RPMD
 	if(1):
 		methodkey = 'RPMD'
-		enskey = 'thermal'
+		enskey = 'mc'#'thermal'
 
 		kwlist = [methodkey,corrkey,syskey,potkey,Tkey,beadkey,'dt_{}'.format(dt)]
 		
@@ -174,7 +174,7 @@ if(0):#CMD
 	plt.show()
 	store_1D_plotdata(tarr,OTOCarr,'CMD_{}_{}_{}_nbeads_{}_dt_{}_gamma_{}'.format(corrkey,potkey,Tkey,nbeads,dt,gamma),cext)
 
-if(1):#Classical
+if(0):#Classical
 	if(1):
 		methodkey = 'Classical'
 		enskey = 'mc'#'thermal'

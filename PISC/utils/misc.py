@@ -11,6 +11,24 @@ def pairwise_swap(a,l):
 	temp[...,2:l:2] = tempodd
 	return temp[...,:l]
 
+def hess_compress(arr,rp):
+	return arr.swapaxes(2,3).reshape(-1,rp.ndim*rp.nbeads,\
+			rp.ndim*rp.nbeads)
+
+def hess_expand(arr,rp):
+	return arr.reshape(-1,rp.ndim,rp.nbeads,rp.ndim,rp.nbeads).swapaxes(2,3)
+
+def hess_mul(ddpot,arr_i,arr_o,rp,dt):
+	hess = hess_compress(ddpot,rp)
+	arr_in = hess_compress(arr_i,rp)
+	arr_out = hess_compress(arr_o,rp)
+	arr_out-=np.matmul(hess,arr_in)*dt
+	
+	#print(np.shares_memory(arr_out,arr_o))
+	
+	#print('ddpot',np.around(ddpot[0,1,0],2))
+	#print('hess', np.around(hess[0],2))
+	
 def find_OTOC_slope(fname,tst,tend):
 	data = read_1D_plotdata('{}.txt'.format(fname))
 	t_arr = data[:,0]
