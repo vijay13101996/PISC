@@ -255,6 +255,7 @@ def find_instanton(m,pes,qinit,beta,nbeads,ax=None,plt=None,plot=False,dim=2,sca
 		count+=1
 
 	instant = rp.qcart
+	print('dpot',rp.dpot+pes.dpot)
 	print('time', time.time()-start_time)
 	#print('qcart after evfollowing', rp.qcart)
 	#print('dpot cart after evfollowing', rp.dpot_cart)	

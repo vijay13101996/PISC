@@ -19,5 +19,6 @@ def find_instanton_DW(nbeads,m,pes,beta,ax=None,plt=None,plot=False,step=1e-4,to
 		qinit=inst_double(instanton)
 		nb*=2
 	print('Exiting')
-	plt.show()	
+	if(plot==True):
+		plt.show()	
 	return instanton

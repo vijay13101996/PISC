@@ -28,9 +28,8 @@ g = 0.08
 Vb = lamda**4/(64*g)
 D = 3*Vb
 alpha = 0.37
-print('Vb',Vb, 'D', D)
 
-z = 0
+z = 1.0
 
 pes = quartic_bistable(alpha,D,lamda,g,z)
 #Only for RP and Canonic simulations important
@@ -39,8 +38,8 @@ times = 1.0
 T = times*Tc
 
 #Initialize p and q
-E = 1.001*Vb 
 if(False):
+    E = 1.001*Vb
     xg = np.linspace(-1e-2,1e-2,int(5e2)+1)
     yg = np.linspace(-1e-2,1e-2,int(5e2)+1)
     xgrid,ygrid = np.meshgrid(xg,yg)
@@ -59,16 +58,16 @@ if(False):
     qlist = np.array(qlist)
     plist = np.array(plist)	
 #random initialization of p and q
-q=0.000000*np.ones((1,dim,nbeads))#todo:vary
-p=0.00000*np.ones((1,dim,nbeads))#todo:vary
+q=0.001*np.ones((1,dim,nbeads))#todo:vary
+p=-0.001*np.ones((1,dim,nbeads))#todo:vary
 ### ------------------------------------------------------------------------------
 #normalization of deviation
 norm=0.00001#CONVERGENCE PARAMETER#todo:vary
 dt=0.0001#CONVERGENCE PARAMETER#todo:vary
-time_run=20#CONVERGENCE PARAMETER#todo:vary
+time_run=8#CONVERGENCE PARAMETER#todo:vary
 tau=0.05#CONVERGENCE PARAMETER#todo:vary
 def norm_dp_dq(dp,dq,norm=norm):
-    div=(1/norm)*np.linalg.norm(dp+dq)
+    div=(1/norm)*np.linalg.norm(np.concatenate((dp,dq)))
     return dp/div,dq/div
 def run_var(sim,dt,time_run,tau):
     tarr=[]
@@ -79,19 +78,16 @@ def run_var(sim,dt,time_run,tau):
     nsteps = int(tau/dt)
     N=int(time_run/tau)
     for k in range(N):
+        prev=np.linalg.norm(np.concatenate((sim.rp.dp[0],sim.rp.dq[0])))
         for i in range(nsteps):
             sim.step(mode="nve",var='variation')#pc=False?
         tarr.append(sim.t)
-        dp_new,dq_new=norm_dp_dq(sim.rp.dp,sim.rp.dq)
-        #print(np.linalg.norm(sim.rp.dp[0]+sim.rp.dq[0]))
-        alpha.append((1/norm)*np.linalg.norm(sim.rp.dp[0]+sim.rp.dq[0]))
-        sim.rp.dp=dp_new
-        sim.rp.dq=dq_new
-        #print(alpha)
+        current=np.linalg.norm(np.concatenate((sim.rp.dp[0],sim.rp.dq[0])))
+        alpha.append(current/prev)
+        prev=current
+        sim.rp.dp,sim.rp.dq=norm_dp_dq(sim.rp.dp,sim.rp.dq)
         mLCE.append((1/sim.t)*np.sum(np.log(alpha)))
-        qx.append(sim.rp.q[0,0,0])
-
-        
+        qx.append(sim.rp.qcart[0,0,0])
         #qy.append(sim.rp.q[0,1,0])
     return tarr, mLCE,qx
 
@@ -114,7 +110,7 @@ therm = PILE_L(tau0=1.0,pile_lambda=100.0)#only important due to initalization
 sim.bind(ens,motion,rng,rp,pes,propa,therm)
 
 tarr,mLCE,qx=run_var(sim,dt,time_run,tau)
-fig,ax=plt.subplots(2)
+fig,ax=plt.subplots(2,sharex=True)
 ax[0].plot(tarr,mLCE)
 ax[1].plot(tarr,qx)
 plt.show()
