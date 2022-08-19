@@ -7,6 +7,7 @@ import numpy as np
 import scipy
 import scipy.integrate
 from scipy.integrate import odeint, ode
+from PISC.utils.misc import hess_compress, hess_mul
 ### Work left to do:
 # 1. Declare the order of the integrator and splitting inside the Integrator class object.  
 # 2. Figure out how to do 4th order integration with the ring polymer springs.
@@ -50,16 +51,16 @@ class Symplectic_order_II(Integrator):
 			self.rp.p[...,1:]-=self.pes.dpot[...,1:]*self.motion.pdt
 
 	def Bv(self,centmove=True):
-		hess = self.pes.ddpot.swapaxes(2,3).reshape(-1,self.pes.ndim*self.rp.nbeads,\
-			self.pes.ndim*self.rp.nbeads)
+		hess = hess_compress(self.pes.ddpot,self.rp)
+		#self.pes.ddpot.swapaxes(2,3).reshape(-1,self.pes.ndim*self.rp.nbeads,self.pes.ndim*self.rp.nbeads)
+		#print('det',np.around(self.pes.ddpot,2))
 		dq=self.rp.dq.reshape(-1,self.pes.ndim*self.rp.nbeads)
-		dpc= np.einsum('ijk,ik->ik',hess,dq)
+		dpc= np.einsum('ijk,ik->ij',hess,dq)
 		dpc=dpc.reshape(-1,self.pes.ndim,self.rp.nbeads)
 		if(centmove):
 			self.rp.dp-=dpc*self.motion.pdt	
 		else:
 			self.rp.dp[...,1:]-=dpc[...,1:]*self.motion.pdt
-
 	def b(self):
 		if self.rp.nmats is None:
 			self.rp.p-=self.rp.dpot*self.motion.pdt
@@ -67,16 +68,16 @@ class Symplectic_order_II(Integrator):
 			self.rp.p[...,self.rp.nmats:]-=self.rp.dpot[...,self.rp.nmats:]*self.motion.pdt
 
 	def bv(self):
-		hess = self.rp.ddpot.swapaxes(2,3).reshape(-1,self.rp.ndim*self.rp.nbeads,self.rp.ndim*self.rp.nbeads)
+		hess = hess_compress(self.rp.ddpot,self.rp)
+		#self.rp.ddpot.swapaxes(2,3).reshape(-1,self.rp.ndim*self.rp.nbeads,self.rp.ndim*self.rp.nbeads)
 		dq=self.rp.dq.reshape(-1,self.pes.ndim*self.rp.nbeads)
-		dpc= np.einsum('ijk,ik->ik',hess,dq)
+		dpc= np.einsum('ijk,ik->ij',hess,dq)
 		dpc=dpc.reshape(-1,self.pes.ndim,self.rp.nbeads)
 		self.rp.dp-=dpc*self.motion.pdt
 		if self.rp.nmats is None:	
 			self.rp.dp-=dpc*self.motion.pdt
 		else:
 			self.rp.p[...,self.rp.nmats:]-=dpc[...,self.rp.nmats:]*self.motion.pdt
-
 	def M1(self):
 		self.rp.Mpp-=(self.pes.ddpot)*self.motion.pdt*self.rp.Mqp
 	
@@ -190,13 +191,12 @@ class Symplectic_order_IV(Integrator):
 	def Bv(self,k,centmove=True):
 		hess = self.pes.ddpot.swapaxes(2,3).reshape(-1,self.pes.ndim*self.rp.nbeads,self.rp.ndim*self.rp.nbeads)
 		dq=self.rp.dq.reshape(-1,self.pes.ndim*self.rp.nbeads)
-		dpc= np.einsum('ijk,ik->ik',hess,dq)
+		dpc= np.einsum('ijk,ik->ij',hess,dq) #Check once again!
 		dpc=dpc.reshape(-1,self.pes.ndim,self.rp.nbeads)
 		if(centmove):
 			self.rp.dp-=dpc*self.motion.pdt[k]
 		else:
 			self.rp.dp[...,1:]-=dpc[...,1:]*self.motion.pdt[k]
-
 	def bv(self,k):
 		hess = self.rp.ddpot.swapaxes(2,3).reshape(-1,self.rp.ndim*self.rp.nbeads,self.rp.ndim*self.rp.nbeads)
 		dq=self.rp.dq.reshape(-1,self.pes.ndim*self.rp.nbeads)

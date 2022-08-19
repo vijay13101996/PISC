@@ -2,8 +2,7 @@ import numpy as np
 import sys
 sys.path.insert(0, "/home/lm979/Desktop/PISC")
 from PISC.engine.Poincare_section import Poincare_SOS
-from PISC.potentials.Coupled_harmonic import coupled_harmonic
-from PISC.potentials.Quartic_bistable import quartic_bistable
+from PISC.potentials.Henon_Heiles import henon_heiles
 from PISC.engine.PI_sim_core import SimUniverse
 from matplotlib import pyplot as plt
 from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr, read_arr
@@ -15,32 +14,20 @@ from PISC.engine.simulation import RP_Simulation
 from PISC.engine.integrators import Symplectic_order_II, Symplectic_order_IV
 from PISC.engine.beads import RingPolymer
 import os
-from DW_Instanton import find_instanton_DW
 
 
 ### Potential parameters
-m=0.5#0.5
+m=1
 dim=2
-
-lamda = 2.0
-g = 0.08
-Vb = lamda**4/(64*g)
-D = 3*Vb
-alpha = 0.37
-print('Vb',Vb, 'D', D)
-
-z = 1.0
-
-pes = quartic_bistable(alpha,D,lamda,g,z)
+g=0
+lamda=1
+pes = henon_heiles(lamda,g)
 
 #Only relevant for ring polymer and canonical simulations
 Tc = 0.5*lamda/np.pi
-times = 0.9#0.9
+times = 1#0.9
 T = times*Tc
 beta = 1/T
-
-#Initialize p and q
-E = 1.001*Vb 
 
 path = os.path.dirname(os.path.abspath(__file__))
 
@@ -51,8 +38,8 @@ def norm_dp_dq(dp,dq,norm=0.001):
 
 def run_var(sim,dt,time_run,tau,norm):
 	tarr=[]
+	alpha=[]
 	mLCE=[]
-	alpha = []
 	qx_cent=[]
 	qy_cent=[]
 	nsteps = int(tau/dt)
@@ -92,36 +79,45 @@ potgrid = pes.potential_xy(xgrid,ygrid)
 #ax.contour(xgrid,ygrid,potgrid,levels=np.arange(0.0,D,D/20))
 
 #CONVERGENCE PARAMETERS
-norm=0.01#CONVERGENCE PARAMETER#todo:vary
-dt=0.001#CONVERGENCE PARAMETER#todo:vary
-time_run=10#CONVERGENCE PARAMETER#todo:vary
-tau=0.01#CONVERGENCE PARAMETER#todo:vary
-nbeads=32#32
+norm=0.01#small enough s.t. deviation is actually small
+dt=0.001#small enough s.t. simulation correct
+time_run=600#long enough to get to plateau
+tau=0.05#a bit ore than one order of magnitude bigger than dt
+nbeads=1#32
 
-#Gives a slightly unconverged instanton configuration
-#instanton = find_instanton_DW(nbeads,m,pes,beta,ax=None,plt=None,plot=False,path=path) 
+if(False):#get instanton
+	try:
+		q = read_arr('Instanton_beta_{}_nbeads_{}_z_{}'.format(beta,nbeads,z),'{}/Datafiles'.format(path)) #instanton
+	except:
+		instanton = find_instanton_DW(nbeads,m,pes,beta,ax=None,plt=None,plot=False,path=path) 
+		q = read_arr('Instanton_beta_{}_nbeads_{}_z_{}'.format(beta,nbeads,z),'{}/Datafiles'.format(path)) #instanton
+	#q = np.zeros((1,dim,nbeads))
+	q[:,0,:]+=1e-4
 
-#Gives instanton configuration upto an accuracy of 1e-5
-#inst_opt = find_instanton_DW(32,m,pes,beta,ax=None,plt=None,plot=False,step=1e-7,tol=1e-5,nb_start=32,qinit=instanton,path=path)
-#print('inst_opt',inst_opt)
-try:
-    q = read_arr('Instanton_beta_{}_nbeads_{}_z_{}'.format(beta,nbeads,z),'{}/Datafiles'.format(path)) #instanton
-except:
-    instanton = find_instanton_DW(nbeads,m,pes,beta,ax=None,plt=None,plot=False,path=path) 
-    q = read_arr('Instanton_beta_{}_nbeads_{}_z_{}'.format(beta,nbeads,z),'{}/Datafiles'.format(path)) #instanton
-#q = np.zeros((1,dim,nbeads))
-q[:,0,:]+=1e-4
-
-#Trial initialization of instanton 
-#q=np.zeros((1,dim,nbeads))
-#q[...,0] = 0.0
-p=np.zeros_like(q)#or initialize differently
-p[:,0,:]=-1e-4
-
+	#Trial initialization of instanton 
+	#q=np.zeros((1,dim,nbeads))
+	#q[...,0] = 0.0
+	p=np.zeros_like(q)#or initialize differently
+	p[:,0,:]=-1e-4
+q=np.zeros((1,2,1))
+p=np.zeros((1,2,1))
+#set like in paper
+#regular orbit, R1:#expect mLCE=0 #got 0.005 but decreases monotonically. One order of magnitude smaller than C1
+if(True):
+	q[0,0,0]=0
+	p[0,0,0]=0.2334
+	q[0,1,0]=0.558
+	p[0,1,0]=0
+#chaotic orbit, C1:#expect mLCE=0.045 for long times (got 0.055) but is supposed to decrease monotonically
+if(False):
+	q[0,0,0]=0
+	p[0,0,0]=0.4208
+	q[0,1,0]=-0.25
+	p[0,1,0]=0
 #initialize small deviation
 rng = np.random.default_rng(10)
 dq=np.zeros_like(q)
-dq=rng.standard_normal(np.shape(q))#todo:vary
+dq=rng.standard_normal(np.shape(q))
 dq[:,0,0]=1e-1
 dp=np.zeros_like(p)
 dp=rng.standard_normal(np.shape(q))
