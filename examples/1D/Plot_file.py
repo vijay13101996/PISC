@@ -15,7 +15,7 @@ T = times*Tc
 
 m = 0.5
 N = 1000
-dt = 0.005
+dt = 0.002
 
 nbeads = 8
 gamma = 16
@@ -44,14 +44,14 @@ if(0):
 
 if(1):
 	corrkey = 'OTOC'
-	enskey = 'mc'#'thermal'
+	enskey = 'thermal'
 	Tkey = 'T_{}Tc'.format(times)
 
 	ext = 'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,nbeads,dt)
 	ext = rpext+ext
 	print('f',ext)
 	plot_1D(ax,ext, label=r'$RPMD, T=T_c$',color='m', log=True,linewidth=1)
-	slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,0.8,1.8)#3.2,4.5)
+	slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,3.5,4.5)
 	ax.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k')
 	
 if(0):

@@ -29,12 +29,12 @@ times = 1.0
 T = times*Tc
 
 m = 0.5
-N = 1
+N = 100
 dt_therm = 0.05
 dt = 0.005
 time_therm = 100.0
 time_total = 5.0
-nbeads = 4
+nbeads = 8
 
 method = 'RPMD'
 potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
@@ -78,8 +78,8 @@ Sim_class.set_runtime(time_therm,time_total)
 
 start_time=time.time()
 func = partial(Sim_class.run_seed)
-seeds = range(1)
-seed_split = chunks(seeds,1)
+seeds = range(100)
+seed_split = chunks(seeds,10)
 
 param_dict = {'Temperature':Tkey,'CType':corrkey,'m':m,\
 	'therm_time':time_therm,'time_total':time_total,'nbeads':nbeads,'dt':dt,'dt_therm':dt_therm}

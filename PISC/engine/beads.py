@@ -179,24 +179,38 @@ class RingPolymer(object):
 		
 		self.get_RSP_coeffs()	
 		self.ddpot = np.zeros((self.nsys,self.ndim,self.ndim,self.nmodes,self.nmodes))
-		for d1 in range(self.ndim):  ##Check here when doing multi-D simulation with beads!!!
-			for d2 in range(self.ndim):
-				self.ddpot[:,d1,d2] = np.eye(self.nmodes,self.nmodes)
-
-		self.ddpot*=(self.dynm3*self.dynfreq2)[:,:,None,:,None]
-		
 		self.ddpot_cart = np.zeros((self.nsys,self.ndim,self.ndim,self.nbeads,self.nbeads))
-		for d1 in range(self.ndim):
-			for d2 in range(self.ndim):
+			
+		##Check here when doing multi-D simulation with beads.
+		if(self.nbeads>1):	
+			for d in range(self.ndim):
+				self.ddpot[:,d,d] = np.eye(self.nmodes,self.nmodes)
+			#for d1 in range(self.ndim):  
+			#	for d2 in range(self.ndim):
+			#		self.ddpot[:,d1,d2] = np.eye(self.nmodes,self.nmodes)
+
+			self.ddpot*=(self.dynm3*self.dynfreq2)[:,:,None,:,None]
+			
+			for d in range(self.ndim):
 				for k in range(self.nbeads-1):
-					self.ddpot_cart[:,d1,d2,k,k] = 2
-					self.ddpot_cart[:,d1,d2,k,k+1] = -1
-					self.ddpot_cart[:,d1,d2,k,k-1] = -1
-				self.ddpot_cart[:,d1,d2,self.nbeads-1,0] = -1
-				self.ddpot_cart[:,d1,d2,self.nbeads-1,self.nbeads-1] = 2
-				self.ddpot_cart[:,d1,d2,self.nbeads-1,self.nbeads-2] = -1
-	
-		self.ddpot_cart*=(self.dynm3*self.omegan**2)[:,:,None,:,None]	
+						self.ddpot_cart[:,d,d,k,k] = 2
+						self.ddpot_cart[:,d,d,k,k+1] = -1
+						self.ddpot_cart[:,d,d,k,k-1] = -1
+				self.ddpot_cart[:,d,d,self.nbeads-1,0] = -1
+				self.ddpot_cart[:,d,d,self.nbeads-1,self.nbeads-1] = 2
+				self.ddpot_cart[:,d,d,self.nbeads-1,self.nbeads-2] = -1
+
+			#for d1 in range(self.ndim):
+			#	for d2 in range(self.ndim):
+			#		for k in range(self.nbeads-1):
+			#			self.ddpot_cart[:,d1,d2,k,k] = 2
+			#			self.ddpot_cart[:,d1,d2,k,k+1] = -1
+			#			self.ddpot_cart[:,d1,d2,k,k-1] = -1
+			#		self.ddpot_cart[:,d1,d2,self.nbeads-1,0] = -1
+			#		self.ddpot_cart[:,d1,d2,self.nbeads-1,self.nbeads-1] = 2
+			#		self.ddpot_cart[:,d1,d2,self.nbeads-1,self.nbeads-2] = -1
+		
+			self.ddpot_cart*=(self.dynm3*self.omegan**2)[:,:,None,:,None]	
 	
 		if self.p is None and self.pcart is None:
 			self.p = self.rng.normal(size=self.q.shape,scale=1/np.sqrt(self.ens.beta))

@@ -12,6 +12,9 @@ def pairwise_swap(a,l):
 	return temp[...,:l]
 
 def hess_compress(arr,rp):
+	#This function returns a copy when nbeads>1, but changes
+	#arr inplace when nbeads=1. There is no way of getting 
+	#around this, as np.reshape is designed that way.
 	return arr.swapaxes(2,3).reshape(-1,rp.ndim*rp.nbeads,\
 			rp.ndim*rp.nbeads)
 
@@ -23,6 +26,7 @@ def hess_mul(ddpot,arr_i,arr_o,rp,dt):
 	arr_in = hess_compress(arr_i,rp)
 	arr_out = hess_compress(arr_o,rp)
 	arr_out-=np.matmul(hess,arr_in)*dt
+	arr_o[:] = hess_expand(arr_out,rp)	
 	
 	#print(np.shares_memory(arr_out,arr_o))
 	
@@ -44,25 +48,34 @@ def find_OTOC_slope(fname,tst,tend):
 
 	return slope,ic,x_trunc,y_trunc
 
-def seed_collector(kwlist,datapath,tarr,Carr,allseeds=True,seedcount=None):
+def seed_collector(kwlist,datapath,tarr,Carr,allseeds=True,seedcount=None,logerr=True):
 	flist = []
 	print('kwlist',kwlist)
 	for fname in os.listdir(datapath):
 		if all(kw in fname for kw in kwlist):
-			print('f',fname)
+			#print('f',fname)
 			flist.append(fname)
 
 	count=0
-	#flist = flist[:500]
+	if(allseeds is False):	
+		flist=flist[:seedcount]
+	Carr_stack = []	
 	for f in flist:
 		data = read_1D_plotdata('{}/{}'.format(datapath,f))
 		tarr = data[:,0]
 		Carr += data[:,1]
+		Carr_stack.append(data[:,1])
 		count+=1
 
+	Carr_stack = np.array(Carr_stack)
+	mean = np.mean(Carr_stack,axis=0)
+	if(logerr):
+		std = np.std(np.log(Carr_stack),axis=0) 
+	else:
+		std = np.std(Carr_stack,axis=0)
 	print('count',count)
-	Carr/=count
-	return tarr,Carr	
+	Carr[:] = mean
+	return tarr,Carr,std	
 
 def seed_finder(kwlist,datapath,allseeds=True,sort=True,dropext=False):
 	flist = []

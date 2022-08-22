@@ -2,7 +2,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 import time
 import pickle
-from PISC.engine import Classical_core
 import multiprocessing as mp
 from functools import partial
 from PISC.utils.mptools import chunks, batching
@@ -19,12 +18,12 @@ D = 9.375
 lamda = 2.0
 g = 0.08
 
-z = 0.0#1.5
+z = 1.0#1.5
  
 pes = quartic_bistable(alpha,D,lamda,g,z)
 
 Tc = 0.5*lamda/np.pi
-times = 1.0
+times = 10.0
 T = times*Tc
 
 m = 0.5
@@ -32,7 +31,7 @@ N = 1000
 dt_therm = 0.01
 dt = 0.005
 time_therm = 40.0
-time_total = 10.0
+time_total = 5.0
 
 method = 'Classical'
 potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)

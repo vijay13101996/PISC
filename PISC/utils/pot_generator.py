@@ -28,8 +28,32 @@ if(0):
 	print('V',V)
 	print('Vx',diff(V,x))
 	print('Vxx',diff(V,x,x))
+
+if(1):
+	T11 = sympy.Symbol('self.T11')
+	T12 = sympy.Symbol('self.T12')
+	T21 = sympy.Symbol('self.T21')
+	T22 = sympy.Symbol('self.T22')
+	m = sympy.Symbol('self.m')
+	omega1 = symbol.Symbol('self.omega1')
+	omega2 = symbol.Symbol('self.omega2')
+	xi	= T11*x + T12*y
+	eta = T21*x + T22*y
+			
+	V = 0.5*m*omega1**2*xi**2 + 0.5*m*omega2**2*eta**2
+
+	print('V',V)
+	print('Vx=',diff(V,x))
+	print('Vy=',diff(V,y))
+	print('Vxx=',diff(V,x,x))
+	print('Vxy=',diff(V,x,y))
+	print('Vyx=',diff(V,y,x))
+	print('Vyy=',diff(V,y,y))
+
+
+
 	
-if(1):### Double-double well potential
+if(0):### Double-double well potential
 	lamdax = sympy.Symbol('self.lamdax')	
 	gx = sympy.Symbol('self.gx')
 	lamday = sympy.Symbol('self.lamday')	

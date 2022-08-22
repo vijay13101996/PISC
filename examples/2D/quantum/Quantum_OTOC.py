@@ -24,7 +24,7 @@ Don't forget to set export OMP_NUM_THREADS=#thread_count in the .bashrc file!
 
 start_time = time.time()
 
-if(0): #2D double well
+if(1): #2D double well
 	L = 10.0
 	lbx = -6#-7
 	ubx = 6#7
@@ -38,16 +38,14 @@ if(0): #2D double well
 	w = 0.1	
 	
 	lamda = 2.0
-	g = 0.085
+	g = 0.08
 
 	Vb = lamda**4/(64*g)
 
 	D = 3*Vb
-	alpha = 0.37
-	
-	k = 1.0
+	alpha = 0.382
 
-	z = 1.5#2.3	
+	z = 1.0#2.3	
 
 	Tc = lamda*0.5/np.pi
 	times = 1.0
@@ -198,7 +196,7 @@ if(0): #2D double well
 		
 		print('time',time.time()-start_time)
 		
-if(1): #Four well
+if(0): #Four well
 	L = 5.0
 	lbx = -L
 	ubx = L

@@ -66,13 +66,13 @@ if(1): # Double well 2D
 
 	w = 0.1	
 	
-	lamda = 2.0#4.0
-	g = 0.085#0.08#lamda**2/32#4.0
+	lamda = 2.0
+	g = 0.08
 
 	Vb = lamda**4/(64*g)
 
 	D = 3*Vb
-	alpha = 0.37#
+	alpha = 0.382
 
 	k = 1.0	
 		
@@ -81,7 +81,7 @@ if(1): # Double well 2D
 	z = 1.0#1.25#2.3	
 
 	Tc = lamda*0.5/np.pi
-	T_au = Tc#10.0 
+	T_au = 10*Tc#10.0 
 	
 	pes = quartic_bistable(alpha,D,lamda,g,z,k)
 

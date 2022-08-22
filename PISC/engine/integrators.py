@@ -54,7 +54,6 @@ class Symplectic_order_II(Integrator):
 	def Bv(self,centmove=True):
 		hess = hess_compress(self.pes.ddpot,self.rp)
 		#self.pes.ddpot.swapaxes(2,3).reshape(-1,self.pes.ndim*self.rp.nbeads,self.pes.ndim*self.rp.nbeads)
-		#print('det',np.around(self.pes.ddpot,2))
 		dq=self.rp.dq.reshape(-1,self.pes.ndim*self.rp.nbeads)
 		dpc= np.einsum('ijk,ik->ij',hess,dq)
 		dpc=dpc.reshape(-1,self.pes.ndim,self.rp.nbeads)
@@ -261,7 +260,6 @@ class Symplectic_order_IV(Integrator):
 		#c2 = np.matmul(hess,Mqq)*self.motion.pdt[k]
 		#Mpq-=c2
 
-		#print('Mpq',self.rp.Mpq)#np.linalg.det(self.rp.Mpq))
 		hess_mul(self.rp.ddpot,self.rp.Mqq,self.rp.Mpq,self.rp,self.motion.pdt[k])		
 
 	def M3(self,k):

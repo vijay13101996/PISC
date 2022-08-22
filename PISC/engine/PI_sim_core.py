@@ -114,17 +114,23 @@ class SimUniverse(object):
 			dt = self.dt
 			nsteps = int(2*self.time_run/dt)	
 			for i in range(nsteps):
-				sim.step(mode="nve",var='pq',pc=False)
-				q = sim.rp.q[:,:,0]
-				p = sim.rp.p[:,:,0]
+				sim.step(mode="nve",var='pq')
+				q = sim.rp.q[:,:,0].copy()
+				p = sim.rp.p[:,:,0].copy()
 				tarr.append(sim.t)
 				qarr.append(q)
 				parr.append(p)
-	
+
+		qarr = np.array(qarr)
+		parr = np.array(parr)	
 		if(self.corrkey=='qq_TCF'):
 			tarr,tcf = gen_tcf(qarr,qarr,tarr)
+		elif(self.corrkey=='qq2_TCF'):
+			tarr,tcf = gen_tcf(qarr**2,qarr**2,tarr)
 		elif(self.corrkey=='pp_TCF'):
 			tarr,tcf = gen_tcf(parr,parr,tarr)
+		elif(self.corrkey=='pp2_TCF'):
+			tarr,tcf = gen_tcf(parr**2,parr**2,tarr)	
 		elif(self.corrkey=='qp_TCF'):
 			tarr,tcf = gen_tcf(qarr,parr,tarr)
 		elif(self.corrkey=='pq_TCF'):		

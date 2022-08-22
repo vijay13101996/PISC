@@ -14,13 +14,13 @@ lamda = 2.0
 g = 0.08
 Vb = lamda**4/(64*g)
 
-alpha = 0.37
+alpha = 0.382
 D = 3*Vb
 
 z = 1.0
  
 Tc = 0.5*lamda/np.pi
-times = 1.0
+times = 10.0
 T = times*Tc
 beta=1/T
 
@@ -53,19 +53,23 @@ Tkey = 'T_{}Tc'.format(times)
 syskey = 'Selene'
 
 if(0):#RPMD
-	if(0):
+	if(1):
 		methodkey = 'RPMD'
+		enskey='thermal'
 
-		kwlist = [methodkey,corrkey,syskey,potkey,Tkey,beadkey]
+		kwlist = [methodkey,enskey,corrkey,syskey,potkey,Tkey,beadkey]
 		
-		tarr,OTOCarr = seed_collector(kwlist,rpext,tarr,OTOCarr)
+		tarr,OTOCarr,stdarr = seed_collector(kwlist,rpext,tarr,OTOCarr)
+
+		print('stdarr', stdarr[2499])
 
 		if(corrkey!='OTOC'):
 			OTOCarr/=nbeads
 		#plt.plot(tarr,OTOCarr)
 		plt.plot(tarr,np.log(abs(OTOCarr)))
+		plt.errorbar(tarr,np.log(abs(OTOCarr)),yerr=stdarr/2,ecolor='m',errorevery=100,capsize=2.0)
 		plt.show()
-		store_1D_plotdata(tarr,OTOCarr,'RPMD_{}_{}_{}_nbeads_{}_dt_{}'.format(corrkey,potkey,Tkey,nbeads,dt),rpext)
+		store_1D_plotdata(tarr,OTOCarr,'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,nbeads,dt),rpext,ebar=stdarr)
 
 	if(0): # Energy_histogram
 		kwqlist = ['Thermalized_rp_qcart','nbeads_{}'.format(nbeads), 'beta_{}'.format(beta), potkey]
@@ -123,7 +127,7 @@ if(0):#RPMD
 		plt.axvline(x=Vb,ymin=0.0, ymax = 1.0,linestyle='--',color='m')
 		plt.show()
 
-	if(1): #Radius of gyration histogram 
+	if(0): #Radius of gyration histogram 
 		kwqlist = ['Microcanonical_rp_qcart','nbeads_{}'.format(nbeads), 'beta_{}'.format(beta), potkey]
 		kwplist = ['Microcanonical_rp_pcart','nbeads_{}'.format(nbeads), 'beta_{}'.format(beta), potkey]
 		
@@ -150,7 +154,7 @@ if(0):#RPMD/mc
 	enskey  = 'mc'
 	kwlist = [enskey,methodkey,corrkey,syskey,potkey,Tkey,beadkey]
 	
-	tarr,OTOCarr = seed_collector(kwlist,rpext,tarr,OTOCarr)
+	tarr,OTOCarr,stdarr = seed_collector(kwlist,rpext,tarr,OTOCarr)
 
 	if(corrkey!='OTOC'):
 		OTOCarr/=nbeads
@@ -174,17 +178,18 @@ if(0):#CMD
 if(1):#Classical
 	if(1):
 		methodkey = 'Classical'
-		enskey = 'mc'
+		enskey = 'thermal'#'mc'
 
 		kwlist = [enskey,methodkey,corrkey,syskey,potkey,Tkey]
 		
-		tarr,OTOCarr = seed_collector(kwlist,Cext,tarr,OTOCarr)
+		tarr,OTOCarr,stdarr = seed_collector(kwlist,Cext,tarr,OTOCarr)
 
 		plt.plot(tarr,np.log(abs(OTOCarr)))
 		plt.show()
 		store_1D_plotdata(tarr,OTOCarr,'Classical_{}_{}_{}_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,dt),Cext)
 
-	if(1): 
+
+	if(0): 
 		#kwqlist = ['Thermalized_rp_qcart', 'beta_{}'.format(beta), potkey]
 		#kwplist = ['Thermalized_rp_pcart', 'beta_{}'.format(beta), potkey]
 		

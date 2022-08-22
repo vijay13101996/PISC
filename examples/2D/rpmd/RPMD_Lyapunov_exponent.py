@@ -34,9 +34,11 @@ pes = quartic_bistable(alpha,D,lamda,g,z)
 
 #Only relevant for ring polymer and canonical simulations
 Tc = 0.5*lamda/np.pi
-times = 1.0#0.9
+times = 0.9
 T = times*Tc
 beta = 1/T
+
+print('Bound', 2*np.pi/beta)
 
 #Initialize p and q
 E = 1.001*Vb 
@@ -82,13 +84,13 @@ def run_var(sim,dt,time_run,tau,norm):
 
 #-------------------------------------------------------------------------------------------
 #Display where the Instanton is
-#fig,ax = plt.subplots()
+fig,ax = plt.subplots()
 xg = np.linspace(-5,5,int(1e2)+1)
 yg = np.linspace(-3,7,int(1e2)+1)
 xgrid,ygrid = np.meshgrid(xg,yg)
 potgrid = pes.potential_xy(xgrid,ygrid)
 
-#ax.contour(xgrid,ygrid,potgrid,levels=np.arange(0.0,D,D/20))
+ax.contour(xgrid,ygrid,potgrid,levels=np.arange(0.0,D,D/20))
 
 #CONVERGENCE PARAMETERS
 norm=0.01#CONVERGENCE PARAMETER#todo:vary
@@ -98,7 +100,7 @@ tau=0.01#CONVERGENCE PARAMETER#todo:vary
 nbeads=32#32
 
 #Gives a slightly unconverged instanton configuration
-#instanton = find_instanton_DW(nbeads,m,pes,beta,ax=None,plt=None,plot=False,path=path) 
+instanton = find_instanton_DW(nbeads,m,pes,beta,ax=ax,plt=plt,plot=True,path=path) 
 
 #Gives instanton configuration upto an accuracy of 1e-4
 #inst_opt = find_instanton_DW(32,m,pes,beta,ax,plt,plot=True,step=1e-7,tol=1e-5,nb_start=32,qinit=instanton,path=path)
@@ -106,20 +108,20 @@ nbeads=32#32
 
 q = read_arr('Instanton_beta_{}_nbeads_{}_z_{}'.format(beta,nbeads,z),'{}/Datafiles'.format(path)) #instanton
 #q = np.zeros((1,dim,nbeads))
-q[:,0,:]+=1e-4
+q[:,0,:]+=1e-2
 
 #Trial initialization of instanton 
 #q=np.zeros((1,dim,nbeads))
 #q[...,0] = 0.0
 p=np.zeros_like(q)#or initialize differently
-p[:,0,:]=-1e-4
+p[:,0,:]=-1e-2
 
 #initialize small deviation
 rng = np.random.default_rng(10)
 dq=np.zeros_like(q)#rng.standard_normal(np.shape(q))#todo:vary
-dq[:,0,0]=1e-1
+dq[:,0,0]=1e-3
 dp=np.zeros_like(p)#rng.standard_normal(np.shape(q))#todo:vary
-dp[:,0,0]=1e-1
+dp[:,0,0]=1e-3
 dp,dq=norm_dp_dq(dp,dq,norm)
 #print('dq,dp',dp,dq)
 

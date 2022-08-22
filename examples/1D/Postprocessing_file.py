@@ -20,9 +20,9 @@ beta=1/T
 
 m = 0.5
 N = 1000
-dt = 0.005
+dt = 0.002
 
-nbeads = 8
+nbeads = 32
 gamma = 16
 
 time_total = 5.0#
@@ -49,10 +49,10 @@ beadkey = 'nbeads_{}_'.format(nbeads)
 Tkey = 'T_{}Tc'.format(times)
 syskey = 'Selene'
 
-if(1):#RPMD
+if(0):#RPMD
 	if(1):
 		methodkey = 'RPMD'
-		enskey = 'mc'#'thermal'
+		enskey = 'thermal'
 
 		kwlist = [methodkey,corrkey,syskey,potkey,Tkey,beadkey,'dt_{}'.format(dt)]
 		
@@ -147,6 +147,32 @@ if(1):#RPMD
 
 		RGhist = plt.hist(x=RG, bins=bins,density=True)
 		plt.show()
+
+if(1):
+	methodkey = 'RPMD'
+	enskey = 'thermal'
+	corrkey = 'qq_TCF'
+	potkey='quartic_a_1.0'
+	dt = 0.01
+	Tkey='T_0.125'
+	
+	kwlist = [methodkey,corrkey,syskey,potkey,Tkey,beadkey,'dt_{}'.format(dt)]
+	
+	tarr = np.arange(0.0,time_total,dt)
+	OTOCarr = np.zeros_like(tarr) +0j
+
+	for sc in [1,3,5,10,13,16,20]:
+		tarr,OTOCarr,stdarr = seed_collector(kwlist,rpext,tarr,OTOCarr,allseeds=False,seedcount=sc,logerr=False)
+		print('std,C0',stdarr[0],OTOCarr[0]/nbeads)
+
+	if(corrkey!='OTOC'):
+		OTOCarr/=nbeads
+	#plt.plot(tarr,OTOCarr)
+	plt.plot(tarr,OTOCarr)
+	plt.errorbar(tarr,OTOCarr,yerr=stdarr/2,ecolor='m',errorevery=100,capsize=2.0)	
+	plt.show()
+	store_1D_plotdata(tarr,OTOCarr,'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,nbeads,dt),rpext)
+
 
 if(0):#RPMD/mc
 	methodkey = 'RPMD'

@@ -1,8 +1,12 @@
 import numpy as np
 import pickle
 
-def store_1D_plotdata(x,y,fname,fpath=None):
-	data = np.column_stack([x, y])
+def store_1D_plotdata(x,y,fname,fpath=None,ebar=None):
+	if(ebar is None):
+		data = np.column_stack([x,y])
+	else:
+		data = np.column_stack([x,y,ebar])
+
 	if(fpath is None):
 		datafile_path = "/home/vgs23/Pickle_files/{}.txt".format(fname)
 	else:
