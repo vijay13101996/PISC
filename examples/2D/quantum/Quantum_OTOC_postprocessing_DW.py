@@ -22,7 +22,7 @@ print('Vb', Vb)
 z = 1.0#2.3	
 
 Tc = lamda*0.5/np.pi
-times = 10.0#1.0
+times = 1.0#1.0
 T_au = times*Tc 
 beta = 1.0/T_au 
 	
@@ -38,12 +38,17 @@ alpha_list4 = [1.147]
 if(1): # b_nm,C_n for different alpha
 	n=8#8
 	M=2
-	for alph in alpha_list1:
-		print('alpha',alph)	
+
+	for z in [1.5]:#0.0,0.5,1.0]:
+		print('z',z) 
+		plot_kubo(path,alpha,D,lamda,g,z,beta,ax,lbltxt=r'$\z={}$'.format(z),basis_N=50,n_eigen=20)
+		
+	#for alph in alpha_list1:
+		#print('alpha',alph)	
 		#plot_wf(path,alph,D,lamda,g,z,n)
 		#plot_bnm(path,alph,D,lamda,g,z,n,M,ax,lbltxt=r'$\alpha={}$'.format(alph) )
 		#plot_Cn(path,alph,D,lamda,g,z,n,ax,lbltxt=r'$\alpha={}$'.format(alph))
-		plot_kubo(path,alph,D,lamda,g,z,beta,ax,lbltxt=r'$\alpha={}$'.format(alph),basis_N=100,n_eigen=50)
+		#plot_kubo(path,alph,D,lamda,g,z,beta,ax,lbltxt=r'$\alpha={}$'.format(alph),basis_N=100,n_eigen=50)
 		#print('time', time.time()-start_time)	
 	n=7
 	M=3

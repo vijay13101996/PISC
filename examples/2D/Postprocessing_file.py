@@ -17,17 +17,17 @@ Vb = lamda**4/(64*g)
 alpha = 0.382
 D = 3*Vb
 
-z = 1.0
+z = 0.5
  
 Tc = 0.5*lamda/np.pi
-times = 10.0
+times = 1.0
 T = times*Tc
 beta=1/T
 
 m = 0.5
 N = 1000
 dt_therm = 0.05
-dt = 0.005
+dt = 0.002
 time_therm = 100.0
 time_total = 5.0
 
@@ -52,7 +52,7 @@ beadkey = 'nbeads_{}_'.format(nbeads)
 Tkey = 'T_{}Tc'.format(times)
 syskey = 'Selene'
 
-if(0):#RPMD
+if(1):#RPMD
 	if(1):
 		methodkey = 'RPMD'
 		enskey='thermal'
@@ -175,7 +175,7 @@ if(0):#CMD
 	plt.show()
 	store_1D_plotdata(tarr,OTOCarr,'CMD_{}_{}_{}_nbeads_{}_dt_{}_gamma_{}'.format(corrkey,potkey,Tkey,nbeads,dt,gamma),cext)
 
-if(1):#Classical
+if(0):#Classical
 	if(1):
 		methodkey = 'Classical'
 		enskey = 'thermal'#'mc'

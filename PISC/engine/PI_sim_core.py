@@ -12,7 +12,7 @@ from PISC.engine.thermalize_PILE_L import thermalize_rp
 from PISC.engine.gen_mc_ensemble import generate_rp
 
 class SimUniverse(object):
-	def __init__(self,method,pathname,sysname,potkey,corrkey,enskey,Tkey):
+	def __init__(self,method,pathname,sysname,potkey,corrkey,enskey,Tkey,ext_kwlist=None):
 		self.method = method
 		self.pathname = pathname
 		self.sysname = sysname
@@ -20,6 +20,7 @@ class SimUniverse(object):
 		self.corrkey = corrkey
 		self.enskey = enskey
 		self.Tkey = Tkey
+		self.ext_kwlist = ext_kwlist
 	
 	def set_sysparams(self,pes,T,mass,dim):
 		''' Set system paramenters 
@@ -138,7 +139,7 @@ class SimUniverse(object):
 		
 		return tarr,tcf	
 	
-	def run_seed(self,rngSeed):
+	def run_seed(self,rngSeed,op=None):
 		print('Seed {} : T {}, nbeads {}'.format(rngSeed,self.T,self.nbeads))	
 		rng = np.random.default_rng(rngSeed)
 		ens = Ensemble(beta=1/self.T,ndim=self.dim)
@@ -164,12 +165,17 @@ class SimUniverse(object):
 			tarr, Carr = self.run_OTOC(sim)
 		elif('TCF' in self.corrkey):
 			tarr, Carr = self.run_TCF(sim)
+		elif(self.corrkey =='stat_avg'):
+			# The assumption here is that 'op' is scalar-valued function (i.e. returns a scalar for every bead)
+			avg = np.mean(np.mean(op(sim.rp.qcart,sim.rp.pcart),axis=1))
+			self.store_scalar(avg,rngSeed)
+			return
 		else:
 			return	
 	
-		self.store_data(tarr,Carr,rngSeed)
+		self.store_time_series(tarr,Carr,rngSeed)
 
-	def store_data(self,tarr,Carr,rngSeed,ext_kwlist=None): 
+	def assign_fname(self,rngSeed):
 		key = [self.method,self.enskey,self.corrkey,self.sysname,self.potkey,self.Tkey,'N_{}'.format(self.N),'dt_{}'.format(self.dt)]
 		fext = '_'.join(key)
 		if(self.method=='Classical'):
@@ -178,9 +184,29 @@ class SimUniverse(object):
 			methext = '_nbeads_{}_'.format(self.nbeads)
 		elif(self.method=='CMD'):
 			methext = '_nbeads_{}_gamma_{}_'.format(self.nbeads,self.gamma)
-		seedext = 'seed_{}'.format(rngSeed)
-
-		if(ext_kwlist is None):
-			fname = ''.join([fext,methext,seedext])	
 		
-		store_1D_plotdata(tarr,Carr,fname,'{}/Datafiles'.format(self.pathname))		
+		if(self.corrkey!='stat_avg'):
+			seedext = 'seed_{}'.format(rngSeed)
+		else:
+			seedext = ''
+
+		if(self.ext_kwlist is None):
+			fname = ''.join([fext,methext,seedext])	
+		else:
+			namelst = [fext,methext]
+			namelst.append('_'.join(self.ext_kwlist) + '_')
+			namelst.append(seedext)
+			fname = ''.join(namelst)
+
+		return fname
+
+	def store_time_series(self,tarr,Carr,rngSeed): 
+		fname = self.assign_fname(rngSeed)	
+		store_1D_plotdata(tarr,Carr,fname,'{}/Datafiles'.format(self.pathname))	
+
+	def store_scalar(self,scalar,rngSeed):
+		# Scalar values are stored in the same filename
+		fname = self.assign_fname(rngSeed)
+		f = open('{}/Datafiles/{}.txt'.format(self.pathname,fname),'a')
+		f.write(str(rngSeed) + "  " + str(scalar) + '\n')
+		f.close()	

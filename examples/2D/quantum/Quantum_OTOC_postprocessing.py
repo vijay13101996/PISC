@@ -58,7 +58,7 @@ if(1): # Double well 2D
 	lbx = -6.0#-7.0
 	ubx = 6.0#7.0
 	lby = -3#-5.0
-	uby = 7
+	uby = 12
 	m = 0.5#8.0
 	ngrid = 100
 	ngridx = ngrid
@@ -73,17 +73,15 @@ if(1): # Double well 2D
 
 	D = 3*Vb
 	alpha = 0.382
-
-	k = 1.0	
 		
 	print('Vb', lamda**4/(64*g))
 
-	z = 1.0#1.25#2.3	
+	z = 0.0	
 
 	Tc = lamda*0.5/np.pi
 	T_au = 10*Tc#10.0 
 	
-	pes = quartic_bistable(alpha,D,lamda,g,z,k)
+	pes = quartic_bistable(alpha,D,lamda,g,z)
 
 	path = os.path.dirname(os.path.abspath(__file__))	
 	#print('pes', pes.potential_xy(0.0,0.0))
@@ -111,7 +109,7 @@ if(1): # Double well 2D
 	#DVR = DVR2D(ngridx,ngridy,lbx,ubx,lby,uby,m,pes.potential_xy)	
 	#plt.imshow(DVR.eigenstate(vecs[:,35])**2,origin='lower')	
 	plt.title('De Leon-Berne potential')
-	plt.contour(x,y,potgrid,colors='k',levels=np.arange(0.0,1.1*D+0.1,0.5))	
+	plt.contour(x,y,potgrid,colors='k',levels=np.arange(0.0,1.01*D,0.5))	
 	#plt.contour(x,y,potgrid,colors='m',levels=np.arange(-1.0,0.0,0.001))
 	#plt.contour(x,y,hesgrid,colors='g',levels=np.arange(-5.0,0.0,0.001))	
 	plt.show()

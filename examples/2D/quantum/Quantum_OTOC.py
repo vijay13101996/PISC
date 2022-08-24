@@ -45,7 +45,7 @@ if(1): #2D double well
 	D = 3*Vb
 	alpha = 0.382
 
-	z = 1.0#2.3	
+	z = 1.5#2.3	
 
 	Tc = lamda*0.5/np.pi
 	times = 1.0

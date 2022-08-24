@@ -148,7 +148,35 @@ if(0):#RPMD
 		RGhist = plt.hist(x=RG, bins=bins,density=True)
 		plt.show()
 
-if(1):
+if(1):#RPMD static averages
+	methodkey = 'RPMD'
+	enskey = 'thermal'
+	corrkey = 'stat_avg'
+	sigmakey = 'sigma_0.21'
+
+	kwlist = [methodkey,corrkey,syskey,potkey,Tkey,beadkey,sigmakey]
+
+	fname  = seed_finder(kwlist,rpext)
+	fname = rpext + fname[0] 
+	print('fname',fname)
+	
+	data = np.loadtxt(fname)[:,1]
+	
+	countarr = []
+	data_arr = []
+	count = 0
+	statavg = 0.0
+	for i in range(len(data)):
+		statavg+=data[i]
+		count+=1
+		countarr.append(count)
+		data_arr.append(statavg/count)
+		
+	print('statavg,count',statavg/count,count)
+	plt.plot(countarr,data_arr)
+	plt.show()
+
+if(0):
 	methodkey = 'RPMD'
 	enskey = 'thermal'
 	corrkey = 'qq_TCF'
