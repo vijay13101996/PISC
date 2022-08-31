@@ -1,4 +1,6 @@
 import numpy as np
+import sys
+sys.path.insert(0, "/home/lm979/Desktop/PISC")
 import PISC
 from PISC.engine.Poincare_section import Poincare_SOS
 from PISC.potentials.Coupled_harmonic import coupled_harmonic
