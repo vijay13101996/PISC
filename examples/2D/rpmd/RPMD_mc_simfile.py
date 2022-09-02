@@ -34,7 +34,7 @@ dt_therm = 0.01
 dt = 0.005
 time_therm = 100.0
 time_total = 5.0
-nbeads = 4
+nbeads = 8
 
 method = 'RPMD'
 potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)

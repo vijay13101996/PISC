@@ -15,8 +15,8 @@ import os
 
 ### Potential parameters
 m=0.5#0.5
-N=10#previously 100
-dt=0.005
+N=400
+dt=0.005#0.005
 
 lamda = 2.0
 g = 0.08
@@ -25,12 +25,12 @@ D = 3*Vb
 alpha = 0.38
 print('Vb',Vb, 'D', D)
 
-z = 1.5
+z = 1.0
 potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
 
 ### Temperature is only relevant for the ring-polymer Poincare section
 Tc = 0.5*lamda/np.pi
-times = 1.5
+times = 0.95
 T = times*Tc
 Tkey = 'T_{}Tc'.format(times) 
 
@@ -42,7 +42,7 @@ pathname = os.path.dirname(os.path.abspath(__file__))
 
 w_db = np.sqrt(lamda/m)
 w_m = (2*D*alpha**2/m)**0.5
-E = 1.05*Vb #+ w_m/2
+E = 1.01*Vb #+ w_m/2
 
 minima = find_minima(m,D,alpha,lamda,g,z)
 xmin,ymin = minima
@@ -57,18 +57,18 @@ potgrid = pes.potential_xy(xgrid,ygrid) ###
 
 qlist = []
 
-#fig,ax = plt_util.prepare_fig_ax(dim=1,tex=True)
-#fig = plt_util.prepare_fig(tex=True)
+#fig,ax = plt.subplots(1)
+fig = plt_util.prepare_fig(tex=True)
 #ax.contour(xgrid,ygrid,potgrid,levels=np.arange(0,1.01*D,D/30))
 #plt.show()
 
 
 ### 'nbeads' can be set to >1 for ring-polymer simulations.
-nbeads = 1
+nbeads = 8
 PSOS = Poincare_SOS('Classical',pathname,potkey,Tkey)
 PSOS.set_sysparams(pes,T,m,2)
 PSOS.set_simparams(N,dt,dt,nbeads=nbeads,rngSeed=0)	
-PSOS.set_runtime(10.0,100.0)
+PSOS.set_runtime(50.0,800.0)
 if(1):
 	xmin=0
 	ymin=0
@@ -82,7 +82,7 @@ if(1):
 	#yg = np.linspace(-1e-8,1e-8,int(1e2)+1)
 
 	#xg = np.linspace(0.0,2.5,int(1e2)+1)
-	#yg = np.linspace(-0.4,1,int(1e3)+1)
+	#yg = np.linspace(-0.2,0.2,int(1e3)+1)
 	xgrid,ygrid = np.meshgrid(xg,yg)
 	potgrid = pes.potential_xy(xgrid,ygrid)
 
@@ -98,40 +98,47 @@ if(1):
 		ax.contour(xgrid,ygrid,potgrid,levels=np.arange(0,1.01*D,D/5))
 		PSOS.run_traj(0,ax) #(1,2,3,4,8,13 for z=1.25), (2,3) 
 		plt.show()
-	if(0): ## Plot the trajectories that make up the Poincare section
-		fig,ax = plt_util.prepare_fig_ax(dim=2,tex=True,sharex=False)
-		xg = np.linspace(-5,5,int(1e2)+1)
-		yg = np.linspace(-2.5,5.5,int(1e2)+1)
-		xgrid,ygrid = np.meshgrid(xg,yg)
-		potgrid = pes.potential_xy(xgrid,ygrid)
-
-		ax[0].contour(xgrid,ygrid,potgrid,levels=np.arange(0,1.01*D,D/5))
-		PSOS.run_traj_PSOS(0,ax) #(1,2,3,4,8,13 for z=1.25), (2,3) 
-		filename='Poincare_N_{}_z_{}_D3Vb'.format(N,z)
-		file_dpi=600
-		#plt.savefig(filename,format='pdf',bbox_inches='tight', dpi=file_dpi)
-		plt.show()
-
 	
-	if(1): ## Collect the data from the Poincare section and plot. 
+	if(0): ## Collect the data from the Poincare section and plot. 
 		X,PX,Y = PSOS.PSOS_X(y0=0.0)#ymin)
-
 		plt.scatter(X,PX,s=0.5)
+	if(1): ## Collect the data from the Poincare section and plot. 
+		max_rg=0.3
+		X,PX,Y, gyr_list_np = PSOS.PSOS_X_gyr(y0=0.0,gyr_min=0.0,gyr_max=max_rg)#ymin)
+		plt.scatter(X,PX,s=0.4)
+		print(gyr_list_np.shape)
 		
 	#plt.title(r'$\alpha={}$, E=$V_b$+$3\omega_m/2$'.format(alpha) )#$N_b={}$'.format(nbeads))
-	if(0):
-		plt.xlabel(r'$x$')
-		plt.ylabel(r'$p_x$')
-		filename='Poincare_N_{}_z_{}_D3Vb'.format(N,z)
-		file_dpi=600
+	plt.xlabel(r'$x$')
+	plt.ylabel(r'$p_x$')
+	filename='RPMD_Poincare_max_rg_{}_N_{}_z_{}_D_3Vb_T_{}Tc_beads_{}'.format(max_rg,N,z,times,nbeads)
+	file_dpi=600
+	plt.savefig(filename,format='pdf',bbox_inches='tight', dpi=file_dpi)
+	plt.show()
+	if(1):#create histogram
+		print(gyr_list_np.shape)
+		gyr_list_max= np.zeros_like(gyr_list_np[0,:])
+		for k in range(len(gyr_list_max)):
+			gyr_list_max[k]=np.max(gyr_list_np[:,k])
+		plt.hist(gyr_list_max,bins=20,edgecolor='black', linewidth=1.2)
+		print('min',np.min(gyr_list_max))
+		print('max',np.max(gyr_list_max))
+		print('mean',np.mean(gyr_list_max))
+		print('std',np.std(gyr_list_max))
+
+		filename='Max_hist_beads_{}_T_{}Tc_z_{}'.format(nbeads,times,z)
+		plt.ylabel(r'Trajectories')
+		plt.xlabel(r'$r_{\small \textup{G}}$')
 		plt.savefig(filename,format='pdf',bbox_inches='tight', dpi=file_dpi)
 		plt.show()
+		
+	
 	#fname = 'Poincare_Section_x_px_{}_T_{}'.format(potkey,T)
 	#store_1D_plotdata(X,PX,fname,'{}/Datafiles'.format(pathname))
 				
 if(0): ## Collect the data from the Poincare section and plot. 
 	Y,PY,X = PSOS.PSOS_Y(x0=xmin)
-	plt.scatter(Y,PY,s=0.5)	
+	plt.scatter(Y,PY,s=1)	
 	#PSOS.set_simparams(N,dt,dt,nbeads=nbeads,rngSeed=1)
 	#PSOS.set_runtime(50.0,500.0)
 	#PSOS.bind(qcartg=qlist,E=E)#pcartg=plist)#E=E)

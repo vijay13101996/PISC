@@ -124,7 +124,46 @@ class Poincare_SOS(object):
 		self.PY.extend(PY_list)
 
 		return Y_list,PY_list,X_list
-	
+	def run_traj_PSOS(self,y0,ax,ind=22):#50 und 20 oder so
+		nsteps = int(self.time_run/self.motion.dt)
+		#for PSOS
+		X_list = []
+		PX_list = []
+		prev = self.rp.q[ind,1,0]/self.rp.nbeads**0.5 - y0
+		curr = self.rp.q[ind,1,0]/self.rp.nbeads**0.5 - y0
+		x_arr=[]
+		y_arr=[]
+		for i in range(nsteps):
+			self.sim.step(mode="nve",var='pq')	
+			x = self.rp.qcart[ind,0,:]
+			px = self.rp.pcart[ind,0,:]
+			y = self.rp.qcart[ind,1,:]
+			py = self.rp.pcart[ind,1,:]
+			
+			curr = y-y0
+			if((prev*curr<0.0) & (py<0.0)):
+				X_list.extend(x)
+				PX_list.extend(px)	
+			
+			if(i%1e0==0):
+				#ax.scatter(self.sim.t,y)
+				x_arr.extend(x)
+				y_arr.extend(y)
+				#plt.pause(0.05)	
+			prev = curr
+		from matplotlib.lines import Line2D
+		line = Line2D(x_arr, y_arr, linewidth=0.2)
+		ax[0].lines(x_arr,y_arr)
+		ax[0].add_line(line)
+		line = Line2D(np.linspace(-5,5,10), np.zeros(10), linewidth=1.5,color='k')
+		ax[0].add_line(line)
+		#ax[0].scatter(x_arr,y_arr,s=2,c=np.linspace(0.99,1,len(x_arr)),cmap='twilight')#color='blue')#cmap='Reds')
+		ax[1].scatter(X_list,PX_list,s=3)
+		ax[0].set(xlabel=r'$x$', ylabel=r'$y$')
+		ax[1].set(xlabel=r'$x$', ylabel=r'$p_x$')
+		ax[1].yaxis.tick_right()
+		#plt.show()	
+
 	def PSOS_X(self,y0):
 		prev = self.rp.q[:,1,0]/self.rp.nbeads**0.5 - y0
 		curr = self.rp.q[:,1,0]/self.rp.nbeads**0.5 - y0
@@ -181,9 +220,13 @@ class Poincare_SOS(object):
 			px = self.rp.p[:,0,0]/self.rp.nbeads**0.5
 			y = self.rp.q[:,1,0]/self.rp.nbeads**0.5
 			py = self.rp.p[:,1,0]/self.rp.nbeads**0.5
-			
-			gyr_x=np.mean((x-self.rp.qcart[:,0,:])**2,axis=1)
-			gyr_y=np.mean((y-self.rp.qcart[:,1,:])**2,axis=1)
+
+			x_rep=np.repeat(x,self.rp.nbeads,axis=0)
+			y_rep=np.repeat(y,self.rp.nbeads,axis=0)
+			x_rep=np.reshape(x_rep,(len(x),self.rp.nbeads))
+			y_rep=np.reshape(y_rep,(len(y),self.rp.nbeads))
+			gyr_x=np.mean((x_rep-self.rp.qcart[:,0,:])**2,axis=1)
+			gyr_y=np.mean((y_rep-self.rp.qcart[:,1,:])**2,axis=1)
 			gyr_tot=np.sqrt(gyr_x+gyr_y)
 			gyr_list_np[i,:]=gyr_tot[:]
 
@@ -199,9 +242,9 @@ class Poincare_SOS(object):
 			prev = curr
 			count+=1
 		
-		gyr_list_max= np.zeros(2*self.N)
-		for s in range(2*self.N):
-			gyr_list_max[s]=np.max(gyr_list_np[:,s])
+		#gyr_list_max= np.zeros(2*self.N)
+		#for s in range(2*self.N):
+		#	gyr_list_max[s]=np.max(gyr_list_np[:,s])
 		
 		print('shape(X):',np.array(X_list).shape,'(at x: sign of y changes and py<0)')
 		self.X.extend(X_list)

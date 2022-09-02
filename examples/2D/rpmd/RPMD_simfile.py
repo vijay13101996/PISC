@@ -2,7 +2,8 @@ import numpy as np
 from matplotlib import pyplot as plt
 import time
 import pickle
-from PISC.engine import RPMD_core
+import sys
+sys.path.insert(0, "/home/lm979/Desktop/PISC")
 import multiprocessing as mp
 from functools import partial
 from PISC.utils.mptools import chunks, batching
@@ -13,7 +14,7 @@ import os
 
 dim=2
 
-alpha = 0.382
+alpha = 0.38
 D = 9.375 
 
 lamda = 2.0
@@ -24,16 +25,16 @@ z = 1.5
 pes = quartic_bistable(alpha,D,lamda,g,z)
 
 Tc = 0.5*lamda/np.pi
-times = 1.0
+times = 0.95
 T = times*Tc
 
 m = 0.5
 N = 1000
 dt_therm = 0.01
 dt = 0.005
-time_therm = 1.0
-time_total = 3.0
-nbeads = 4
+time_therm = 100.0
+time_total = 8.0
+nbeads = 16
 
 method = 'RPMD'
 potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
