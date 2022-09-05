@@ -24,28 +24,16 @@ ngridx = ngrid
 ngridy = ngrid
 
 ##########potential##########
-###CHO_Lars
-if(False):
-    omega=1
-    g=0.1
-    pes= lambda a,b : DVR2D_mod.pot_2D_CHO(a,b,g=g, omega=omega,m=m)
-    DVR = DVR2D(ngridx,ngridy,lbx,ubx,lby,uby,m,pes)
 
 ###quartic bistable
 if(True):#parameters
     lamda = 2.0 #already desired parameter -> either 2.0 (or 1.5), but 2.0 better b.c.. in other paper 
-    if(lamda==2):
-        D= 10.0
-    else:  
-        D=10.0#5.0 ##hight of Morse ### much higher than barrier hight (ALWAYS!),
-    ######exponent in Morse D*(1-e**(-alpha y)) the bigger alpha, the smaller time until plateau
-    #sqeezes corrod system... energy spacing: 
-    alpha = 1 #1.165#0.81#0.175#0.41#0.255#1.165 
-
-
-    g = lamda**2/32##### v(x)=g*(x**2 -lambda**2/(8g)**2)   #lamda**2/32#4.0###g=0.01  many states in double well , larger g, 0.035 
-
-    z = 0.2#1.25#2.3	###coupling, ###2.3 ...breaks at around that point
+    Vb = lamda**4/(64*g)
+    D= 3*Vb
+    alpha = 0.38#1 #1.165#0.81#0.175#0.41#0.255#1.165 
+    #g = lamda**2/32##### v(x)=g*(x**2 -lambda**2/(8g)**2)   #lamda**2/32#4.0###g=0.01  many states in double well , larger g, 0.035 
+    g=0.08
+    z = 1#1.25#2.3	###coupling, ###2.3 ...breaks at around that point
 
 pes = quartic_bistable(alpha,D,lamda,g,z)
 xg = np.linspace(lbx,ubx,ngridx)#ngridx+1 if "prettier"

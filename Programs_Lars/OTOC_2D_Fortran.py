@@ -6,6 +6,7 @@ from mylib.twoD import PY_OTOC2D
 import sys
 sys.path.insert(0, "/home/lm979/Desktop/PISC")
 from PISC.dvr import dvr
+import plt_util
 import time
 time_0=time.perf_counter()
 
@@ -27,8 +28,8 @@ def nbr_occ(w,norm=1,nr_E=50,print_energy_levels=False):
 hbar=1 #like in OTOC paper
 m=1/2 #like in OTOC paper
 L=1
-pot_name='PiB'#PiB, HO, CHO
-N_trunc=150
+pot_name='DWMorse'#'PiB'#PiB, HO, CHO
+N_trunc=200
 print('Potential: %s' % pot_name)
 
 ##########DVR##########
@@ -62,14 +63,14 @@ if(pot_name=='PiB'):
     #T=DVR2D_mod.kin_inf_2D(xy,hbar=hbar, m=m)
     T=DVR2D_mod.kin_box_2D(xy,hbar=hbar, m=m)
 if(pot_name=='DWMorse'):
-    D = 5.0#10.0
-    alpha = 1#1.165#0.81#0.175#0.41#0.255#1.165
-    lamda = 1.5#4.0
-    g = 0.035#lamda**2/32#4.0
+    alpha = 0.38#1#1.165#0.81#0.175#0.41#0.255#1.165
+    lamda = 2#4.0
+    g = 0.08#lamda**2/32#4.0
     z = 0.5#1.25#2.3	
-
-    xy = np.mgrid[-12.0:12.01:0.4, -12.0:12.01:0.4] #until ?
-    xy = np.mgrid[-12.0:12.01:0.4, -12.0:12.01:0.4] #until ?
+    Vb = lamda**4/(64*g)
+    D = 3*Vb#10.0
+    #xy = np.mgrid[-12.0:12.01:0.1, -12.0:12.01:0.4]
+    xy = np.mgrid[-12.0:12.01:0.1, -12.0:12.01:0.1] 
     if(False):
         alpha_morse=1
         D=5
@@ -128,6 +129,7 @@ elif(pot_name=='DWMorse'):
     t=np.linspace(0,10.0,400)#DWMorse
 elif(pot_name=='Quartic_bistable'):
     #implement VJ's code and play with coupling strength... also make contour plot 
+    t=np.linspace(0,10.0,400)
     print('use VJs code!')
 
 
