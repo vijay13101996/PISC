@@ -1,4 +1,6 @@
 import numpy as np
+import sys
+sys.path.insert(0, "/home/lm979/Desktop/PISC")
 from PISC.dvr.dvr import DVR2D
 from PISC.husimi.Husimi import Husimi_2D,Husimi_1D
 from PISC.potentials.Coupled_harmonic import coupled_harmonic

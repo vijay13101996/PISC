@@ -55,6 +55,7 @@ Sim_class.set_runtime(time_therm,time_total)
 start_time=time.time()
 func = partial(Sim_class.run_seed)
 seeds = range(1000)
+seeds=np.arange(480,1000)
 seed_split = chunks(seeds,10)
 
 param_dict = {'Temperature':Tkey,'CType':corrkey,'m':m,\

@@ -15,7 +15,7 @@ import os
 
 ### Potential parameters
 m=0.5#0.5
-N=400
+N=100
 dt=0.005#0.005
 
 lamda = 2.0
@@ -68,7 +68,7 @@ nbeads = 8
 PSOS = Poincare_SOS('Classical',pathname,potkey,Tkey)
 PSOS.set_sysparams(pes,T,m,2)
 PSOS.set_simparams(N,dt,dt,nbeads=nbeads,rngSeed=0)	
-PSOS.set_runtime(50.0,800.0)
+PSOS.set_runtime(5.0,650.0)
 if(1):
 	xmin=0
 	ymin=0
@@ -101,21 +101,25 @@ if(1):
 	
 	if(0): ## Collect the data from the Poincare section and plot. 
 		X,PX,Y = PSOS.PSOS_X(y0=0.0)#ymin)
-		plt.scatter(X,PX,s=0.5)
+		plt.scatter(X,PX,s=0.4)
 	if(1): ## Collect the data from the Poincare section and plot. 
-		max_rg=0.3
-		X,PX,Y, gyr_list_np = PSOS.PSOS_X_gyr(y0=0.0,gyr_min=0.0,gyr_max=max_rg)#ymin)
+		t_relax=250
+		max_rg=0.2
+		X,PX,Y, gyr_list_np = PSOS.PSOS_X_gyr(y0=0.0,gyr_min=0.0,gyr_max=max_rg,time_relax=t_relax)#ymin)
 		plt.scatter(X,PX,s=0.4)
 		print(gyr_list_np.shape)
-		
+
 	#plt.title(r'$\alpha={}$, E=$V_b$+$3\omega_m/2$'.format(alpha) )#$N_b={}$'.format(nbeads))
 	plt.xlabel(r'$x$')
 	plt.ylabel(r'$p_x$')
-	filename='RPMD_Poincare_max_rg_{}_N_{}_z_{}_D_3Vb_T_{}Tc_beads_{}'.format(max_rg,N,z,times,nbeads)
+	#filename='RPMD_Poincare_max_rg_{}_N_{}_z_{}_D_3Vb_T_{}Tc_beads_{}'.format(max_rg,N,z,times,nbeads)
+	filename='RPMD_Poincare_N_{}_z_{}_D_3Vb_T_{}Tc_beads_{}'.format(N,z,times,nbeads)
+	plt.ylim([-4,4])
+	plt.ylim([-1.8,1.8])
 	file_dpi=600
 	plt.savefig(filename,format='pdf',bbox_inches='tight', dpi=file_dpi)
 	plt.show()
-	if(1):#create histogram
+	if(0):#create histogram
 		print(gyr_list_np.shape)
 		gyr_list_max= np.zeros_like(gyr_list_np[0,:])
 		for k in range(len(gyr_list_max)):

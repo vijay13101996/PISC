@@ -200,7 +200,7 @@ class Poincare_SOS(object):
 
 		return X_list,PX_list,Y_list			
 
-	def PSOS_X_gyr(self,y0,gyr_min,gyr_max):
+	def PSOS_X_gyr(self,y0,gyr_min,gyr_max,time_relax=30):
 		""" Same as PSOS_X but with a filter of the radius of gyration.
 		Returns an extra np array with all radii of gyration, so these can be used for histogramming/ passing to other functions."""
 		prev = self.rp.q[:,1,0] - y0
@@ -208,7 +208,7 @@ class Poincare_SOS(object):
 		count=0
 
 		nsteps = int(self.time_run/self.motion.dt)
-		therm_steps=int(30/self.motion.dt)
+		therm_steps=int(time_relax/self.motion.dt)
 		#print('E,kin,pot',np.sum(self.rp.pcart**2/(2*self.m),axis=1)+self.pes.pot,self.rp.kin,self.pes.pot)
 		X_list = []
 		PX_list = []

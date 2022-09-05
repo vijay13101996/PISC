@@ -1,12 +1,12 @@
 import numpy as np
+import sys
+sys.path.insert(0, "/home/lm979/Desktop/PISC")
 from PISC.dvr.dvr import DVR2D
 from PISC.potentials.Coupled_harmonic import coupled_harmonic
 from PISC.potentials.Quartic_bistable import quartic_bistable
 from PISC.potentials.Heller_Davis import heller_davis
 from PISC.potentials.harmonic_2D import Harmonic
-from PISC.potentials.Four_well import four_well
 from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr, read_arr
-from PISC.engine import OTOC_f_1D
 from PISC.engine import OTOC_f_2D_omp_updated
 from matplotlib import pyplot as plt
 import os 

@@ -1,4 +1,7 @@
+from cProfile import label
 import numpy as np
+import sys
+sys.path.insert(0, "/home/lm979/Desktop/PISC")
 from PISC.utils.plottools import plot_1D
 from PISC.utils.misc import find_OTOC_slope
 from matplotlib import pyplot as plt
@@ -7,24 +10,24 @@ from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr,
 
 dim=2
 
-alpha = 0.37
+alpha = 0.38
 D = 9.375 
 
 lamda = 2.0
 g = 0.08
 
-z = 1.0
+z = 1.5
  
 Tc = 0.5*lamda/np.pi
-times = 1.0
+times = 0.95
 T = times*Tc
 
 m = 0.5
 N = 1000
 dt_therm = 0.01
 dt = 0.005
-time_therm = 40.0
-time_total = 5.0
+time_therm = 100
+time_total = 8.0
 
 nbeads = 16
 
@@ -49,7 +52,7 @@ syskey = 'Selene'
 fig,ax = plt.subplots()
 
 
-if(1):
+if(0):
 	corrkey = 'OTOC'
 	enskey ='mc'#'thermal'
 	Tkey = 'T_{}Tc'.format(times)
@@ -73,6 +76,41 @@ if(0):
 		ax.plot(t_trunc, slope*t_trunc+ic,linewidth=2,color='k')
 	
 	plt.title('RPMD microcanonical OTOCs for the 2D double well')	
+
+if(1):
+	n_seeds=1000
+	#for nbeads,c in zip([8,16],['r','g']):
+	for nbeads,c in zip([8],['r']):	
+		Tkey = 'T_{}Tc'.format(times)
+		x_arr=np.zeros((int(time_total/dt),n_seeds))
+		y_arr=np.zeros((int(time_total/dt),n_seeds))
+		for seeds in range(n_seeds):
+			ext ='RPMD_thermal_{}_{}_{}_{}_N_{}_dt_{}_nbeads_{}_seed_{}'.format(corrkey,syskey,potkey,Tkey,N,dt,nbeads,seeds)
+			extclass = rpext + ext
+			#print('fname',extclass)
+			data = read_1D_plotdata('{}.txt'.format(extclass))
+			x_arr[:,seeds]=data[:,0]
+			y_arr[:,seeds]=data[:,1]
+		x=np.mean(x_arr,axis=1)#mean of t which is always correct but useless
+		y=np.mean(y_arr,axis=1)
+		y_std=np.std(y_arr,axis=1)
+		log_y=np.mean(np.log(y_arr),axis=1)
+		log_std= np.std(np.log(y_arr),axis=1)
+		#print(np.min(y_std))
+		#print(np.min(np.log(y_std)))
+		#seems wrong because log(y_std) will give crazy derivations
+		#ax.errorbar(x,np.log(y),np.log(y_std),label='N = {}_log_mean'.format(nbeads))
+		ax.errorbar(x,log_y,log_std,ecolor='red',label='N = {}_log_mean'.format(nbeads))
+		#ax.plot(x,log_y,label='N = {}_mean_log'.format(nbeads))
+		ax.set_xlim(0,6.5)
+		#ax.set_ylim(0,10)
+		#slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(extclass,1,2)
+		#print('2pi/beta', 2*np.pi*T,slope/2)	
+		#plot_1D(ax,extclass, label=r'$RPMD,T={}Tc,\; N_b={}, \lambda={:.3f}$'.format(times,nbeads,np.real(slope/2)),color=c, log=True,linewidth=1)	
+		
+		#ax.plot(t_trunc, slope*t_trunc+ic,linewidth=2,color='k')
+	
+	plt.title('RPMD OTOCs for the 2D double well')	
 
 plt.legend()
 plt.show()
