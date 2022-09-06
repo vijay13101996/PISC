@@ -31,10 +31,7 @@ class FFT(object):
 		#	self.ft_scale[nbeads-1]= 1/nbeads**0.5
 		
 	def cart2mats(self,cart,mats=None,axis=-1):
-		print(cart,'cart')
-		print(scipy.__version__)
 		mats = scipy.fftpack.rfft(cart,axis=axis)*self.ft_scale
-		print(scipy.fftpack.rfft(cart,axis=axis),'rfft')
 		return mats
 	
 	def mats2cart(self,mats,cart=None,axis=-1):

@@ -2,7 +2,7 @@ from matplotlib import pyplot as plt
 import matplotlib
 
 
-font = {'family':'serif','size':16}
+font = {'family':'serif','size':20}
 
 std_width = 20
 std_height = 10

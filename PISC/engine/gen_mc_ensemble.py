@@ -57,14 +57,13 @@ def generate_rp(pathname,m,dim,N,nbeads,ens,pes,rng,time_relax,dt_relax,potkey,r
 	#print('E tot', np.sum(rp.pcart**2/(2*m),axis=2) + np.sum(pes.potential(rp.qcart),axis=2 ) )
 	#plt.axis([-10, 10, 0, 5])		
 
-	sim.step(mode="nve",ndt=0,var='pq',RSP=True) # Allow time for the trajectories to spread out 	
+	sim.step(mode="nve",ndt=50,var='pq',RSP=True) # Allow time for the trajectories to spread out 	
 	
 	# Run NVE steps until time_therm	
 	rp0 = deepcopy(rp)
 	
 	filt_condn = np.array([False for i in range(N)])
 	for i in range(nthermsteps):
-		print(i,'i')
 		sim.step(mode="nve",var='pq',RSP=True)
 		if(filt_func is not None):
 			ind = filt_func(rp,rp0)
