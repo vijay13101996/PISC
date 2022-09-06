@@ -27,7 +27,6 @@ class quartic_bistable(PES):
 			Vx = 4*self.g*x*(-1 + np.exp(-self.alpha*y*self.z))*(x**2 - self.lamda**2/(8*self.g)) + 4*self.g*x*(x**2 - self.lamda**2/(8*self.g))
 			Vy = 2*self.D*self.alpha*(1 - np.exp(-self.alpha*y))*np.exp(-self.alpha*y) \
 					- self.alpha*self.z*(self.g*(x**2 - self.lamda**2/(8*self.g))**2 - self.lamda**4/(64*self.g))*np.exp(-self.alpha*y*self.z)		 
-			
 			return np.transpose([Vx,Vy],axes=[1,0,2])
 	
 		def ddpotential(self,q):

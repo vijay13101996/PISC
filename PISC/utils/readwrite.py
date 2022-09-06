@@ -9,8 +9,11 @@ def store_1D_plotdata(x,y,fname,fpath=None):
 		datafile_path = "{}/{}.txt".format(fpath,fname)
 	np.savetxt(datafile_path , data)#,fmt = ['%f','%f'])
 
-def read_1D_plotdata(fname):
-	data = np.loadtxt("{}".format(fname),dtype=complex)
+def read_1D_plotdata(fname,fpath=None):
+	if(fpath is None):
+		data = np.loadtxt("{}".format(fname),dtype=complex)
+	else:
+		data = np.loadtxt("{}/{}".format(fpath,fname),dtype=complex)
 	return data
 
 def chunks(L, n): 

@@ -37,9 +37,9 @@ def generate_rp(pathname,m,dim,N,nbeads,ens,pes,rng,time_relax,dt_relax,potkey,r
 				count+=1	
 	
 	rp = RingPolymer(qcart=qcart,pcart=pcart,m=m) 	
+	
 	motion = Motion(dt = dt_relax,symporder=2)
 	rp.bind(ens,motion,rng)
- 
 	therm = PILE_L(tau0=1.0,pile_lambda=100.0) 
 	therm.bind(rp,motion,rng,ens)
 
@@ -49,7 +49,7 @@ def generate_rp(pathname,m,dim,N,nbeads,ens,pes,rng,time_relax,dt_relax,potkey,r
 	sim = RP_Simulation()
 	sim.bind(ens,motion,rng,rp,pes,propa,therm)
 	start_time = time.time()
-
+	
 	nthermsteps = int(time_relax/motion.dt)
 
 	print('rp E', E*nbeads,np.sum(rp.pcart[0]**2/(2*m)) +np.sum(pot[0]))
@@ -57,12 +57,14 @@ def generate_rp(pathname,m,dim,N,nbeads,ens,pes,rng,time_relax,dt_relax,potkey,r
 	#print('E tot', np.sum(rp.pcart**2/(2*m),axis=2) + np.sum(pes.potential(rp.qcart),axis=2 ) )
 	#plt.axis([-10, 10, 0, 5])		
 
-	sim.step(mode="nve",ndt=nthermsteps//10,var='pq',RSP=True) # Allow time for the trajectories to spread out 	
+	sim.step(mode="nve",ndt=0,var='pq',RSP=True) # Allow time for the trajectories to spread out 	
 	
 	# Run NVE steps until time_therm	
 	rp0 = deepcopy(rp)
+	
 	filt_condn = np.array([False for i in range(N)])
 	for i in range(nthermsteps):
+		print(i,'i')
 		sim.step(mode="nve",var='pq',RSP=True)
 		if(filt_func is not None):
 			ind = filt_func(rp,rp0)
@@ -76,7 +78,8 @@ def generate_rp(pathname,m,dim,N,nbeads,ens,pes,rng,time_relax,dt_relax,potkey,r
 			#plt.pause(0.02)
 		#tarr.append(i*dt)
 		#kinarr.append((rp.pcart**2).sum())#kin.sum())
-	
+
+
 	if(filt_func is not None):
 		ind_arr = np.where(filt_condn)[0]	
 		if(len(ind_arr) ==0):

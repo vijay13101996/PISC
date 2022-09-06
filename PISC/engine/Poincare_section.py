@@ -54,7 +54,6 @@ class Poincare_SOS(object):
 			generate_rp(self.pathname,self.m,self.dim,self.N,self.nbeads,self.ens,self.pes,self.rng,self.time_ens,self.dt,self.potkey,self.rngSeed,E,qcartg)
 			qcartg = read_arr('Microcanonical_rp_qcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(self.N,self.nbeads,self.beta,self.potkey,self.rngSeed),"{}/Datafiles".format(self.pathname))
 			pcartg = read_arr('Microcanonical_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(self.N,self.nbeads,self.beta,self.potkey,self.rngSeed),"{}/Datafiles".format(self.pathname)) 
-		
 		if(specific_traj is not None):
 			qcartg = qcartg[specific_traj]
 			pcartg = pcartg[specific_traj]
@@ -65,8 +64,8 @@ class Poincare_SOS(object):
 			pc[::2,0] = -pc[::2,0]
 			qcartg = qc
 			pcartg = pc
-				
-		self.rp = RingPolymer(qcart=qcartg,pcart=pcartg,m=self.m)	
+
+		self.rp = RingPolymer(qcart=qcartg,pcart=pcartg,m=self.m)
 		self.sim.bind(self.ens,self.motion,self.rng,self.rp,self.pes,self.propa,self.therm)
 
 	def find_initcondn(self,xgrid,ygrid,potgrid,E):
@@ -169,6 +168,7 @@ class Poincare_SOS(object):
 		curr = self.rp.q[:,1,0]/self.rp.nbeads**0.5 - y0
 		count=0
 
+
 		nsteps = int(self.time_run/self.motion.dt)
 		#print('E,kin,pot',np.sum(self.rp.pcart**2/(2*self.m),axis=1)+self.pes.pot,self.rp.kin,self.pes.pot)
 		X_list = []
@@ -184,10 +184,12 @@ class Poincare_SOS(object):
 			cent_E = np.sum(self.rp.p[:,:,0]**2/self.rp.nbeads,axis=1) + self.pes.potential(self.rp.q[:,:,0]/self.rp.nbeads**0.5)
 			#print('t, cent E',self.sim.t,cent_E.shape)		
 			curr = y-y0
+			
 			#Rg = np.sum((self.rp.qcart-self.rp.q[:,:,0])**2, axis=1)
 			ind = np.where( (prev*curr<0.0) & (py<0.0))# & (cent_E>0.95*self.E))# & (cent_E>0.8*self.E))
 			#if(len(np.array(ind)[0])>0):
 			#	print('py',py[ind])
+	
 			X_list.extend(x[ind])
 			PX_list.extend(px[ind])
 			Y_list.extend(y[ind])

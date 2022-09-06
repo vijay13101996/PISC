@@ -15,12 +15,15 @@ import os
 
 ### Potential parameters
 m=0.5#0.5
-N=100
+N=2
 dt=0.005#0.005
+t_relax=2
+max_runtime=200.0
 
 lamda = 2.0
 g = 0.08
 Vb = lamda**4/(64*g)
+
 D = 3*Vb
 alpha = 0.38
 print('Vb',Vb, 'D', D)
@@ -44,31 +47,36 @@ w_db = np.sqrt(lamda/m)
 w_m = (2*D*alpha**2/m)**0.5
 E = 1.01*Vb #+ w_m/2
 
-minima = find_minima(m,D,alpha,lamda,g,z)
-xmin,ymin = minima
+#minima = find_minima(m,D,alpha,lamda,g,z)
+#xmin,ymin = minima
+xmin,ymin = 2.5,0
 print('xmin, ymin,alpha*ymin', xmin, ymin,alpha*ymin)
 print('pot at min', pes.potential_xy(xmin,ymin), pes.potential_xy(0.0,0.0))
 
-xg = np.linspace(-8,8,int(1e2)+1)
-yg = np.linspace(-5,20,int(1e2)+1)
+xg = np.linspace(-5,5,int(1e3)+1)
+yg = np.linspace(-2,10,int(1e3)+1)
 
 xgrid,ygrid = np.meshgrid(xg,yg)
 potgrid = pes.potential_xy(xgrid,ygrid) ###
 
 qlist = []
 
-#fig,ax = plt.subplots(1)
-fig = plt_util.prepare_fig(tex=True)
+#fig2,ax = plt.subplots(1)
 #ax.contour(xgrid,ygrid,potgrid,levels=np.arange(0,1.01*D,D/30))
 #plt.show()
 
+#fig = plt_util.prepare_fig(tex=True)
+fig,axs = plt_util.prepare_fig_ax(dim=2,tex=True,sharex=True)
+
+
 
 ### 'nbeads' can be set to >1 for ring-polymer simulations.
-nbeads = 8
+nbeads = 16
 PSOS = Poincare_SOS('Classical',pathname,potkey,Tkey)
 PSOS.set_sysparams(pes,T,m,2)
 PSOS.set_simparams(N,dt,dt,nbeads=nbeads,rngSeed=0)	
-PSOS.set_runtime(5.0,650.0)
+PSOS.set_runtime(2*dt,0*dt)#50.0,max_runtime)
+
 if(1):
 	xmin=0
 	ymin=0
@@ -87,8 +95,10 @@ if(1):
 	potgrid = pes.potential_xy(xgrid,ygrid)
 
 	qlist = PSOS.find_initcondn(xgrid,ygrid,potgrid,E)
-	PSOS.bind(qcartg=qlist,E=E,sym_init=True)#pcartg=plist)#E=E)
-
+	
+	PSOS.bind(qcartg=qlist,E=E,sym_init=False)#pcartg=plist)#E=E)
+	
+	sys.exit()
 	if(0): ## Plot the trajectories that make up the Poincare section
 		xg = np.linspace(-8,8,int(1e2)+1)
 		yg = np.linspace(-5,10,int(1e2)+1)
@@ -98,27 +108,100 @@ if(1):
 		ax.contour(xgrid,ygrid,potgrid,levels=np.arange(0,1.01*D,D/5))
 		PSOS.run_traj(0,ax) #(1,2,3,4,8,13 for z=1.25), (2,3) 
 		plt.show()
-	
 	if(0): ## Collect the data from the Poincare section and plot. 
 		X,PX,Y = PSOS.PSOS_X(y0=0.0)#ymin)
 		plt.scatter(X,PX,s=0.4)
-	if(1): ## Collect the data from the Poincare section and plot. 
-		t_relax=250
+	if(1): ## Collect the data from the Poincare section and plot, next to each other. 
+		max_rg=10
+		
+		X_full,PX_full,Y_full = PSOS.PSOS_X(y0=0.0)
+		X,PX,Y, gyr_list_np = PSOS.PSOS_X_gyr(y0=0.0,gyr_min=0.0,gyr_max=max_rg,time_relax=t_relax)#ymin)
+		####saving Data
+		fname = 'PSOS_un_and_filtered_x_px_{}_T_{}_N_{}_long_{}'.format(potkey,T,N,max_runtime)
+		fgyr_name = 'gyr_{}'.format(fname)
+		filter_name= 'filt_{}'.format(fname)
+		unfilter_name= 'unfilt_{}'.format(fname)
+		store_1D_plotdata(X_full,PX_full,fname=unfilter_name,fpath='{}/Datafiles'.format(pathname))
+		store_1D_plotdata(X,PX,fname=filter_name,fpath='{}/Datafiles'.format(pathname))
+		store_arr(gyr_list_np,fgyr_name,'{}/Datafiles'.format(pathname))
+		#read_1D_plotdata(X,PX,X_full,PX_full,gyr_list_np,'{}.txt'.format(fname))
+		
+		#plotting Data
+
+		axs[0].scatter(X,PX,s=0.4)
+		axs[1].scatter(X_full,PX_full,s=0.4)
+		print(gyr_list_np.shape)
+		print(np.shape(X_full))
+		print(np.shape(X))
+		print(np.max(gyr_list_np))
+		print(np.min(gyr_list_np))
+		print(np.mean(gyr_list_np))
+		axs[0].set_xlabel(r'$x$')
+		axs[0].set_ylabel(r'$p_x$')
+		axs[1].set_xlabel(r'$x$')
+		axs[1].get_yaxis().set_ticks([])
+		filename='RPMD_Poincare_filtered_unfiltered_N_{}_z_{}_D_3Vb_T_{}Tc_beads_{}_rg_{}'.format(N,z,times,nbeads,max_rg)
+		file_dpi=600
+		plt.savefig(filename,format='pdf',bbox_inches='tight', dpi=file_dpi)
+		plt.show()
+	if(0):
+		max_rg=1
+		###reading Data
+		fname = 'PSOS_un_and_filtered_x_px_{}_T_{}_N_{}_long_{}'.format(potkey,T,N,max_runtime)
+		fgyr_name = 'gyr_{}'.format(fname)
+		filter_name= 'filt_{}'.format(fname)
+		unfilter_name= 'unfilt_{}'.format(fname)
+		X_full,PX_full=read_1D_plotdata(fname=unfilter_name,fpath='{}/Datafiles'.format(pathname))
+		X,PX=read_1D_plotdata(fname=filter_name,fpath='{}/Datafiles'.format(pathname))
+		gyr_list_np=read_arr(fgyr_name,'{}/Datafiles'.format(pathname))
+
+		axs[0].scatter(X,PX,s=0.4)
+		axs[1].scatter(X_full,PX_full,s=0.4)
+		print(gyr_list_np.shape)
+		axs[0].set_xlabel(r'$x$')
+		axs[0].set_ylabel(r'$p_x$')
+		axs[1].set_xlabel(r'$x$')
+		filename='RPMD_Poincare_filtered_unfiltered_N_{}_z_{}_D_3Vb_T_{}Tc_beads_{}_rg_{}'.format(N,z,times,nbeads,max_rg)
+		#plt.ylim([-4,4])
+		#plt.ylim([-1.8,1.8])
+		file_dpi=600
+		#plt.savefig(filename,format='pdf',bbox_inches='tight', dpi=file_dpi)
+		plt.show()
+
+	if(0):#create histogram
+		print(gyr_list_np.shape)
+		gyr_list_max= np.zeros_like(gyr_list_np[0,:])
+		for k in range(len(gyr_list_max)):
+			gyr_list_max[k]=np.max(gyr_list_np[:,k])
+		plt.hist(gyr_list_max,bins=20,edgecolor='black', linewidth=1.2)
+		print('min',np.min(gyr_list_max))
+		print('max',np.max(gyr_list_max))
+		print('mean',np.mean(gyr_list_max))
+		print('std',np.std(gyr_list_max))
+
+		filename='Max_hist_beads_{}_T_{}Tc_z_{}'.format(nbeads,times,z)
+		plt.ylabel(r'Trajectories')
+		plt.xlabel(r'$r_{\small \textup{G}}$')
+		plt.savefig(filename,format='pdf',bbox_inches='tight', dpi=file_dpi)
+		plt.show()
+	
+	if(0): ## Collect the data from the Poincare section and plot. 
+		t_relax=2
 		max_rg=0.2
 		X,PX,Y, gyr_list_np = PSOS.PSOS_X_gyr(y0=0.0,gyr_min=0.0,gyr_max=max_rg,time_relax=t_relax)#ymin)
 		plt.scatter(X,PX,s=0.4)
 		print(gyr_list_np.shape)
 
-	#plt.title(r'$\alpha={}$, E=$V_b$+$3\omega_m/2$'.format(alpha) )#$N_b={}$'.format(nbeads))
-	plt.xlabel(r'$x$')
-	plt.ylabel(r'$p_x$')
-	#filename='RPMD_Poincare_max_rg_{}_N_{}_z_{}_D_3Vb_T_{}Tc_beads_{}'.format(max_rg,N,z,times,nbeads)
-	filename='RPMD_Poincare_N_{}_z_{}_D_3Vb_T_{}Tc_beads_{}'.format(N,z,times,nbeads)
-	plt.ylim([-4,4])
-	plt.ylim([-1.8,1.8])
-	file_dpi=600
-	plt.savefig(filename,format='pdf',bbox_inches='tight', dpi=file_dpi)
-	plt.show()
+		#plt.title(r'$\alpha={}$, E=$V_b$+$3\omega_m/2$'.format(alpha) )#$N_b={}$'.format(nbeads))
+		plt.xlabel(r'$x$')
+		plt.ylabel(r'$p_x$')
+		#filename='RPMD_Poincare_max_rg_{}_N_{}_z_{}_D_3Vb_T_{}Tc_beads_{}'.format(max_rg,N,z,times,nbeads)
+		filename='RPMD_Poincare_N_{}_z_{}_D_3Vb_T_{}Tc_beads_{}'.format(N,z,times,nbeads)
+		plt.ylim([-4,4])
+		plt.ylim([-1.8,1.8])
+		file_dpi=600
+		plt.savefig(filename,format='pdf',bbox_inches='tight', dpi=file_dpi)
+		plt.show()
 	if(0):#create histogram
 		print(gyr_list_np.shape)
 		gyr_list_max= np.zeros_like(gyr_list_np[0,:])
