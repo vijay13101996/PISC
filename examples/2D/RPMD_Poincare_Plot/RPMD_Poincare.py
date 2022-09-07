@@ -13,10 +13,10 @@ import time
 import os
 
 ###convergence Parameters
-N=40
-dt=0.005#0.005
-t_relax=20#200
-max_runtime=200.0
+N=100
+dt=0.002#0.005
+t_relax=200#200
+max_runtime=800.0
 
 ### Potential parameters
 m=0.5#0.5
@@ -75,11 +75,11 @@ if(1):#2D plot
 
 
 ### 'nbeads' can be set to >1 for ring-polymer simulations.
-nbeads = 8
+nbeads = 16
 PSOS = Poincare_SOS('Classical',pathname,potkey,Tkey)
 PSOS.set_sysparams(pes,T,m,2)
 PSOS.set_simparams(N,dt,dt,nbeads=nbeads,rngSeed=0)	
-PSOS.set_runtime(10,100)#50.0,max_runtime)
+PSOS.set_runtime(50,max_runtime)#50.0,max_runtime)
 
 #Some way of initalization
 xg = np.linspace(xmin-2.5,xmin+2.5,int(1e2)+1)
@@ -102,7 +102,7 @@ PSOS.bind(qcartg=qlist,E=E,sym_init=True)#pcartg=plist)#E=E)
 	
 	
 max_rg=0.25
-fname = 'PSOS_un_and_filtered_x_px_{}_T_{}_N_{}_long_{}'.format(potkey,T,N,max_runtime)
+fname = 'PSOS_un_and_filtered_x_px_{}_T_{}_N_{}_long_{}_nbeads_{}'.format(potkey,T,N,max_runtime,nbeads)
 fgyr_name = 'gyr_{}'.format(fname)
 filter_name= 'filt_{}'.format(fname)
 unfilter_name= 'unfilt_{}'.format(fname)
