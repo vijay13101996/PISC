@@ -5,7 +5,7 @@ import matplotlib
 font = {'family':'serif','size':18}
 
 std_width = 20
-std_height = 10
+std_height = 12#Adam: 20 zu 10
 std_dpi = 150
 file_dpi = 1200
 

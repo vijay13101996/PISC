@@ -12,7 +12,7 @@ import os
 
 dim=1
 lamda = 2.0
-g = 0.085
+g = 0.08
 
 Vb = lamda**4/(64*g)
 
@@ -45,7 +45,7 @@ Sim_class.set_runtime(time_therm)
 
 start_time=time.time()
 func = partial(Sim_class.run_seed)
-seeds = range(1000)
+seeds = range(100)
 seed_split = chunks(seeds,10)
 
 param_dict = {'Temperature':Tkey,'CType':corrkey,'m':m,\

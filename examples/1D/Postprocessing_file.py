@@ -1,4 +1,6 @@
 import numpy as np
+import sys
+sys.path.insert(0, "/home/lm979/Desktop/PISC")
 from PISC.utils.plottools import plot_1D
 from PISC.utils.misc import find_OTOC_slope,seed_collector,seed_finder
 from matplotlib import pyplot as plt
@@ -23,9 +25,8 @@ N = 1000
 dt = 0.002
 
 nbeads = 16
-gamma = 16
 
-time_total = 5.0#
+time_total = 6.0#
 
 tarr = np.arange(0.0,time_total,dt)
 OTOCarr = np.zeros_like(tarr) +0j
@@ -49,7 +50,7 @@ beadkey = 'nbeads_{}_'.format(nbeads)
 Tkey = 'T_{}Tc'.format(times)
 syskey = 'Selene'
 
-if(0):#RPMD
+if(1):#RPMD
 	if(1):
 		methodkey = 'RPMD'
 		enskey = 'thermal'
@@ -162,22 +163,10 @@ if(0):#RPMD/mc
 	plt.show()
 	store_1D_plotdata(tarr,OTOCarr,'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,nbeads,dt),rpext)
 
-if(0):#CMD
-	methodkey = 'CMD'
-	gammakey = 'gamma_{}'.format(gamma)
-
-	kwlist = [methodkey,corrkey,syskey,potkey,Tkey,beadkey,gammakey]
-	
-	tarr,OTOCarr = seed_collector(kwlist,cext,OTOCarr)
-
-	plt.plot(tarr,np.log(abs(OTOCarr)))
-	plt.show()
-	store_1D_plotdata(tarr,OTOCarr,'CMD_{}_{}_{}_nbeads_{}_dt_{}_gamma_{}'.format(corrkey,potkey,Tkey,nbeads,dt,gamma),cext)
-
-if(1):#Classical
+if(0):#Classical
 	if(1):
 		methodkey = 'Classical'
-		enskey = 'mc'#'thermal'
+		enskey = 'thermal'#'mc'#'thermal'
 
 		kwlist = [enskey,methodkey,corrkey,syskey,potkey,Tkey]
 		

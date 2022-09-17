@@ -27,7 +27,7 @@ N = 1000
 dt_therm = 0.01
 dt = 0.005
 time_therm = 100
-time_total = 8.0
+time_total = 6.0
 
 nbeads = 16
 
