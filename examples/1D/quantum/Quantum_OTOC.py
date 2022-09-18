@@ -71,13 +71,14 @@ high_T=[1.0,2.0,5.0,10.0]
 all_T=[0.8,0.9,0.95,1.0,2.0,5.0,10.0]
 #high_T=[5.0,10.0]#testing
 colors=['r','g','b','k']
+#low_T=[0.8,0.95]
 #colors=['r','g']
 file_dpi=600
 fname = 'Quantum_Kubo_OTOC_{}_T_{}Tc_basis_{}_n_eigen_{}'.format(potkey,times,basis_N,n_eigen)
 
 print('Kubo')
-if(1):#calculate Kubo Quantum OTOC
-	for times in (0.8,0.9,0.95):#all_T:	
+if(0):#calculate Kubo Quantum OTOC
+	for times in all_T:	
 		OTOC_arr*=0.0
 		T_au = times*Tc
 		beta = 1.0/T_au
@@ -92,7 +93,7 @@ if(0):#read the corresponding plotdata, plot high T
 		T_au = times*Tc
 		beta = 1.0/T_au
 		fname = 'Quantum_Kubo_OTOC_{}_T_{}Tc_basis_{}_n_eigen_{}'.format(potkey,times,basis_N,n_eigen)
-		#slope1, ic1, t_trunc1, OTOC_trunc1 = find_OTOC_slope(path+'/Datafiles/'+fname,1.0,1.75)
+		slope1, ic1, t_trunc1, OTOC_trunc1 = find_OTOC_slope(path+'/Datafiles/'+fname,1.0,1.75)
 		plot_1D(ax,'./Datafiles/'+fname, label=r'$T=%.1f\,T_\textup{c}$'%times,color=c, log=True,linewidth=1)	
 		#plt.plot(t_trunc2,slope2*t_trunc2+ic2,linewidth=4,color='k')
 	ax.legend(fontsize='small',fancybox=True)
@@ -104,7 +105,7 @@ if(0):#read the corresponding plotdata, plot low T
 		T_au = times*Tc
 		beta = 1.0/T_au
 		fname = 'Quantum_Kubo_OTOC_{}_T_{}Tc_basis_{}_n_eigen_{}'.format(potkey,times,basis_N,n_eigen)
-		#slope1, ic1, t_trunc1, OTOC_trunc1 = find_OTOC_slope(path+'/Datafiles/'+fname,1.0,1.75)
+		slope1, ic1, t_trunc1, OTOC_trunc1 = find_OTOC_slope(path+'/Datafiles/'+fname,1.0,1.75)
 		plot_1D(ax,'./Datafiles/'+fname, label=r'$T=%.2f\,T_\textup{c}$'%times,color=c, log=True,linewidth=1)	
 		#plt.plot(t_trunc2,slope2*t_trunc2+ic2,linewidth=4,color='k')
 	ax.legend(fontsize='small',fancybox=True)
@@ -112,7 +113,7 @@ if(0):#read the corresponding plotdata, plot low T
 	fig.savefig('plots/Thermal_OTOC_Kubo_low_temps.pdf',format='pdf',bbox_inches='tight',dpi=file_dpi)
 	fig.savefig('plots/Thermal_OTOC_Kubo_low_temps.png',format='png',bbox_inches='tight',dpi=file_dpi)
 print('quantum')
-if(1):#calculate Quantum OTOC
+if(0):#calculate Quantum OTOC
 	for times in all_T:	
 		OTOC_arr*=0.0
 		T_au = times*Tc
@@ -127,7 +128,7 @@ if(0):#read and plot the Quantum plot high_T
 		T_au = times*Tc
 		beta = 1.0/T_au
 		fname = 'Quantum_OTOC_{}_T_{}Tc_basis_{}_n_eigen_{}'.format(potkey,times,basis_N,n_eigen)
-		#slope2, ic2, t_trunc2, OTOC_trunc2 = find_OTOC_slope(path+'/Datafiles/'+fname,1.0,1.75)
+		slope2, ic2, t_trunc2, OTOC_trunc2 = find_OTOC_slope(path+'/Datafiles/'+fname,1.0,1.75)
 		print(np.shape(t_trunc2))
 		plot_1D(ax,'./Datafiles/'+fname, label=r'$T=%.1f\,T_\textup{c}$'%times,color=c, log=True,linewidth=1)	
 		#plt.plot(t_trunc2,slope2*t_trunc2+ic2,linewidth=4,color='k')
@@ -135,14 +136,14 @@ if(0):#read and plot the Quantum plot high_T
 	plt.show()
 	fig.savefig('plots/Thermal_OTOC_high_temps.pdf',format='pdf',bbox_inches='tight',dpi=file_dpi)
 	fig.savefig('plots/Thermal_OTOC_high_temps.png',format='png',bbox_inches='tight',dpi=file_dpi)
-if(0):#read and plot the Quantum plot low_T	
+if(1):#read and plot the Quantum plot low_T	
 	for times,c in zip(low_T,colors):#rgbk
 		T_au = times*Tc
 		beta = 1.0/T_au
 		fname = 'Quantum_OTOC_{}_T_{}Tc_basis_{}_n_eigen_{}'.format(potkey,times,basis_N,n_eigen)
-		#slope2, ic2, t_trunc2, OTOC_trunc2 = find_OTOC_slope(path+'/Datafiles/'+fname,1.0,1.75)
+		slope2, ic2, t_trunc2, OTOC_trunc2 = find_OTOC_slope(path+'/Datafiles/'+fname,1.0,1.75)
 		print(np.shape(t_trunc2))
-		plot_1D(ax,'./Datafiles/'+fname, label=r'$T=%.2f\,T_\textup{c}$'%times,color=c, log=True,linewidth=1)	
+		plot_1D(ax,'./Datafiles/'+fname, label=r'$T=%.2f\,T_\textup{c}$'%times,color=c, log=True,linewidth=1,alpha=0.5)	
 		#plt.plot(t_trunc2,slope2*t_trunc2+ic2,linewidth=4,color='k')
 	ax.legend(fontsize='small',fancybox=True)
 	plt.show()

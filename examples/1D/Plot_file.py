@@ -33,7 +33,7 @@ sysname='Selene'
 fig,ax = prepare_fig_ax(tex=True, dim=1)#plt.subplots()
 ax.set_xlabel(r'$t$')
 ax.set_ylabel(r'$\textup{log}\,C_{T}(t)$')
-if(1):#high temp classical vs quantum
+if(0):#high temp classical vs quantum
 	basis_N=60
 	N_eigen=20
 	for times,c in zip([5.0,10.0],['r','g']):
@@ -110,7 +110,7 @@ if(0):#thermal RPMD OTOC high T
 	fig.savefig('rpmd/plots/Thermal_OTOC_RPMD_{}_high_temps.pdf'.format(nbeads),format='pdf',bbox_inches='tight', dpi=file_dpi)
 	fig.savefig('rpmd/plots/Thermal_OTOC_RPMD_{}_high_temps.png'.format(nbeads),format='png',bbox_inches='tight', dpi=file_dpi)
 
-if(0):#thermal RPMD OTOC low T
+if(1):#thermal RPMD OTOC low T
 	for times,c in zip([0.8,0.9,0.95,1.0],['r','g','b','tab:grey']):
 		corrkey = 'OTOC'
 		enskey = 'thermal'
