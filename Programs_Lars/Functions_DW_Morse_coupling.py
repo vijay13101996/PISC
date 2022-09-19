@@ -39,36 +39,40 @@ def plot_pot_and_Eigenvalues(pes,DVR,lbx,lby,ubx,uby,ngridx,ngridy,z,vecs,lrange
         plt.imshow(DVR.eigenstate(vecs[:,contour_eigenstate])**2,origin='lower')#cannot be fit to actual axis #plt.imshow(np.reshape(vecs[:,12],(ngridx+1,ngridy+1),'F')**2,origin='lower')#same
         #plt.contour(xg,yg,pes.potential_xy(xgr,ygr),levels=np.arange(0,5,0.25))#in case I need the values
         plt.show()
-def contour_plots_eigenstates(pes,DVR,lbx,lby,ubx,uby,ngridx,ngridy,z,vecs,alpha,l_range=(2,),remove_upper_part=True):
+def contour_plots_eigenstates(pes,DVR,lbx,lby,ubx,uby,ngridx,ngridy,z,vecs,alpha,l_range=(2,),remove_upper_part=True,save_fig=False):
 #some inside/intuition about potential and Eigenvalues
-    fig, ax = prepare_fig_ax(dim_tuple=(int(len(l_range)/2),2),tex=True)#plt.subplots(int(len(l_range)/2),2)
-    plt.ion()
-    plt.show()
-    l_cntr=0
-    for axs in ax.flat: 
-        xg = np.linspace(lbx,ubx,ngridx)#ngridx+1 if "prettier"
-        yg = np.linspace(lby,uby,ngridy)
-        xgr,ygr = np.meshgrid(xg,yg)
-        contour_eigenstate=l_range[l_cntr]
-        fig.suptitle(r'Eigenstates for z = %.1f, $\alpha$= %.2f'% (z,alpha))
-        #axs.contour(pes.potential_xy(xgr,ygr),levels=np.arange(0,7.5,1.5))
-        axs.imshow(DVR.eigenstate(vecs[:,contour_eigenstate])**2,origin='lower')#cannot be fit to actual axis #plt.imshow(np.reshape(vecs[:,12],(ngridx+1,ngridy+1),'F')**2,origin='lower')#same
-        #axs.set_title(r'$\psi_%i$'%(l_cntr))
-        axs.set_title(r'$n=%i$'%(l_range[l_cntr]),fontsize=9)
-        axs.axis('off')
-        if(remove_upper_part==True):
-            axs.set_ylim([0,75])#0,55 
-        l_cntr +=1
-    plt.draw()
-    plt.pause(0.001)
-    #plt.draw()
-    #plt.show(block=False)
-def plot_C_n_for_contour_eigenstates(alpha_range, z_range, C_n_range,t_arr, C_n_loop_alpha,N_trunc,non_log=False,log=True,deriv=True):
+	fig, ax = prepare_fig_ax(width=20,height=18,dim_tuple=(int(len(l_range)/2),2),tex=True)#plt.subplots(int(len(l_range)/2),2)
+	plt.ion()
+	plt.show()
+	l_cntr=0
+	for axs in ax.flat: 
+		xg = np.linspace(lbx,ubx,ngridx)#ngridx+1 if "prettier"
+		yg = np.linspace(lby,uby,ngridy)
+		xgr,ygr = np.meshgrid(xg,yg)
+		contour_eigenstate=l_range[l_cntr]
+		fig.suptitle(r'Eigenstates for z = %.1f, $\alpha$= %.2f'% (z,alpha))
+		#axs.contour(pes.potential_xy(xgr,ygr),levels=np.arange(0,7.5,1.5))
+		axs.imshow(DVR.eigenstate(vecs[:,contour_eigenstate])**2,origin='lower')#cannot be fit to actual axis #plt.imshow(np.reshape(vecs[:,12],(ngridx+1,ngridy+1),'F')**2,origin='lower')#same
+		#axs.set_title(r'$\psi_%i$'%(l_cntr))
+		axs.set_title(r'$n=%i$'%(l_range[l_cntr]),fontsize=9)
+		axs.axis('off')
+		if(remove_upper_part==True):
+			axs.set_ylim([0.09*ngridx,0.6*ngridy])#0,55#für 100, 10,75 für 140 
+		l_cntr +=1
+	if(save_fig==True):
+		file_dpi=600
+		fig.savefig('plots/eigenstates_6.pdf',format='pdf',bbox_inches='tight', dpi=file_dpi)
+		fig.savefig('plots/eigenstates_6.png',format='png',bbox_inches='tight', dpi=file_dpi)
+	plt.draw()
+	plt.pause(0.001)
+	#plt.draw()
+	#plt.show(block=False)
+def plot_C_n_for_contour_eigenstates(alpha_range, z_range, C_n_range,t_arr, C_n_loop_alpha,N_trunc,non_log=False,log=True,deriv=True,save_fig=False):
 	for alpha_counter in range(len(alpha_range)):
 		for z_counter in range(len(z_range)):
 			print('alpha, z = %.2f,%.2f' %(alpha_range[alpha_counter],z_range[z_counter]))
 			if(log==True):
-				fig_log, ax_log = prepare_fig_ax(dim_tuple=(int(len(C_n_range)/2),2),tex=True,share_x=True,share_y=True)#plt.subplots(int(len(C_n_range)/2),2,sharex='all',sharey='all')
+				fig_log, ax_log = prepare_fig_ax(width=20, height=18,dim_tuple=(int(len(C_n_range)/2),2),tex=True,share_x=True,share_y=True)#plt.subplots(int(len(C_n_range)/2),2,sharex='all',sharey='all')
 				plt.ion()
 				plt.show()
 			if(deriv==True):
@@ -93,7 +97,15 @@ def plot_C_n_for_contour_eigenstates(alpha_range, z_range, C_n_range,t_arr, C_n_
 					axs.plot(t_arr,tmp,'--',label='n = %i' % C_n_range[n_counter],linewidth=1)
 					axs.set_title(r'$n=%i$'%(C_n_range[n_counter]),fontsize=9)
 					n_counter+=1
-			fig_log.suptitle(r'log$\,C_n(t)$ \large ($\alpha=%.2f, z = %.1f$)' %(alpha_range[alpha_counter],z_range[z_counter]))
+					axs.set_xlabel(r'$t$')
+					#axs.set_ylabel(r'$C_n(t)$')
+				for ax in fig_log.get_axes():
+    					ax.label_outer()
+				fig_log.suptitle(r'log$\,C_n(t)$ \large ($\alpha=%.2f, z = %.1f$)' %(alpha_range[alpha_counter],z_range[z_counter]))
+				if(save_fig==True):
+					file_dpi=600
+					fig_log.savefig('plots/mc_OTOCS_6_z%.2f.pdf'%z_range[z_counter],format='pdf',bbox_inches='tight', dpi=file_dpi)
+					fig_log.savefig('plots/mc_OTOCS_6_z%.2f.png'%z_range[z_counter],format='png',bbox_inches='tight', dpi=file_dpi)
 			if(deriv==True):
 				n_counter=0
 				for axs in ax_deriv.flat:
