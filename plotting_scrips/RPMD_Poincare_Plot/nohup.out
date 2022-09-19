@@ -1,0 +1,28 @@
+/usr/local/shared/anaconda/python3/2022.05/lib/python3.9/site-packages/matplotlib/collections.py:200: ComplexWarning: Casting complex values to real discards the imaginary part
+  offsets = np.asanyarray(offsets, float)
+/usr/local/shared/anaconda/python3/2022.05/lib/python3.9/site-packages/matplotlib/collections.py:200: ComplexWarning: Casting complex values to real discards the imaginary part
+  offsets = np.asanyarray(offsets, float)
+The X11 connection broke: I/O error (code 1)
+XIO:  fatal IO error 25 (Inappropriate ioctl for device) on X server "localhost:10.0"
+      after 193 requests (193 known processed) with 0 events remaining.
+Vb 3.125 D 9.375
+rp E 25.25 2.525e+01
+Traceback (most recent call last):
+  File "/home/lm979/Desktop/PISC/plotting_scrips/RPMD_Poincare_Plot/RPMD_Poincare.py", line 136, in <module>
+    data=read_1D_plotdata(fname=(unfilter_name+'.txt'),fpath='{}/Datafiles'.format(pathname))
+  File "/home/lm979/Desktop/PISC/PISC/utils/readwrite.py", line 16, in read_1D_plotdata
+    data = np.loadtxt("{}/{}".format(fpath,fname),dtype=complex)
+  File "/usr/local/shared/anaconda/python3/2022.05/lib/python3.9/site-packages/numpy/lib/npyio.py", line 1067, in loadtxt
+    fh = np.lib._datasource.open(fname, 'rt', encoding=encoding)
+  File "/usr/local/shared/anaconda/python3/2022.05/lib/python3.9/site-packages/numpy/lib/_datasource.py", line 193, in open
+    return ds.open(path, mode, encoding=encoding, newline=newline)
+  File "/usr/local/shared/anaconda/python3/2022.05/lib/python3.9/site-packages/numpy/lib/_datasource.py", line 533, in open
+    raise IOError("%s not found." % path)
+OSError: /home/lm979/Desktop/PISC/plotting_scrips/RPMD_Poincare_Plot/Datafiles/unfilt_PSOS_un_and_filtered_x_px_double_well_2D_alpha_0.38_D_9.375_lamda_2.0_g_0.08_z_1.0_T_0.30239439187460115_N_24_long_1000.0_nbeads_8.txt not found.
+/usr/local/shared/anaconda/python3/2022.05/lib/python3.9/site-packages/matplotlib/collections.py:200: ComplexWarning: Casting complex values to real discards the imaginary part
+  offsets = np.asanyarray(offsets, float)
+/usr/local/shared/anaconda/python3/2022.05/lib/python3.9/site-packages/matplotlib/collections.py:200: ComplexWarning: Casting complex values to real discards the imaginary part
+  offsets = np.asanyarray(offsets, float)
+The X11 connection broke: I/O error (code 1)
+XIO:  fatal IO error 22 (Invalid argument) on X server "localhost:10.0"
+      after 391 requests (391 known processed) with 0 events remaining.

@@ -12,6 +12,7 @@ from matplotlib import pyplot as plt
 import os 
 import time 
 from mylib.testing import Check_DVR 
+from plt_util import prepare_fig, prepare_fig_ax
 
 def plot_pot_E_Ecoupled_and_3D(pes,ngridx,ngridy,lbx,ubx,lby,uby,m,xg,yg,vals,z):
 #plot x and y potentials, eigenvalues and eigenvalues of the coupled problem, and 3D potential

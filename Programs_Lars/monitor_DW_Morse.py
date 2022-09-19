@@ -23,13 +23,13 @@ g = 0.08
 
 ##########Parameters########## (fixed)
 #Grid
-Lx=7.0
+Lx=10.0
 lbx = -Lx
 ubx = Lx
 lby = -4#Morse, will explode quickly #-2 not enough for alpha 0.35  
 uby = 10#Morse, will explode quickly
 m = 0.5
-ngrid = 100
+ngrid = 150
 ngridx = ngrid
 ngridy = ngrid
 xg = np.linspace(lbx,ubx,ngridx)#ngridx+1 if "prettier"
@@ -46,21 +46,21 @@ N_trunc=100#how long m_arr is and therefore N_trunc
 
 ### MICROCANONIC OTOC: C_n
 calc_Cn=False
-C_n_range=np.arange(2,8,dtype=int)
+C_n_range=np.arange(0,6,dtype=int)
 
 
 #z_range=(0,0.25,0.5,1,1.5)
 z_range= (0,1.5)
-z_range=(1.5,)
+#z_range=(1.5,)
 #z_range=(0,)
 
 #alpha_range=(0.2,0.3,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75)
 #alpha_range=(0.25,0.35,0.45,0.55,0.65,0.75)
-alpha_range=(0.236,0.382,0.52,1.147)
-
-plot_eigenstates=False
-plot_C_n_for_eigenstates=False
-plot_C_T=True
+#alpha_range=(0.236,0.382,0.52,1.147)
+alpha_range=(0.38,)
+plot_eigenstates=True
+plot_C_n_for_eigenstates=True
+#plot_C_T=True
 
 #even more available at the end
 where_exp_thermal=False

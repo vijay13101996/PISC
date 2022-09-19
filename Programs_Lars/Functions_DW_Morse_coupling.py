@@ -1,6 +1,7 @@
 import sys
 sys.path.insert(0, "/home/lm979/Desktop/PISC")
 import numpy as np
+from plt_util import prepare_fig, prepare_fig_ax
 from PISC.dvr.dvr import DVR2D, DVR1D
 from mylib.twoD import DVR2D_mod
 #from PISC.potentials.Coupled_harmonic import coupled_harmonic
@@ -13,7 +14,7 @@ import os
 import time 
 from mylib.testing import Check_DVR 
 
-def plot_pot_E_Ecoupled_and_3D(pes,ngridx,ngridy,lbx,ubx,lby,uby,m,xg,yg,vals,z,plt_V_and_E=False,vecs=()):
+def plot_pot_E_Ecoupled_and_3D(pes,ngridx,ngridy,lbx,ubx,lby,uby,m,xg,yg,vals,z,plt_V_and_E=True,vecs=()):
 #plot x and y potentials, eigenvalues and eigenvalues of the coupled problem, and 3D potential
     from PISC.dvr.dvr import DVR1D
     pot_DW= lambda a: pes.potential_xy(a,0)
@@ -40,7 +41,7 @@ def plot_pot_and_Eigenvalues(pes,DVR,lbx,lby,ubx,uby,ngridx,ngridy,z,vecs,lrange
         plt.show()
 def contour_plots_eigenstates(pes,DVR,lbx,lby,ubx,uby,ngridx,ngridy,z,vecs,alpha,l_range=(2,),remove_upper_part=True):
 #some inside/intuition about potential and Eigenvalues
-    fig, ax = plt.subplots(int(len(l_range)/2),2)
+    fig, ax = prepare_fig_ax(dim_tuple=(int(len(l_range)/2),2),tex=True)#plt.subplots(int(len(l_range)/2),2)
     plt.ion()
     plt.show()
     l_cntr=0
@@ -49,78 +50,81 @@ def contour_plots_eigenstates(pes,DVR,lbx,lby,ubx,uby,ngridx,ngridy,z,vecs,alpha
         yg = np.linspace(lby,uby,ngridy)
         xgr,ygr = np.meshgrid(xg,yg)
         contour_eigenstate=l_range[l_cntr]
-        fig.suptitle(r'Eigenstates for z = %.2f, $\alpha$= %.3f'% (z,alpha))
+        fig.suptitle(r'Eigenstates for z = %.1f, $\alpha$= %.2f'% (z,alpha))
         #axs.contour(pes.potential_xy(xgr,ygr),levels=np.arange(0,7.5,1.5))
         axs.imshow(DVR.eigenstate(vecs[:,contour_eigenstate])**2,origin='lower')#cannot be fit to actual axis #plt.imshow(np.reshape(vecs[:,12],(ngridx+1,ngridy+1),'F')**2,origin='lower')#same
         #axs.set_title(r'$\psi_%i$'%(l_cntr))
-        axs.set_title(r'$n=%i$'%(l_range[l_cntr]),fontsize=6)
+        axs.set_title(r'$n=%i$'%(l_range[l_cntr]),fontsize=9)
         axs.axis('off')
         if(remove_upper_part==True):
-            axs.set_ylim([0,55])
+            axs.set_ylim([0,75])#0,55 
         l_cntr +=1
     plt.draw()
     plt.pause(0.001)
     #plt.draw()
     #plt.show(block=False)
-def plot_C_n_for_contour_eigenstates(alpha_range, z_range, C_n_range,t_arr, C_n_loop_alpha,N_trunc,log=True,deriv=True):
-    for alpha_counter in range(len(alpha_range)):
-        for z_counter in range(len(z_range)):
-            print('alpha, z = %.2f,%.2f' %(alpha_range[alpha_counter],z_range[z_counter]))
-            if(log==True):
-                fig_log, ax_log = plt.subplots(int(len(C_n_range)/2),2,sharex='all',sharey='all')
-                plt.ion()
-                plt.show()
-            if(deriv==True):
-                fig_deriv, ax_deriv = plt.subplots(int(len(C_n_range)/2),2,sharex='all',sharey='all')
-                plt.ion()
-                plt.show()
-            fig, ax= plt.subplots(int(len(C_n_range)/2),2,sharex='all',sharey='all')
-            plt.ion()
-            plt.show()
-            n_counter=0
-            for axs in ax.flat:
-                axs.plot(t_arr,np.abs(C_n_loop_alpha[alpha_counter][z_counter][n_counter]),'--',label='n = %i' % C_n_range[n_counter],linewidth=1)
-                axs.set_title(r'$n=%i$'%(C_n_range[n_counter]))
-                n_counter+=1
-            fig.suptitle(r'C_n for $\alpha$ = %.3f, z = %.2f, N_trunc = %i' %(alpha_range[alpha_counter],z_range[z_counter],N_trunc))
-            if(log==True):
-                n_counter=0
-                for axs in ax_log.flat:
-                    tmp=np.log(np.abs(C_n_loop_alpha[alpha_counter][z_counter][n_counter]))
-                    axs.plot(t_arr,tmp,'--',label='n = %i' % C_n_range[n_counter],linewidth=1)
-                    axs.set_title(r'$n=%i$'%(C_n_range[n_counter]))
-                    n_counter+=1
-                fig_log.suptitle(r'log(C_n) for $\alpha$ = %.3f, z = %.2f, N_trunc = %i' %(alpha_range[alpha_counter],z_range[z_counter],N_trunc))
-            if(deriv==True):
-                n_counter=0
-                for axs in ax_deriv.flat:
-                    tmp=np.log(np.abs(C_n_loop_alpha[alpha_counter][z_counter][n_counter]))
-                    grad=np.gradient(tmp,t_arr)
-                    axs.plot(t_arr,grad,'--',label='n = %i' % C_n_range[n_counter],linewidth=1)
-                    axs.set_title(r'$n=%i$'%(n_counter))
-                    n_counter+=1
-                fig_deriv.suptitle(r'dlog(C_n)/dt for $\alpha$ = %.3f, z = %.2f, N_trunc = %i' %(alpha_range[alpha_counter],z_range[z_counter],N_trunc))
-            plt.draw()
-            plt.pause(0.001)
+def plot_C_n_for_contour_eigenstates(alpha_range, z_range, C_n_range,t_arr, C_n_loop_alpha,N_trunc,non_log=False,log=True,deriv=True):
+	for alpha_counter in range(len(alpha_range)):
+		for z_counter in range(len(z_range)):
+			print('alpha, z = %.2f,%.2f' %(alpha_range[alpha_counter],z_range[z_counter]))
+			if(log==True):
+				fig_log, ax_log = prepare_fig_ax(dim_tuple=(int(len(C_n_range)/2),2),tex=True,share_x=True,share_y=True)#plt.subplots(int(len(C_n_range)/2),2,sharex='all',sharey='all')
+				plt.ion()
+				plt.show()
+			if(deriv==True):
+				fig_deriv, ax_deriv = plt.subplots(int(len(C_n_range)/2),2,sharex='all',sharey='all')
+				plt.ion()
+				plt.show()
+			if(non_log==True):
+				fig, ax= plt.subplots(int(len(C_n_range)/2),2,sharex='all',sharey='all')
+				plt.ion()
+				plt.show()
+			n_counter=0
+			if(non_log==True):
+				for axs in ax.flat:
+					axs.plot(t_arr,np.abs(C_n_loop_alpha[alpha_counter][z_counter][n_counter]),'--',label='n = %i' % C_n_range[n_counter],linewidth=1)
+					axs.set_title(r'$n=%i$'%(C_n_range[n_counter]),fontsize=9)
+					n_counter+=1
+				fig.suptitle(r'C_n for $\alpha$ = %.3f, z = %.2f, N_trunc = %i' %(alpha_range[alpha_counter],z_range[z_counter],N_trunc))
+			if(log==True):
+				n_counter=0
+				for axs in ax_log.flat:
+					tmp=np.log(np.abs(C_n_loop_alpha[alpha_counter][z_counter][n_counter]))
+					axs.plot(t_arr,tmp,'--',label='n = %i' % C_n_range[n_counter],linewidth=1)
+					axs.set_title(r'$n=%i$'%(C_n_range[n_counter]),fontsize=9)
+					n_counter+=1
+			fig_log.suptitle(r'log$\,C_n(t)$ \large ($\alpha=%.2f, z = %.1f$)' %(alpha_range[alpha_counter],z_range[z_counter]))
+			if(deriv==True):
+				n_counter=0
+				for axs in ax_deriv.flat:
+					tmp=np.log(np.abs(C_n_loop_alpha[alpha_counter][z_counter][n_counter]))
+					grad=np.gradient(tmp,t_arr)
+					axs.plot(t_arr,grad,'--',label='n = %i' % C_n_range[n_counter],linewidth=1)
+					axs.set_title(r'$n=%i$'%(n_counter))
+					n_counter+=1
+				fig_deriv.suptitle(r'dlog(C_n)/dt for $\alpha$ = %.3f, z = %.2f, N_trunc = %i' %(alpha_range[alpha_counter],z_range[z_counter],N_trunc))
+			plt.draw()
+			plt.pause(0.001)
+
 def get_thermal_otoc(alpha,z,D,lamda,g,ngridx,ngridy,lbx,ubx,lby,uby,m,ngrid,n_eig_tot,T=1,n_eigen=50,N_trunc=70):
-    beta=1/T
-    #n_eigen=50#up to which n C_n should be calculated
-    #N_trunc=70#how long m_arr is and therefore N_trunc 
-    print('Calculating thermal OTOC with n_eig = %i N_trunc = %i' % (n_eigen, N_trunc))
-    s_time=time.time()
-    ##########Arrays
-    pes = quartic_bistable(alpha,D,lamda,g,z)
-    DVR = DVR2D(ngridx,ngridy,lbx,ubx,lby,uby,m,pes.potential_xy)
-    x_arr = DVR.pos_mat(0)#defines grid points on x
-    k_arr = np.arange(N_trunc) +1 #what
-    m_arr = np.arange(N_trunc) +1 #what
-    #t_arr = np.linspace(0.0,15.0,150) # time interval
-    t_arr = np.linspace(0.0,6.0,100) # time interval
-    OTOC_arr = np.zeros_like(t_arr,dtype='complex') #Store OTOC 
-    vals,vecs=get_EV_and_EVECS(alpha,D,lamda,g,z,ngrid,n_eig_tot,lbx,ubx,lby,uby,m,ngridx,ngridy,pes,DVR)
-    OTOC_arr = OTOC_f_2D_omp_updated.otoc_tools.therm_corr_arr_t(vecs,m,x_arr,DVR.dx,DVR.dy,k_arr,vals,m_arr,t_arr,beta,n_eigen,'xxC','stan',OTOC_arr) 
-    print('Time OTOC calc: %.2f s' %(time.time()-s_time))
-    return t_arr, OTOC_arr
+	beta=1/T
+	#n_eigen=50#up to which n C_n should be calculated
+	#N_trunc=70#how long m_arr is and therefore N_trunc 
+	print('Calculating thermal OTOC with n_eig = %i N_trunc = %i' % (n_eigen, N_trunc))
+	s_time=time.time()
+	##########Arrays
+	pes = quartic_bistable(alpha,D,lamda,g,z)
+	DVR = DVR2D(ngridx,ngridy,lbx,ubx,lby,uby,m,pes.potential_xy)
+	x_arr = DVR.pos_mat(0)#defines grid points on x
+	k_arr = np.arange(N_trunc) +1 #what
+	m_arr = np.arange(N_trunc) +1 #what
+	#t_arr = np.linspace(0.0,15.0,150) # time interval
+	t_arr = np.linspace(0.0,6.0,100) # time interval
+	OTOC_arr = np.zeros_like(t_arr,dtype='complex') #Store OTOC 
+	vals,vecs=get_EV_and_EVECS(alpha,D,lamda,g,z,ngrid,n_eig_tot,lbx,ubx,lby,uby,m,ngridx,ngridy,pes,DVR)
+	OTOC_arr = OTOC_f_2D_omp_updated.otoc_tools.therm_corr_arr_t(vecs,m,x_arr,DVR.dx,DVR.dy,k_arr,vals,m_arr,t_arr,beta,n_eigen,'xxC','stan',OTOC_arr) 
+	print('Time OTOC calc: %.2f s' %(time.time()-s_time))
+	return t_arr, OTOC_arr
 
 def get_EV_and_EVECS(alpha,D,lamda,g,z,ngrid,n_eig_tot,lbx,ubx,lby,uby,m,ngridx,ngridy,pes,DVR):
     import os 

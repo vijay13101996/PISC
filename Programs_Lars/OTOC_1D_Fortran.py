@@ -41,8 +41,8 @@ N_tsteps=len(t)
 B_matrix= np.zeros((N_trunc,N_trunc,N_tsteps),dtype=complex)
 Cn_Fortran = np.zeros((N_trunc, N_tsteps))
 print('N_grd: %i, N_trunc: %i, timesteps: %i ' % (N_grdpts, N_trunc-1,len(t)))
-
-
+labda=2
+Tc=0.5*labda/np.pi
 
 ##########Calculation of OTOC##########
 
@@ -69,7 +69,7 @@ MC_other_parameters=()
 #MC_other_parameters =  range(len(Cn_Fortran[:,1])) #(un)comment if other are (un)desired
 plt_OTOC.plot_MC_OTOC(Cn_Fortran, pot_name, t=t,log_OTOC_mic=log_OTOC_mic,other_parameters=MC_other_parameters)
 plt_OTOC.plot_MC_OTOC(Cn_Fortran, pot_name, t=t,log_OTOC_mic=False,other_parameters=MC_other_parameters)
-plt_OTOC.plot_Thermal_OTOC(Cn_Fortran, pot_name, t=t,Energies=Energies,log_OTOC_T=log_OTOC_T)#,other_parameters=(1,5,9,30,50,100,150))
+plt_OTOC.plot_Thermal_OTOC(Cn_Fortran, pot_name, t=t,Energies=Energies,log_OTOC_T=log_OTOC_T,other_parameters=(0.8*Tc,0.9*Tc,1.0*Tc,10*Tc))#,other_parameters=(1,5,9,30,50,100,150))
 plt.show(block=True)
 
 ####HOW Thermal OTOC is Calculated, just as a reminder what plot_Thermal_OTOC does
