@@ -386,64 +386,84 @@ def plot_b_nm_var_alpha_fix_z_nm(alpha_range, z_range, b_nm_range,t_arr, b_nm_lo
                 ax.legend()
             plt.show()
 
-def Compare_DW_and_Morse_energies(Terminal_output,lbx=-5,ubx=5,lby=-2,uby=10,m=0.5,ngridx=100,ngridy=100,lamda = 2.0,D=10.0, g = 0.08,plotting=True,alpha_range = (0.252,0.344,0.363,0.525)):
-    ###Parameters
-    #0.153,0.157,0.193,0.252,0.344,0.363,0.525,0.837,1.1,1.665,2.514###DVR nicht genug converged fuer 3 stellen
-    #alpha_range = (0.153,0.157,0.193,0.220,0.252,0.344,0.363,0.525,0.837,1.1,1.665,2.514)
-    #alpha_range = (0.344,0.363,0.525)
-    
-    #get DW energies, in later loop Morse
-    pes = quartic_bistable(alpha_range[0],D,lamda,g,z=0)
-    pot_DW= lambda a: pes.potential_xy(a,0)
-    DVR_DW = DVR1D(4*ngridx,lbx,2*ubx,m,pot_DW)
-    vals_DW, vecs_DW= DVR_DW.Diagonalize()
-    
-    if(plotting==True):  
-        xg = np.linspace(lbx,ubx,2*ngridx)#ngridx+1 if "prettier"
-        yg = np.linspace(lby,uby,2*ngridy)
-        colors= ['b','g','r','c','m','y','k']
-    
-    if(Terminal_output==True):
-        print('Lowest energy levels of DW:')
-        print(vals_DW[0:4])
+def Compare_DW_and_Morse_energies(Terminal_output=True,lbx=-5,ubx=5,lby=-2,uby=10,m=0.5,ngridx=100,ngridy=100,lamda = 2.0,D=10.0, g = 0.08,plotting=True,alpha_range = (0.252,0.344,0.363,0.525),save_fig=False):
+	###Parameters
+	#0.153,0.157,0.193,0.252,0.344,0.363,0.525,0.837,1.1,1.665,2.514###DVR nicht genug converged fuer 3 stellen
+	#alpha_range = (0.153,0.157,0.193,0.220,0.252,0.344,0.363,0.525,0.837,1.1,1.665,2.514)
+	#alpha_range = (0.344,0.363,0.525)
 
-    cntr=0
-        
-    for alpha in alpha_range:
-        if(plotting==True):
-            fig= plt.figure()
-            gs = fig.add_gridspec(1,2,hspace=0,wspace=0)
-            axs = gs.subplots(sharey='row')
-            axs[0].plot(xg,pot_DW(xg))
-            axs[0].set_title('Pot x')
-            for n in range(6):
-                axs[0].plot(xg,vals_DW[n]*np.ones_like(xg),'--',label='n = %i' %n )
-            color = colors[cntr % len(colors)]
-            cntr+=1
+	#get DW energies, in later loop Morse
+	pes = quartic_bistable(alpha_range[0],D,lamda,g,z=0)
+	pot_DW= lambda a: pes.potential_xy(a,0)
+	DVR_DW = DVR1D(4*ngridx,lbx,2*ubx,m,pot_DW)
+	vals_DW, vecs_DW= DVR_DW.Diagonalize()
 
-        pes = quartic_bistable(alpha,D,lamda,g,z=0)
-        pot_Morse= lambda a: pes.potential_xy(0,a)-pes.potential_xy(0,0)
-        DVR_Morse = DVR1D(2*ngridy,lby,4*uby,m,pot_Morse)
-        vals_M, vecs_M= DVR_Morse.Diagonalize()
+	if(plotting==True):  
+		xg = np.linspace(lbx,ubx,2*ngridx)#ngridx+1 if "prettier"
+		yg = np.linspace(lby,uby,2*ngridy)
+		colors= ['b','g','r','c','m','y','k']
 
-        if(plotting==True):
-            axs[1].plot(yg, pot_Morse(yg), color)#,label = r'$\alpha$ = %.3f'%alpha)
-            for n in range(4):#amount of ev
-                axs[1].plot(xg,vals_M[n]*np.ones_like(yg), ('--')+color )
-            axs[1].set_title('Pot y')
-            axs[0].set_ylim([0,9])
-            axs[1].set_ylim([0,9])
-            #axs[1].legend(loc='upper center',ncol=3,fancybox=True,shadow=True,fontsize=7)
-            axs[0].legend()
-            fig.suptitle( r'$\alpha$ = %.2f' %(alpha))
+	if(Terminal_output==True):
+		print('Lowest energy levels of DW:')
+		print(vals_DW[0:4])
 
-        if(Terminal_output==True):
-            print()
-            print('alpha= %.3f'%(alpha))
-            print(vals_M[0:3])
-            print('ratio Dw2 to Morse0 = %.3f, (1/x = %.3f)' %((vals_DW[2]/vals_M[0]),(vals_M[0]/vals_DW[2])))
-            print('ratio Dw2 to Morse1 = %.3f, (1/x = %.3f)' %((vals_DW[2]/vals_M[1]),(vals_M[1]/vals_DW[2])))
-        plt.show(block=False)
+	cntr=0
+
+	for alpha in alpha_range:
+		if(plotting==True):
+			fig= prepare_fig(width=20 , height=12, tex=True)#plt.figure()
+			gs = fig.add_gridspec(1,2,hspace=0,wspace=0.1)
+			axs = gs.subplots(sharey='row')
+			axs[0].plot(xg,pot_DW(xg))
+			#axs[0].set_title('Pot x')
+			axs[0].set_xlabel(r'$x$')
+			axs[1].set_xlabel(r'$y$')
+			axs[0].set_ylabel(r'$V$')
+		for n in range(3):
+			axs[0].plot(xg,vals_DW[n]*np.ones_like(xg),'--',label='n = %i' %n )
+			color = colors[cntr % len(colors)]
+			cntr+=1
+		for k in range(5):
+			axs[0].plot(xg,vals_DW[k+3]*np.ones_like(xg),'--',alpha=0.3,label='n = %i' %(k+3) )
+			color = colors[cntr % len(colors)]
+			cntr+=1
+
+
+		pes = quartic_bistable(alpha,D,lamda,g,z=0)
+		pot_Morse= lambda a: pes.potential_xy(0,a)-pes.potential_xy(0,0)
+		DVR_Morse = DVR1D(2*ngridy,lby,2*uby,m,pot_Morse)
+		vals_M, vecs_M= DVR_Morse.Diagonalize()
+
+		if(plotting==True):
+			axs[1].plot(yg, pot_Morse(yg), color)#,label = r'$\alpha$ = %.3f'%alpha)
+		for n in range(2):#amount of ev
+			axs[1].plot(xg,vals_M[n]*np.ones_like(yg), ('--'))
+			color = colors[cntr % len(colors)]
+			cntr+=1
+		for k in range(4):
+			axs[1].plot(xg,vals_M[k+2]*np.ones_like(xg),'--',alpha=0.3,label='n = %i' %(k+3) )
+			color = colors[cntr % len(colors)]
+			cntr+=1
+		#axs[1].set_title('Pot y')
+		axs[0].set_xlim([-6.5,6.5])
+		axs[1].set_xlim([-2.5,9.5])
+		axs[0].set_ylim([-0.1,9.5])
+		axs[1].set_ylim([-0.1,9.5])
+		#axs[1].legend(loc='upper center',ncol=3,fancybox=True,shadow=True,fontsize=7)
+		#axs[0].legend()
+		#fig.suptitle( r'$\alpha$ = %.2f' %(alpha))
+		if(save_fig==True):
+			file_dpi=600
+			fig.savefig('plots/pot_DW_vs_Morse.pdf',format='pdf',bbox_inches='tight', dpi=file_dpi)
+			fig.savefig('plots/pot_DW_vs_Morse.png',format='png',bbox_inches='tight', dpi=file_dpi)
+
+		if(Terminal_output==True):
+		    print()
+		    print('alpha= %.3f'%(alpha))
+		    print(vals_M[0:3])
+		    print('ratio Dw2 to Morse0 = %.3f, (1/x = %.3f)' %((vals_DW[2]/vals_M[0]),(vals_M[0]/vals_DW[2])))
+		    print('ratio Dw2 to Morse1 = %.3f, (1/x = %.3f)' %((vals_DW[2]/vals_M[1]),(vals_M[1]/vals_DW[2])))
+		plt.show(block=False)
 
 
 #######################################
