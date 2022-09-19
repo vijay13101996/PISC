@@ -40,15 +40,14 @@ T=times*T_c
 alpha=0.38
 alpha_range=(alpha,)
 z_range=(0,0.5,1.0,1.5)
-#z_range=(0.5,)
+z_range=(0.5,)
 contour_eigenstates=range(6)
-file_dpi=600
 for z in z_range:
 	pes = quartic_bistable(alpha,D,lamda,g,z)
-	DVR = DVR2D(ngridx,ngridy,lbx,ubx,lby,uby,m,pes.potential_xy)
-	vals,vecs=DMCC.get_EV_and_EVECS(alpha,D,lamda,g,z,ngrid,n_eig_tot,lbx,ubx,lby,uby,m,ngridx,ngridy,pes,DVR)
-	DMCC.contour_plots_eigenstates(pes,DVR,lbx,lby,ubx,uby,ngridx,ngridy,z,vecs,alpha,l_range=contour_eigenstates,remove_upper_part=True,save_fig=True)
-t_arr,C_n_loop_alpha=DMCC.compute_C_n(alpha_range,z_range,contour_eigenstates,D,lamda,g,ngridx,ngridy,ngrid,lbx,ubx,lby,uby,m,n_eig_tot,N_trunc)
-DMCC.plot_C_n_for_contour_eigenstates(alpha_range, z_range,contour_eigenstates,t_arr,  C_n_loop_alpha,N_trunc,log=True,deriv=False,save_fig=True)
+	#DVR = DVR2D(ngridx,ngridy,lbx,ubx,lby,uby,m,pes.potential_xy)
+	#vals,vecs=DMCC.get_EV_and_EVECS(alpha,D,lamda,g,0,ngrid,n_eig_tot,lbx,ubx,lby,uby,m,ngridx,ngridy,pes,DVR)
+	#DMCC.plot_pot_E_Ecoupled_and_3D(pes,ngridx,ngridy,lbx,ubx,lby,uby,m,xg,yg,vals,z,plt_V_and_E=True,vecs=vecs)
+	DMCC.Compare_DW_and_Morse_energies(lbx=-8,ubx=8,lby=-4,uby=12,m=0.5,ngridx=200,ngridy=200,lamda = 2.0,D=D, g = 0.08,plotting=True,alpha_range = (0.38,),save_fig=True)
+
 plt.show(block=True)
 
