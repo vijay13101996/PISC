@@ -89,7 +89,7 @@ def plot_DW_MO_DW_inter(x,y,pot,vals,vals_x,vals_y,z):
 
 def plot_V_and_E(x,y,pot,vals,vecs,vals_x,vals_y,z=0,twoDplot=True,threeDplot=True):
     #maybe use vecs (for plotting) 
-    #plt.savefig()#if want to safe (FONTIZE important for papers) 
+    #plt.savefig()#if want to save (FONTIZE important for papers) 
     #can do a lot more cosmetics x axis , y  axis title ....
     if(twoDplot==True):
         max_val=20

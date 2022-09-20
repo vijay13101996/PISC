@@ -13,19 +13,21 @@ import os
 import time 
 from Programs_Lars.mylib.testing import Check_DVR 
 from Programs_Lars import Functions_DW_Morse_coupling as DMCC
+
+from plt_util import prepare_fig, prepare_fig_ax
 ##########Potential#########
 #quartic bistable
 lamda = 2.0    
 D=9.375#3Vb
 g = 0.08
 #Grid
-Lx=7.0
+Lx=4.5
 lbx = -Lx
 ubx = Lx
-lby = -4#Morse, will explode quickly #-2 not enough for alpha 0.35  
-uby = 10#Morse, will explode quickly
+lby = -2.5#Morse, will explode quickly #-2 not enough for alpha 0.35  
+uby =6.0#Morse, will explode quickly
 m = 0.5
-ngrid = 140#140#convergence
+ngrid = 2000#140#convergence
 ngridx = ngrid
 ngridy = ngrid
 xg = np.linspace(lbx,ubx,ngridx)#ngridx+1 if "prettier"
@@ -40,14 +42,19 @@ T=times*T_c
 alpha=0.38
 alpha_range=(alpha,)
 z_range=(0,0.5,1.0,1.5)
-z_range=(0.5,)
-contour_eigenstates=range(6)
+#z_range=(0.0,)
 for z in z_range:
 	pes = quartic_bistable(alpha,D,lamda,g,z)
-	#DVR = DVR2D(ngridx,ngridy,lbx,ubx,lby,uby,m,pes.potential_xy)
-	#vals,vecs=DMCC.get_EV_and_EVECS(alpha,D,lamda,g,0,ngrid,n_eig_tot,lbx,ubx,lby,uby,m,ngridx,ngridy,pes,DVR)
-	#DMCC.plot_pot_E_Ecoupled_and_3D(pes,ngridx,ngridy,lbx,ubx,lby,uby,m,xg,yg,vals,z,plt_V_and_E=True,vecs=vecs)
-	DMCC.Compare_DW_and_Morse_energies(lbx=-8,ubx=8,lby=-4,uby=12,m=0.5,ngridx=200,ngridy=200,lamda = 2.0,D=D, g = 0.08,plotting=True,alpha_range = (0.38,),save_fig=True)
-
-plt.show(block=True)
-
+	from mpl_toolkits import mplot3d
+	fig,ax= prepare_fig_ax(tex=True)#dim_tuple
+	V=pes.potential_xy(xgr,ygr)
+	#ax.imshow(V)#very useful, 3D conture	
+	ax.contour(xgr,ygr,V,levels=np.arange(-0.25,7.0,0.25), cmap='viridis')
+	#ax.contourf(xgr,ygr,V,levels=np.arange(-2,8.4,0.4), cmap='viridis')#very useful, 3D conture
+	#ax.plot_surface(xgr, ygr, V, rstride=60, cstride=60, cmap='viridis')#'''viridis','hot', edgecolor='none')
+	ax.set_xlabel(r'$x$')
+	ax.set_ylabel(r'$y$')
+	file_dpi=600
+	fig.savefig('plots/2D_z_%.2f.pdf'%z,format='pdf',bbox_inches='tight', dpi=file_dpi)
+	fig.savefig('plots/2D_z_%.2f.png'%z,format='png',bbox_inches='tight', dpi=file_dpi)
+plt.show()
