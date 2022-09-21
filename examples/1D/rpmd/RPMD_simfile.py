@@ -23,7 +23,7 @@ pes = double_well(lamda,g)
 
 Tc = 0.5*lamda/np.pi
 times = 1.0
-for times in (0.95,2.0,5.0,10.0,0.9,0.8,0.7):
+for times in (2.0,5.0,10.0):#(.95,2.0,5.0,10.0,0.9,0.8,0.7):
 	T = times*Tc
 
 	m = 0.5
@@ -33,7 +33,7 @@ for times in (0.95,2.0,5.0,10.0,0.9,0.8,0.7):
 	time_therm = 50.0
 	time_total = 6.0
 
-	nbeads = 8
+	nbeads = 16
 
 	method = 'RPMD'
 	potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)

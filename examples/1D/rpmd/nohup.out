@@ -1,0 +1,905 @@
+Vb 3.125
+
+Batch #0
+
+Seed 6 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 6 Classical Kinetic energy 209.236 Target value 203.718 
+Seed 5 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 5 Classical Kinetic energy 203.903 Target value 203.718 
+Seed 0 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 0 Classical Kinetic energy 203.203 Target value 203.718 
+Seed 3 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 3 Classical Kinetic energy 201.989 Target value 203.718 
+Seed 7 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 7 Classical Kinetic energy 204.140 Target value 203.718 
+Seed 9 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 9 Classical Kinetic energy 202.522 Target value 203.718 
+Seed 8 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 8 Classical Kinetic energy 204.457 Target value 203.718 
+Seed 4 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 4 Classical Kinetic energy 206.257 Target value 203.718 
+Seed 2 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 2 Classical Kinetic energy 205.889 Target value 203.718 
+Seed 1 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 1 Classical Kinetic energy 201.688 Target value 203.718 
+
+Batch #1
+
+Seed 13 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 13 Classical Kinetic energy 205.620 Target value 203.718 
+Seed 17 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 17 Classical Kinetic energy 203.913 Target value 203.718 
+Seed 19 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 19 Classical Kinetic energy 203.746 Target value 203.718 
+Seed 18 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 18 Classical Kinetic energy 200.941 Target value 203.718 
+Seed 16 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 16 Classical Kinetic energy 202.159 Target value 203.718 
+Seed 15 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 15 Classical Kinetic energy 207.857 Target value 203.718 
+Seed 12 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 12 Classical Kinetic energy 202.050 Target value 203.718 
+Seed 14 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 14 Classical Kinetic energy 198.945 Target value 203.718 
+Seed 10 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 10 Classical Kinetic energy 203.387 Target value 203.718 
+Seed 11 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 11 Classical Kinetic energy 199.590 Target value 203.718 
+
+Batch #2
+
+Seed 22 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 22 Classical Kinetic energy 203.267 Target value 203.718 
+Seed 23 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 23 Classical Kinetic energy 201.729 Target value 203.718 
+Seed 28 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 28 Classical Kinetic energy 209.151 Target value 203.718 
+Seed 24 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 24 Classical Kinetic energy 202.892 Target value 203.718 
+Seed 26 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 26 Classical Kinetic energy 203.067 Target value 203.718 
+Seed 20 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 20 Classical Kinetic energy 201.216 Target value 203.718 
+Seed 27 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 27 Classical Kinetic energy 205.085 Target value 203.718 
+Seed 25 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 25 Classical Kinetic energy 202.872 Target value 203.718 
+Seed 21 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 21 Classical Kinetic energy 207.578 Target value 203.718 
+Seed 29 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 29 Classical Kinetic energy 200.941 Target value 203.718 
+
+Batch #3
+
+Seed 33 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 33 Classical Kinetic energy 204.916 Target value 203.718 
+Seed 31 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 31 Classical Kinetic energy 204.595 Target value 203.718 
+Seed 37 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 37 Classical Kinetic energy 205.719 Target value 203.718 
+Seed 35 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 35 Classical Kinetic energy 205.466 Target value 203.718 
+Seed 39 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 39 Classical Kinetic energy 206.779 Target value 203.718 
+Seed 34 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 34 Classical Kinetic energy 202.264 Target value 203.718 
+Seed 36 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 36 Classical Kinetic energy 209.158 Target value 203.718 
+Seed 32 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 32 Classical Kinetic energy 207.544 Target value 203.718 
+Seed 38 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 38 Classical Kinetic energy 203.260 Target value 203.718 
+Seed 30 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 30 Classical Kinetic energy 201.063 Target value 203.718 
+
+Batch #4
+
+Seed 41 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 41 Classical Kinetic energy 204.790 Target value 203.718 
+Seed 44 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 44 Classical Kinetic energy 205.011 Target value 203.718 
+Seed 40 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 40 Classical Kinetic energy 203.141 Target value 203.718 
+Seed 45 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 45 Classical Kinetic energy 201.266 Target value 203.718 
+Seed 43 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 43 Classical Kinetic energy 202.099 Target value 203.718 
+Seed 47 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 47 Classical Kinetic energy 198.375 Target value 203.718 
+Seed 46 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 46 Classical Kinetic energy 199.287 Target value 203.718 
+Seed 42 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 42 Classical Kinetic energy 203.902 Target value 203.718 
+Seed 48 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 48 Classical Kinetic energy 206.361 Target value 203.718 
+Seed 49 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 49 Classical Kinetic energy 205.686 Target value 203.718 
+
+Batch #5
+
+Seed 53 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 53 Classical Kinetic energy 204.181 Target value 203.718 
+Seed 54 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 54 Classical Kinetic energy 202.821 Target value 203.718 
+Seed 56 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 56 Classical Kinetic energy 202.336 Target value 203.718 
+Seed 50 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 50 Classical Kinetic energy 203.459 Target value 203.718 
+Seed 57 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 57 Classical Kinetic energy 203.719 Target value 203.718 
+Seed 55 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 55 Classical Kinetic energy 198.217 Target value 203.718 
+Seed 52 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 52 Classical Kinetic energy 207.137 Target value 203.718 
+Seed 59 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 59 Classical Kinetic energy 201.771 Target value 203.718 
+Seed 51 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 51 Classical Kinetic energy 204.075 Target value 203.718 
+Seed 58 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 58 Classical Kinetic energy 206.816 Target value 203.718 
+
+Batch #6
+
+Seed 66 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 66 Classical Kinetic energy 203.184 Target value 203.718 
+Seed 61 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 61 Classical Kinetic energy 204.208 Target value 203.718 
+Seed 65 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 65 Classical Kinetic energy 202.650 Target value 203.718 
+Seed 68 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 68 Classical Kinetic energy 206.416 Target value 203.718 
+Seed 63 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 63 Classical Kinetic energy 200.981 Target value 203.718 
+Seed 62 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 62 Classical Kinetic energy 202.700 Target value 203.718 
+Seed 67 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 67 Classical Kinetic energy 203.325 Target value 203.718 
+Seed 69 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 69 Classical Kinetic energy 197.073 Target value 203.718 
+Seed 64 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 64 Classical Kinetic energy 204.158 Target value 203.718 
+Seed 60 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 60 Classical Kinetic energy 205.442 Target value 203.718 
+
+Batch #7
+
+Seed 73 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 73 Classical Kinetic energy 202.939 Target value 203.718 
+Seed 70 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 70 Classical Kinetic energy 200.216 Target value 203.718 
+Seed 74 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 74 Classical Kinetic energy 201.793 Target value 203.718 
+Seed 76 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 76 Classical Kinetic energy 201.809 Target value 203.718 
+Seed 75 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 75 Classical Kinetic energy 203.095 Target value 203.718 
+Seed 72 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 72 Classical Kinetic energy 202.443 Target value 203.718 
+Seed 77 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 77 Classical Kinetic energy 201.337 Target value 203.718 
+Seed 71 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 71 Classical Kinetic energy 204.747 Target value 203.718 
+Seed 79 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 79 Classical Kinetic energy 204.489 Target value 203.718 
+Seed 78 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 78 Classical Kinetic energy 200.180 Target value 203.718 
+
+Batch #8
+
+Seed 83 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 83 Classical Kinetic energy 204.420 Target value 203.718 
+Seed 80 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 80 Classical Kinetic energy 208.547 Target value 203.718 
+Seed 84 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 84 Classical Kinetic energy 205.574 Target value 203.718 
+Seed 86 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 86 Classical Kinetic energy 205.867 Target value 203.718 
+Seed 82 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 82 Classical Kinetic energy 204.882 Target value 203.718 
+Seed 85 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 85 Classical Kinetic energy 204.489 Target value 203.718 
+Seed 87 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 87 Classical Kinetic energy 201.773 Target value 203.718 
+Seed 81 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 81 Classical Kinetic energy 203.868 Target value 203.718 
+Seed 89 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 89 Classical Kinetic energy 205.878 Target value 203.718 
+Seed 88 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 88 Classical Kinetic energy 203.883 Target value 203.718 
+
+Batch #9
+
+Seed 95 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 95 Classical Kinetic energy 205.845 Target value 203.718 
+Seed 92 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 92 Classical Kinetic energy 203.822 Target value 203.718 
+Seed 93 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 93 Classical Kinetic energy 202.422 Target value 203.718 
+Seed 99 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 99 Classical Kinetic energy 204.177 Target value 203.718 
+Seed 90 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 90 Classical Kinetic energy 202.781 Target value 203.718 
+Seed 94 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 94 Classical Kinetic energy 200.345 Target value 203.718 
+Seed 96 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 96 Classical Kinetic energy 204.842 Target value 203.718 
+Seed 98 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 98 Classical Kinetic energy 201.247 Target value 203.718 
+Seed 91 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 91 Classical Kinetic energy 199.858 Target value 203.718 
+Seed 97 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 97 Classical Kinetic energy 203.500 Target value 203.718 
+time 2551.7111492156982
+
+Batch #0
+
+Seed 6 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 6 Classical Kinetic energy 416.065 Target value 407.437 
+Seed 3 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 3 Classical Kinetic energy 403.206 Target value 407.437 
+Seed 4 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 4 Classical Kinetic energy 413.108 Target value 407.437 
+Seed 0 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 0 Classical Kinetic energy 405.629 Target value 407.437 
+Seed 5 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 5 Classical Kinetic energy 409.454 Target value 407.437 
+Seed 7 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 7 Classical Kinetic energy 408.450 Target value 407.437 
+Seed 2 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 2 Classical Kinetic energy 410.498 Target value 407.437 
+Seed 9 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 9 Classical Kinetic energy 405.812 Target value 407.437 
+Seed 1 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 1 Classical Kinetic energy 406.060 Target value 407.437 
+Seed 8 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 8 Classical Kinetic energy 407.248 Target value 407.437 
+
+Batch #1
+
+Seed 16 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 16 Classical Kinetic energy 403.902 Target value 407.437 
+Seed 13 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 13 Classical Kinetic energy 411.302 Target value 407.437 
+Seed 14 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 14 Classical Kinetic energy 396.977 Target value 407.437 
+Seed 12 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 12 Classical Kinetic energy 402.127 Target value 407.437 
+Seed 15 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 15 Classical Kinetic energy 412.347 Target value 407.437 
+Seed 17 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 17 Classical Kinetic energy 407.212 Target value 407.437 
+Seed 11 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 11 Classical Kinetic energy 399.853 Target value 407.437 
+Seed 19 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 19 Classical Kinetic energy 406.393 Target value 407.437 
+Seed 10 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 10 Classical Kinetic energy 407.488 Target value 407.437 
+Seed 18 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 18 Classical Kinetic energy 400.727 Target value 407.437 
+
+Batch #2
+
+Seed 21 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 21 Classical Kinetic energy 415.186 Target value 407.437 
+Seed 20 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 20 Classical Kinetic energy 402.728 Target value 407.437 
+Seed 24 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 24 Classical Kinetic energy 404.135 Target value 407.437 
+Seed 22 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 22 Classical Kinetic energy 404.313 Target value 407.437 
+Seed 29 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 29 Classical Kinetic energy 399.928 Target value 407.437 
+Seed 23 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 23 Classical Kinetic energy 402.508 Target value 407.437 
+Seed 25 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 25 Classical Kinetic energy 405.450 Target value 407.437 
+Seed 26 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 26 Classical Kinetic energy 406.776 Target value 407.437 
+Seed 27 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 27 Classical Kinetic energy 408.370 Target value 407.437 
+Seed 28 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 28 Classical Kinetic energy 420.277 Target value 407.437 
+
+Batch #3
+
+Seed 38 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 38 Classical Kinetic energy 406.650 Target value 407.437 
+Seed 35 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 35 Classical Kinetic energy 409.922 Target value 407.437 
+Seed 39 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 39 Classical Kinetic energy 414.296 Target value 407.437 
+Seed 33 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 33 Classical Kinetic energy 409.144 Target value 407.437 
+Seed 36 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 36 Classical Kinetic energy 417.005 Target value 407.437 
+Seed 34 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 34 Classical Kinetic energy 403.907 Target value 407.437 
+Seed 31 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 31 Classical Kinetic energy 409.184 Target value 407.437 
+Seed 37 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 37 Classical Kinetic energy 411.154 Target value 407.437 
+Seed 30 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 30 Classical Kinetic energy 401.935 Target value 407.437 
+Seed 32 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 32 Classical Kinetic energy 413.991 Target value 407.437 
+
+Batch #4
+
+Seed 43 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 43 Classical Kinetic energy 403.793 Target value 407.437 
+Seed 40 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 40 Classical Kinetic energy 406.412 Target value 407.437 
+Seed 46 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 46 Classical Kinetic energy 398.959 Target value 407.437 
+Seed 44 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 44 Classical Kinetic energy 412.935 Target value 407.437 
+Seed 45 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 45 Classical Kinetic energy 402.022 Target value 407.437 
+Seed 47 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 47 Classical Kinetic energy 396.471 Target value 407.437 
+Seed 42 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 42 Classical Kinetic energy 407.132 Target value 407.437 
+Seed 49 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 49 Classical Kinetic energy 412.706 Target value 407.437 
+Seed 41 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 41 Classical Kinetic energy 411.113 Target value 407.437 
+Seed 48 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 48 Classical Kinetic energy 412.964 Target value 407.437 
+
+Batch #5
+
+Seed 56 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 56 Classical Kinetic energy 407.411 Target value 407.437 
+Seed 53 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 53 Classical Kinetic energy 408.842 Target value 407.437 
+Seed 54 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 54 Classical Kinetic energy 405.659 Target value 407.437 
+Seed 59 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 59 Classical Kinetic energy 404.766 Target value 407.437 
+Seed 58 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 58 Classical Kinetic energy 412.817 Target value 407.437 
+Seed 55 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 55 Classical Kinetic energy 398.353 Target value 407.437 
+Seed 57 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 57 Classical Kinetic energy 408.443 Target value 407.437 
+Seed 52 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 52 Classical Kinetic energy 412.452 Target value 407.437 
+Seed 51 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 51 Classical Kinetic energy 408.853 Target value 407.437 
+Seed 50 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 50 Classical Kinetic energy 406.937 Target value 407.437 
+
+Batch #6
+
+Seed 68 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 68 Classical Kinetic energy 413.691 Target value 407.437 
+Seed 60 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 60 Classical Kinetic energy 412.227 Target value 407.437 
+Seed 69 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 69 Classical Kinetic energy 392.665 Target value 407.437 
+Seed 65 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 65 Classical Kinetic energy 406.093 Target value 407.437 
+Seed 62 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 62 Classical Kinetic energy 403.080 Target value 407.437 
+Seed 64 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 64 Classical Kinetic energy 408.981 Target value 407.437 
+Seed 67 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 67 Classical Kinetic energy 404.748 Target value 407.437 
+Seed 61 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 61 Classical Kinetic energy 409.923 Target value 407.437 
+Seed 63 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 63 Classical Kinetic energy 402.389 Target value 407.437 
+Seed 66 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 66 Classical Kinetic energy 407.702 Target value 407.437 
+
+Batch #7
+
+Seed 70 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 70 Classical Kinetic energy 401.100 Target value 407.437 
+Seed 74 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 74 Classical Kinetic energy 405.788 Target value 407.437 
+Seed 72 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 72 Classical Kinetic energy 405.044 Target value 407.437 
+Seed 79 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 79 Classical Kinetic energy 409.269 Target value 407.437 
+Seed 78 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 78 Classical Kinetic energy 399.363 Target value 407.437 
+Seed 73 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 73 Classical Kinetic energy 404.551 Target value 407.437 
+Seed 75 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 75 Classical Kinetic energy 406.380 Target value 407.437 
+Seed 77 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 77 Classical Kinetic energy 401.550 Target value 407.437 
+Seed 71 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 71 Classical Kinetic energy 407.206 Target value 407.437 
+Seed 76 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 76 Classical Kinetic energy 403.523 Target value 407.437 
+
+Batch #8
+
+Seed 87 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 87 Classical Kinetic energy 401.990 Target value 407.437 
+Seed 82 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 82 Classical Kinetic energy 408.612 Target value 407.437 
+Seed 85 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 85 Classical Kinetic energy 407.721 Target value 407.437 
+Seed 88 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 88 Classical Kinetic energy 407.275 Target value 407.437 
+Seed 89 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 89 Classical Kinetic energy 410.848 Target value 407.437 
+Seed 86 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 86 Classical Kinetic energy 412.434 Target value 407.437 
+Seed 84 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 84 Classical Kinetic energy 411.177 Target value 407.437 
+Seed 81 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 81 Classical Kinetic energy 409.080 Target value 407.437 
+Seed 83 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 83 Classical Kinetic energy 407.844 Target value 407.437 
+Seed 80 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 80 Classical Kinetic energy 416.139 Target value 407.437 
+
+Batch #9
+
+Seed 90 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 90 Classical Kinetic energy 404.868 Target value 407.437 
+Seed 98 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 98 Classical Kinetic energy 403.229 Target value 407.437 
+Seed 94 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 94 Classical Kinetic energy 400.686 Target value 407.437 
+Seed 95 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 95 Classical Kinetic energy 412.770 Target value 407.437 
+Seed 96 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 96 Classical Kinetic energy 408.569 Target value 407.437 
+Seed 99 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 99 Classical Kinetic energy 409.286 Target value 407.437 
+Seed 91 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 91 Classical Kinetic energy 403.205 Target value 407.437 
+Seed 93 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 93 Classical Kinetic energy 405.552 Target value 407.437 
+Seed 97 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 97 Classical Kinetic energy 407.741 Target value 407.437 
+Seed 92 : T 3.183098861837907, nbeads 16
+End of thermalization. Seed: 92 Classical Kinetic energy 409.175 Target value 407.437 
+time 2000.3447873592377
+Vb 3.125
+
+Batch #0
+
+Seed 4 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 4 Classical Kinetic energy 82.505 Target value 81.487 
+Seed 0 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 0 Classical Kinetic energy 80.824 Target value 81.487 
+Seed 8 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 8 Classical Kinetic energy 81.583 Target value 81.487 
+Seed 2 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 2 Classical Kinetic energy 81.651 Target value 81.487 
+Seed 6 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 6 Classical Kinetic energy 83.226 Target value 81.487 
+Seed 9 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 9 Classical Kinetic energy 81.197 Target value 81.487 
+Seed 7 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 7 Classical Kinetic energy 81.236 Target value 81.487 
+Seed 3 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 3 Classical Kinetic energy 80.931 Target value 81.487 
+Seed 1 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 1 Classical Kinetic energy 80.743 Target value 81.487 
+Seed 5 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 5 Classical Kinetic energy 81.458 Target value 81.487 
+
+Batch #1
+
+Seed 19 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 19 Classical Kinetic energy 81.478 Target value 81.487 
+Seed 15 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 15 Classical Kinetic energy 83.061 Target value 81.487 
+Seed 10 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 10 Classical Kinetic energy 81.287 Target value 81.487 
+Seed 16 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 16 Classical Kinetic energy 80.591 Target value 81.487 
+Seed 12 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 12 Classical Kinetic energy 80.655 Target value 81.487 
+Seed 13 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 13 Classical Kinetic energy 82.311 Target value 81.487 
+Seed 14 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 14 Classical Kinetic energy 79.526 Target value 81.487 
+Seed 18 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 18 Classical Kinetic energy 80.058 Target value 81.487 
+Seed 17 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 17 Classical Kinetic energy 81.580 Target value 81.487 
+Seed 11 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 11 Classical Kinetic energy 80.068 Target value 81.487 
+
+Batch #2
+
+Seed 29 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 29 Classical Kinetic energy 80.312 Target value 81.487 
+Seed 24 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 24 Classical Kinetic energy 80.831 Target value 81.487 
+Seed 27 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 27 Classical Kinetic energy 81.726 Target value 81.487 
+Seed 20 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 20 Classical Kinetic energy 80.523 Target value 81.487 
+Seed 26 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 26 Classical Kinetic energy 81.284 Target value 81.487 
+Seed 21 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 21 Classical Kinetic energy 82.823 Target value 81.487 
+Seed 28 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 28 Classical Kinetic energy 83.373 Target value 81.487 
+Seed 25 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 25 Classical Kinetic energy 80.881 Target value 81.487 
+Seed 22 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 22 Classical Kinetic energy 80.611 Target value 81.487 
+Seed 23 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 23 Classical Kinetic energy 80.620 Target value 81.487 
+
+Batch #3
+
+Seed 35 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 35 Classical Kinetic energy 82.086 Target value 81.487 
+Seed 36 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 36 Classical Kinetic energy 83.745 Target value 81.487 
+Seed 34 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 34 Classical Kinetic energy 80.883 Target value 81.487 
+Seed 37 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 37 Classical Kinetic energy 82.413 Target value 81.487 
+Seed 31 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 31 Classical Kinetic energy 81.669 Target value 81.487 
+Seed 30 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 30 Classical Kinetic energy 80.190 Target value 81.487 
+Seed 33 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 33 Classical Kinetic energy 82.010 Target value 81.487 
+Seed 39 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 39 Classical Kinetic energy 82.695 Target value 81.487 
+Seed 32 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 32 Classical Kinetic energy 83.187 Target value 81.487 
+Seed 38 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 38 Classical Kinetic energy 81.275 Target value 81.487 
+
+Batch #4
+
+Seed 43 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 43 Classical Kinetic energy 80.778 Target value 81.487 
+Seed 44 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 44 Classical Kinetic energy 81.928 Target value 81.487 
+Seed 46 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 46 Classical Kinetic energy 79.549 Target value 81.487 
+Seed 47 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 47 Classical Kinetic energy 79.433 Target value 81.487 
+Seed 45 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 45 Classical Kinetic energy 80.624 Target value 81.487 
+Seed 48 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 48 Classical Kinetic energy 82.680 Target value 81.487 
+Seed 42 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 42 Classical Kinetic energy 81.500 Target value 81.487 
+Seed 49 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 49 Classical Kinetic energy 82.566 Target value 81.487 
+Seed 41 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 41 Classical Kinetic energy 82.001 Target value 81.487 
+Seed 40 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 40 Classical Kinetic energy 81.188 Target value 81.487 
+
+Batch #5
+
+Seed 53 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 53 Classical Kinetic energy 81.965 Target value 81.487 
+Seed 50 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 50 Classical Kinetic energy 81.167 Target value 81.487 
+Seed 54 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 54 Classical Kinetic energy 81.132 Target value 81.487 
+Seed 57 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 57 Classical Kinetic energy 81.383 Target value 81.487 
+Seed 52 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 52 Classical Kinetic energy 82.231 Target value 81.487 
+Seed 55 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 55 Classical Kinetic energy 79.379 Target value 81.487 
+Seed 56 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 56 Classical Kinetic energy 81.148 Target value 81.487 
+Seed 59 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 59 Classical Kinetic energy 80.389 Target value 81.487 
+Seed 51 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 51 Classical Kinetic energy 81.758 Target value 81.487 
+Seed 58 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 58 Classical Kinetic energy 82.718 Target value 81.487 
+
+Batch #6
+
+Seed 63 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 63 Classical Kinetic energy 80.273 Target value 81.487 
+Seed 60 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 60 Classical Kinetic energy 82.407 Target value 81.487 
+Seed 62 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 62 Classical Kinetic energy 80.748 Target value 81.487 
+Seed 61 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 61 Classical Kinetic energy 81.799 Target value 81.487 
+Seed 66 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 66 Classical Kinetic energy 81.618 Target value 81.487 
+Seed 65 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 65 Classical Kinetic energy 81.138 Target value 81.487 
+Seed 64 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 64 Classical Kinetic energy 81.493 Target value 81.487 
+Seed 68 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 68 Classical Kinetic energy 82.636 Target value 81.487 
+Seed 67 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 67 Classical Kinetic energy 81.198 Target value 81.487 
+Seed 69 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 69 Classical Kinetic energy 79.010 Target value 81.487 
+
+Batch #7
+
+Seed 75 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 75 Classical Kinetic energy 81.107 Target value 81.487 
+Seed 74 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 74 Classical Kinetic energy 81.141 Target value 81.487 
+Seed 76 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 76 Classical Kinetic energy 80.614 Target value 81.487 
+Seed 79 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 79 Classical Kinetic energy 81.716 Target value 81.487 
+Seed 71 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 71 Classical Kinetic energy 81.705 Target value 81.487 
+Seed 70 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 70 Classical Kinetic energy 80.068 Target value 81.487 
+Seed 73 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 73 Classical Kinetic energy 80.788 Target value 81.487 
+Seed 78 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 78 Classical Kinetic energy 80.046 Target value 81.487 
+Seed 72 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 72 Classical Kinetic energy 80.637 Target value 81.487 
+Seed 77 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 77 Classical Kinetic energy 80.591 Target value 81.487 
+
+Batch #8
+
+Seed 84 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 84 Classical Kinetic energy 82.397 Target value 81.487 
+Seed 85 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 85 Classical Kinetic energy 81.750 Target value 81.487 
+Seed 83 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 83 Classical Kinetic energy 82.250 Target value 81.487 
+Seed 89 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 89 Classical Kinetic energy 82.504 Target value 81.487 
+Seed 86 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 86 Classical Kinetic energy 82.570 Target value 81.487 
+Seed 80 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 80 Classical Kinetic energy 83.158 Target value 81.487 
+Seed 87 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 87 Classical Kinetic energy 80.323 Target value 81.487 
+Seed 82 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 82 Classical Kinetic energy 81.914 Target value 81.487 
+Seed 81 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 81 Classical Kinetic energy 81.922 Target value 81.487 
+Seed 88 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 88 Classical Kinetic energy 81.114 Target value 81.487 
+
+Batch #9
+
+Seed 94 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 94 Classical Kinetic energy 80.099 Target value 81.487 
+Seed 93 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 93 Classical Kinetic energy 81.441 Target value 81.487 
+Seed 96 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 96 Classical Kinetic energy 81.807 Target value 81.487 
+Seed 90 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 90 Classical Kinetic energy 81.140 Target value 81.487 
+Seed 95 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 95 Classical Kinetic energy 82.523 Target value 81.487 
+Seed 97 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 97 Classical Kinetic energy 81.412 Target value 81.487 
+Seed 91 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 91 Classical Kinetic energy 79.839 Target value 81.487 
+Seed 99 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 99 Classical Kinetic energy 81.989 Target value 81.487 
+Seed 92 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 92 Classical Kinetic energy 81.526 Target value 81.487 
+Seed 98 : T 0.6366197723675814, nbeads 16
+End of thermalization. Seed: 98 Classical Kinetic energy 80.721 Target value 81.487 
+time 2006.4406471252441
+
+Batch #0
+
+Seed 9 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 9 Classical Kinetic energy 202.522 Target value 203.718 
+Seed 8 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 8 Classical Kinetic energy 204.457 Target value 203.718 
+Seed 6 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 6 Classical Kinetic energy 209.236 Target value 203.718 
+Seed 4 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 4 Classical Kinetic energy 206.257 Target value 203.718 
+Seed 7 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 7 Classical Kinetic energy 204.140 Target value 203.718 
+Seed 5 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 5 Classical Kinetic energy 203.903 Target value 203.718 
+Seed 1 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 1 Classical Kinetic energy 201.688 Target value 203.718 
+Seed 3 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 3 Classical Kinetic energy 201.989 Target value 203.718 
+Seed 0 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 0 Classical Kinetic energy 203.203 Target value 203.718 
+Seed 2 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 2 Classical Kinetic energy 205.889 Target value 203.718 
+
+Batch #1
+
+Seed 13 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 13 Classical Kinetic energy 205.620 Target value 203.718 
+Seed 14 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 14 Classical Kinetic energy 198.945 Target value 203.718 
+Seed 11 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 11 Classical Kinetic energy 199.590 Target value 203.718 
+Seed 17 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 17 Classical Kinetic energy 203.913 Target value 203.718 
+Seed 12 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 12 Classical Kinetic energy 202.050 Target value 203.718 
+Seed 16 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 16 Classical Kinetic energy 202.159 Target value 203.718 
+Seed 15 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 15 Classical Kinetic energy 207.857 Target value 203.718 
+Seed 10 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 10 Classical Kinetic energy 203.387 Target value 203.718 
+Seed 19 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 19 Classical Kinetic energy 203.746 Target value 203.718 
+Seed 18 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 18 Classical Kinetic energy 200.941 Target value 203.718 
+
+Batch #2
+
+Seed 24 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 24 Classical Kinetic energy 202.892 Target value 203.718 
+Seed 23 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 23 Classical Kinetic energy 201.729 Target value 203.718 
+Seed 26 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 26 Classical Kinetic energy 203.067 Target value 203.718 
+Seed 27 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 27 Classical Kinetic energy 205.085 Target value 203.718 
+Seed 20 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 20 Classical Kinetic energy 201.216 Target value 203.718 
+Seed 21 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 21 Classical Kinetic energy 207.578 Target value 203.718 
+Seed 25 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 25 Classical Kinetic energy 202.872 Target value 203.718 
+Seed 29 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 29 Classical Kinetic energy 200.941 Target value 203.718 
+Seed 22 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 22 Classical Kinetic energy 203.267 Target value 203.718 
+Seed 28 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 28 Classical Kinetic energy 209.151 Target value 203.718 
+
+Batch #3
+
+Seed 33 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 33 Classical Kinetic energy 204.916 Target value 203.718 
+Seed 31 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 31 Classical Kinetic energy 204.595 Target value 203.718 
+Seed 37 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 37 Classical Kinetic energy 205.719 Target value 203.718 
+Seed 38 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 38 Classical Kinetic energy 203.260 Target value 203.718 
+Seed 39 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 39 Classical Kinetic energy 206.779 Target value 203.718 
+Seed 32 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 32 Classical Kinetic energy 207.544 Target value 203.718 
+Seed 34 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 34 Classical Kinetic energy 202.264 Target value 203.718 
+Seed 36 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 36 Classical Kinetic energy 209.158 Target value 203.718 
+Seed 30 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 30 Classical Kinetic energy 201.063 Target value 203.718 
+Seed 35 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 35 Classical Kinetic energy 205.466 Target value 203.718 
+
+Batch #4
+
+Seed 45 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 45 Classical Kinetic energy 201.266 Target value 203.718 
+Seed 41 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 41 Classical Kinetic energy 204.790 Target value 203.718 
+Seed 43 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 43 Classical Kinetic energy 202.099 Target value 203.718 
+Seed 49 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 49 Classical Kinetic energy 205.686 Target value 203.718 
+Seed 44 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 44 Classical Kinetic energy 205.011 Target value 203.718 
+Seed 46 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 46 Classical Kinetic energy 199.287 Target value 203.718 
+Seed 42 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 42 Classical Kinetic energy 203.902 Target value 203.718 
+Seed 48 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 48 Classical Kinetic energy 206.361 Target value 203.718 
+Seed 47 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 47 Classical Kinetic energy 198.375 Target value 203.718 
+Seed 40 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 40 Classical Kinetic energy 203.141 Target value 203.718 
+
+Batch #5
+
+Seed 59 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 59 Classical Kinetic energy 201.771 Target value 203.718 
+Seed 53 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 53 Classical Kinetic energy 204.181 Target value 203.718 
+Seed 57 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 57 Classical Kinetic energy 203.719 Target value 203.718 
+Seed 55 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 55 Classical Kinetic energy 198.217 Target value 203.718 
+Seed 58 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 58 Classical Kinetic energy 206.816 Target value 203.718 
+Seed 51 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 51 Classical Kinetic energy 204.075 Target value 203.718 
+Seed 54 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 54 Classical Kinetic energy 202.821 Target value 203.718 
+Seed 50 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 50 Classical Kinetic energy 203.459 Target value 203.718 
+Seed 56 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 56 Classical Kinetic energy 202.336 Target value 203.718 
+Seed 52 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 52 Classical Kinetic energy 207.137 Target value 203.718 
+
+Batch #6
+
+Seed 64 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 64 Classical Kinetic energy 204.158 Target value 203.718 
+Seed 61 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 61 Classical Kinetic energy 204.208 Target value 203.718 
+Seed 63 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 63 Classical Kinetic energy 200.981 Target value 203.718 
+Seed 66 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 66 Classical Kinetic energy 203.184 Target value 203.718 
+Seed 67 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 67 Classical Kinetic energy 203.325 Target value 203.718 
+Seed 65 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 65 Classical Kinetic energy 202.650 Target value 203.718 
+Seed 62 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 62 Classical Kinetic energy 202.700 Target value 203.718 
+Seed 69 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 69 Classical Kinetic energy 197.073 Target value 203.718 
+Seed 60 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 60 Classical Kinetic energy 205.442 Target value 203.718 
+Seed 68 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 68 Classical Kinetic energy 206.416 Target value 203.718 
+
+Batch #7
+
+Seed 74 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 74 Classical Kinetic energy 201.793 Target value 203.718 
+Seed 79 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 79 Classical Kinetic energy 204.489 Target value 203.718 
+Seed 77 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 77 Classical Kinetic energy 201.337 Target value 203.718 
+Seed 78 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 78 Classical Kinetic energy 200.180 Target value 203.718 
+Seed 72 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 72 Classical Kinetic energy 202.443 Target value 203.718 
+Seed 71 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 71 Classical Kinetic energy 204.747 Target value 203.718 
+Seed 73 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 73 Classical Kinetic energy 202.939 Target value 203.718 
+Seed 76 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 76 Classical Kinetic energy 201.809 Target value 203.718 
+Seed 75 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 75 Classical Kinetic energy 203.095 Target value 203.718 
+Seed 70 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 70 Classical Kinetic energy 200.216 Target value 203.718 
+
+Batch #8
+
+Seed 84 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 84 Classical Kinetic energy 205.574 Target value 203.718 
+Seed 83 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 83 Classical Kinetic energy 204.420 Target value 203.718 
+Seed 87 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 87 Classical Kinetic energy 201.773 Target value 203.718 
+Seed 80 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 80 Classical Kinetic energy 208.547 Target value 203.718 
+Seed 86 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 86 Classical Kinetic energy 205.867 Target value 203.718 
+Seed 85 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 85 Classical Kinetic energy 204.489 Target value 203.718 
+Seed 82 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 82 Classical Kinetic energy 204.882 Target value 203.718 
+Seed 89 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 89 Classical Kinetic energy 205.878 Target value 203.718 
+Seed 81 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 81 Classical Kinetic energy 203.868 Target value 203.718 
+Seed 88 : T 1.5915494309189535, nbeads 16
+End of thermalization. Seed: 88 Classical Kinetic energy 203.883 Target value 203.718 
+
+Batch #9
+

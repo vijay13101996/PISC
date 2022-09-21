@@ -16,7 +16,7 @@ from PISC.engine.integrators import Symplectic_order_II, Symplectic_order_IV
 from PISC.engine.beads import RingPolymer
 import os
 from DW_Instanton import find_instanton_DW
-
+from plt_util import prepare_fig, prepare_fig_ax
 
 ### Potential parameters
 m=0.5#0.5
@@ -95,20 +95,22 @@ potgrid = pes.potential_xy(xgrid,ygrid)
 norm=0.01#CONVERGENCE PARAMETER#todo:vary
 dt=0.001#CONVERGENCE PARAMETER#todo:vary
 time_run=10#CONVERGENCE PARAMETER#todo:vary
-tau=0.01#CONVERGENCE PARAMETER#todo:vary
+tau=0.001#CONVERGENCE PARAMETER#todo:vary
 nbeads=32#32
 
 #Gives a slightly unconverged instanton configuration
 #instanton = find_instanton_DW(nbeads,m,pes,beta,ax=None,plt=None,plot=False,path=path) 
 
 #Gives instanton configuration upto an accuracy of 1e-5
-#inst_opt = find_instanton_DW(32,m,pes,beta,ax=None,plt=None,plot=False,step=1e-7,tol=1e-5,nb_start=32,qinit=instanton,path=path)
+tol=1e-5
+#inst_opt = find_instanton_DW(32,m,pes,beta,ax=None,plt=None,plot=False,step=1e-7,tol=tol,nb_start=32,qinit=instanton,path=path)
 #print('inst_opt',inst_opt)
 try:
-    q = read_arr('Instanton_beta_{}_nbeads_{}_z_{}'.format(beta,nbeads,z),'{}/Datafiles'.format(path)) #instanton
+	q = read_arr('Instanton_beta_{}_nbeads_{}_z_{}_tol_{}'.format(beta,nbeads,z,tol),'{}/Datafiles'.format(path)) #instanton
 except:
-    instanton = find_instanton_DW(nbeads,m,pes,beta,ax=None,plt=None,plot=False,path=path) 
-    q = read_arr('Instanton_beta_{}_nbeads_{}_z_{}'.format(beta,nbeads,z),'{}/Datafiles'.format(path)) #instanton
+	instanton_bad = find_instanton_DW(nbeads,m,pes,beta,ax=None,plt=None,plot=False,path=path)    
+	instanton = find_instanton_DW(nbeads,m,pes,beta,ax=None,plt=None,plot=False,path=path,step=1e-7,qinit=instanton_bad)
+	q = read_arr('Instanton_beta_{}_nbeads_{}_z_{}_tol_{}'.format(beta,nbeads,z,tol),'{}/Datafiles'.format(path)) #instanton
 #q = np.zeros((1,dim,nbeads))
 q[:,0,:]+=1e-4
 
@@ -148,6 +150,13 @@ fig,ax=plt.subplots(3,sharex=True)
 ax[0].plot(tarr,mLCE)
 ax[1].plot(tarr,qx_cent)
 ax[2].plot(tarr,qy_cent)
+fig2,ax2=prepare_fig_ax(tex=True)
+ax2.plot(tarr,mLCE)
+ax2.set_xlabel(r'$t$')
+ax2.set_ylabel(r'$X(t)$')
+file_dpi=600
+fig2.savefig('plots/convergence_mLCE_%i_beads.pdf'%nbeads,format='pdf',bbox_inches='tight', dpi=file_dpi)
+fig2.savefig('plots/convergence_mLCE_%i_beads.png'%nbeads,format='png',bbox_inches='tight', dpi=file_dpi)
 plt.show()
 
 #Initialize trajectory at saddle point with almost zero velocity

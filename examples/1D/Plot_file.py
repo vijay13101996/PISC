@@ -19,7 +19,7 @@ m = 0.5
 N = 1000
 dt = 0.002
 
-nbeads = 8
+nbeads = 16
 gamma = 16
 potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
 
@@ -33,27 +33,6 @@ sysname='Selene'
 fig,ax = prepare_fig_ax(tex=True, dim=1)#plt.subplots()
 ax.set_xlabel(r'$t$')
 ax.set_ylabel(r'$\textup{log}\,C_{T}(t)$')
-if(0):#high temp classical vs quantum
-	basis_N=60
-	N_eigen=20
-	for times,c in zip([5.0,10.0],['r','g']):
-		corrkey = 'OTOC'
-		enskey = 'thermal'#'mc'#'thermal'
-		Tkey = 'T_{}Tc'.format(times)
-		ext = 'Classical_{}_{}_{}_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,0.002)#dt)
-		ext = Cext+ext
-		plot_1D(ax,ext, label=r'$T=%.1f\,T_\textup{c}$'%times,color=c, log=True,linewidth=1)
-		if(times>=2.0):
-		    slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,2.5,3.5)
-		    ax.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k')
-		ext = 'Quantum_OTOC_inv_harmonic_lambda_{}_g_{}_T_{}Tc_basis_{}_n_eigen_{}'
-		l3_t1 = qext + ext.format(2.0,0.08,times,basis_N,N_eigen)
-		plot_1D(ax,l3_t1, label=r'$Q, T =%.1f T_c$'%times, log=True,linewidth=1)
-	file_dpi=600
-	plt.legend(fontsize='small',fancybox=True)
-	plt.show()
-		#fig.savefig('classical/plots/Thermal_OTOC_cl_high_temps.pdf',format='pdf',bbox_inches='tight', dpi=file_dpi)
-		#fig.savefig('classical/plots/Thermal_OTOC_cl_high_temps.png',format='png',bbox_inches='tight', dpi=file_dpi)
 
 if(0):#high temp classical OTOC
 	for times,c in zip([1.0,2.0,5.0,10.0],['r','g','b','k']):
@@ -110,7 +89,7 @@ if(0):#thermal RPMD OTOC high T
 	fig.savefig('rpmd/plots/Thermal_OTOC_RPMD_{}_high_temps.pdf'.format(nbeads),format='pdf',bbox_inches='tight', dpi=file_dpi)
 	fig.savefig('rpmd/plots/Thermal_OTOC_RPMD_{}_high_temps.png'.format(nbeads),format='png',bbox_inches='tight', dpi=file_dpi)
 
-if(1):#thermal RPMD OTOC low T
+if(0):#thermal RPMD OTOC low T
 	for times,c in zip([0.8,0.9,0.95,1.0],['r','g','b','tab:grey']):
 		corrkey = 'OTOC'
 		enskey = 'thermal'
@@ -119,22 +98,82 @@ if(1):#thermal RPMD OTOC low T
 		ext = 'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,nbeads,dt)
 		ext = rpext+ext
 		plot_1D(ax,ext, label=r'$T=%.2f\,T_\textup{c}$'%times,color=c, log=True,linewidth=1)
-		if(0.9==times and  0==1):
-			slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,5,5.5)#3.2,4.5)
-			ax.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k')
-		if(0.95==times and 0==1):
-			slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,4,4.5)#3.2,4.5)
-			ax.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k')
+		if(0.8==times):	
+			slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,4.6,5.6)#3.2,4.5)
+			ax.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k',alpha=0.85)
+		if(0.9==times):
+			slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,4.2,5.5)#3.2,4.5)
+			ax.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k',alpha=0.85)
+		if(0.95==times):
+			slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,3.5,4.5)#3.2,4.5)
+			ax.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k',alpha=0.85)
 		if(times==1.0):
-			slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,3.2,4.4)
-			ax.plot(t_trunc, 0.3+slope*t_trunc+ic,linewidth=1.75,color='k',linestyle='dashed')
-			ax.text(t_trunc[10], 0.95+slope*t_trunc[10]+ic,r'$\alpha \exp (2t)$',rotation = 46)
+			slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,3.2,4.3)
+			ax.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k',alpha=0.85)
+			#ax.plot(t_trunc, 0.3+slope*t_trunc+ic,linewidth=1.75,color='k',linestyle='dashed')#worked for 8 beads but with 16 we have distinction
+			#ax.text(t_trunc[10], 0.95+slope*t_trunc[10]+ic,r'$\alpha \exp (2t)$',rotation = 46)
 		file_dpi=600
 		plt.legend(fontsize='small',fancybox=True)
 	fig.savefig('rpmd/plots/Thermal_OTOC_RPMD_{}_low_temps.pdf'.format(nbeads),format='pdf',bbox_inches='tight', dpi=file_dpi)
 	fig.savefig('rpmd/plots/Thermal_OTOC_RPMD_{}_low_temps.png'.format(nbeads),format='png',bbox_inches='tight', dpi=file_dpi)
-
-
+if(1):#comparison RPMD, Cl, Quantum, KUBO
+	times=10.0
+	T=times*Tc
+	corrkey = 'OTOC'
+	enskey = 'thermal'
+	Tkey = 'T_{}Tc'.format(times)
+	#classical
+	ext = 'Classical_{}_{}_{}_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,0.002)#dt)
+	ext = Cext+ext
+	plot_1D(ax,ext, label=r'Classical', color='r',log=True,linewidth=1)
+	if(1==1):#NOT FOR 0.95
+	    slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,0.7,1.2)
+	    ax.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k')
+	#RPMD 8
+	if(1):
+		nbeads=8
+		print('careful: (only) %i beads!!'%nbeads)
+		ext = 'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,nbeads,dt)
+		ext = rpext+ext
+		plot_1D(ax,ext, label=r'RPMD',color='b', log=True,linewidth=1)
+		if(0==1):
+			print('RPMD')
+			slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,0.7,1.2)#0.95: 3.5,4.6 
+			#ax.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k')
+	#RPMD 16
+	if(0):
+		nbeads=16
+		#print('careful: (only) %i beads!!'%nbeads)
+		ext = 'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,nbeads,dt)
+		ext = rpext+ext
+		plot_1D(ax,ext, label=r'RPMD',color='y', log=True,linewidth=1)
+		if(0==1):
+			print('RPMD')
+			slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,3.4,4.4)#0.95: 3.5,4.6 
+			ax.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k')
+	
+	#quantum
+	ext = 'Quantum_OTOC_{}_T_{}Tc_basis_130_n_eigen_80'.format(potkey,times)
+	f = qext + ext#.format(1.5,0.035,1.0)	
+	plot_1D(ax,f, label=r'Quantum',color='g', log=True,linewidth=1)
+	if(1==1):
+		print('Quantum')
+		slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(f,0.7,1.2)#0.95: 1.1,1.8
+		ax.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k')
+	#Kubo
+	ext = 'Quantum_Kubo_OTOC_inv_harmonic_lambda_{}_g_{}_T_{}Tc_basis_130_n_eigen_80'#140,50
+	l3_t1 = qext + ext.format(2.0,0.08,times)
+	plot_1D(ax,l3_t1, label=r'Kubo', color='tab:orange',log=True,linewidth=1)
+	if(1==1):
+		print('Kubo')
+		slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(l3_t1,0.6,1.1)#0.95: 1.2,2.1
+		ax.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k')
+	file_dpi=600
+	plt.legend(fontsize=7.5,fancybox=True)
+	plt.title(r'$T=%.1f\,T_c$'%times)
+	
+	fig.savefig('cmp_plots/comparison_rpmd_cl_q_kubo_1D_T_%.2fTc.pdf'%times,format='pdf',bbox_inches='tight', dpi=file_dpi)
+	fig.savefig('cmp_plots/comparison_rpmd_cl_q_kubo_1D_T_%.2fTc.png'%times,format='png',bbox_inches='tight', dpi=file_dpi)
 
 if(0):
 	ext = 'Quantum_Kubo_OTOC_inv_harmonic_lambda_{}_g_{}_T_{}Tc_basis_100_n_eigen_20'#140,50

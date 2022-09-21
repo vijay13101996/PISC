@@ -16,6 +16,7 @@ from PISC.engine.simulation import RP_Simulation
 from PISC.engine.integrators import Symplectic_order_II, Symplectic_order_IV
 from PISC.engine.beads import RingPolymer
 import os
+from plt_util import prepare_fig, prepare_fig_ax
 
 def norm_dp_dq(dp,dq,norm):
     div=(1/norm)*np.linalg.norm(np.concatenate((dp,dq)))
@@ -52,7 +53,7 @@ lamda = 2.0
 g = 0.08
 Vb = lamda**4/(64*g)
 D = 3*Vb
-alpha = 0.37
+alpha = 0.38
 
 z = 1.0
 
@@ -65,7 +66,7 @@ T = times*Tc
 #CONVERGENCE PARAMETERS
 norm=0.001
 dt=0.001
-time_run=80
+time_run=100
 tau=0.05
 #--------------------------------------------------------------------------------------------
 
@@ -111,9 +112,11 @@ therm = PILE_L(tau0=1.0,pile_lambda=100.0)#only important due to initalization
 sim.bind(ens,motion,rng,rp,pes,propa,therm)
 
 tarr,mLCE,qx=run_var(sim,dt,time_run,tau,norm)
-fig,ax=plt.subplots(2,sharex=True)
-ax[0].plot(tarr,mLCE)
-ax[1].plot(tarr,qx)
+fig,ax=prepare_fig_ax(tex=True)#plt.subplots(2,sharex=True)
+ax.plot(tarr,mLCE)
+ax.set_xlabel(r'$t$')
+ax.set_ylabel(r'$X(t)$')
+#ax[1].plot(tarr,qx)
 plt.show()
 #Initialize trajectory at saddle point with almost zero velocity
 #Set dq, dp to a certain predefined norm (dp and dq are together w so consider that when normalizing)
