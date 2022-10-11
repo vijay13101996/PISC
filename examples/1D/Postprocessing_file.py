@@ -3,38 +3,74 @@ from PISC.utils.plottools import plot_1D
 from PISC.utils.misc import find_OTOC_slope,seed_collector,seed_finder
 from matplotlib import pyplot as plt
 import os
-from PISC.potentials.double_well_potential import double_well
-from PISC.potentials.harmonic_1D import harmonic
+from PISC.potentials import double_well, quartic, morse
 from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr, read_arr
 from PISC.utils.nmtrans import FFT
 
 dim = 1
-lamda = 2.0#
-g = 0.08#
-Vb = lamda**4/(64*g)
 
-Tc = lamda*(0.5/np.pi)
-times = 1.0
-T = times*Tc
-beta=1/T
+if(1): #Double well potential
+	lamda = 2.0
+	g = 0.08
+	Vb = lamda**4/(64*g)
 
-m = 0.5
-N = 1000
-dt = 0.002
+	Tc = lamda*(0.5/np.pi)
+	times = 3.0
+	T = times*Tc
+	beta=1/T
 
-nbeads = 32
-gamma = 16
+	m = 0.5
+	N = 1000
+	dt = 0.002
 
-time_total = 5.0#
+	time_total = 5.0#
 
+	potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
+	pes = double_well(lamda,g)
+
+	Tkey = 'T_{}Tc'.format(times)
+
+if(0): #Quartic
+	a = 1.0
+
+	pes = quartic(a)
+
+	T = 1.0/8
+	
+	m = 1.0
+	N = 1000
+	dt_therm = 0.05
+	dt = 0.02
+
+	time_therm = 50.0
+	time_total = 20.0
+
+	potkey = 'TESTquart'.format(a)
+	Tkey = 'T_{}'.format(T)
+	
+if(0): #Morse
+	m=0.5
+	D = 9.375
+	alpha = 0.382
+	pes = morse(D,alpha)
+	
+	w_m = (2*D*alpha**2/m)**0.5
+	Vb = D/3
+
+	print('alpha, w_m', alpha, Vb/w_m)
+	T = 3.18*0.3
+	beta = 1/T
+	potkey = 'morse'
+	Tkey = 'T_{}'.format(T)
+	
+	N = 1000
+	dt_therm = 0.05
+	dt = 0.02
+	time_therm = 50.0
+	time_total = 5.0
+	
 tarr = np.arange(0.0,time_total,dt)
 OTOCarr = np.zeros_like(tarr) +0j
-
-potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
-pes = double_well(lamda,g)
-
-#potkey='harmonic'
-#pes = harmonic(m,1.0)
 
 #Path extensions
 path = os.path.dirname(os.path.abspath(__file__))	
@@ -44,28 +80,45 @@ Cext = '{}/classical/Datafiles/'.format(path)
 rpext = '{}/rpmd/Datafiles/'.format(path)
 
 #Simulation specifications
-corrkey = 'OTOC'#'qq_TCF'#
-beadkey = 'nbeads_{}_'.format(nbeads)
-Tkey = 'T_{}Tc'.format(times)
+corrkey = 'OTOC'#'qq_TCF'
 syskey = 'Selene'
 
-if(0):#RPMD
-	if(1):
+if(1):#RPMD
+	nbeads = 16
+	beadkey = 'nbeads_{}_'.format(nbeads)
+	if(1): ##Collect files of thermal ensembles
 		methodkey = 'RPMD'
 		enskey = 'thermal'
 
 		kwlist = [methodkey,corrkey,syskey,potkey,Tkey,beadkey,'dt_{}'.format(dt)]
 		
-		tarr,OTOCarr = seed_collector(kwlist,rpext,tarr,OTOCarr)
+		tarr,OTOCarr,stdarr = seed_collector(kwlist,rpext,tarr,OTOCarr)
+
+		if(corrkey!='OTOC'):
+			OTOCarr/=nbeads
+			plt.plot(tarr,OTOCarr)
+		else:
+			plt.plot(tarr,np.log(abs(OTOCarr)))
+		plt.show()
+		store_1D_plotdata(tarr,OTOCarr,'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,nbeads,dt),rpext)
+
+	if(0): ##Collect files of microcanonical ensembles
+		methodkey = 'RPMD'
+		enskey  = 'mc'
+		E = 3.18
+		Ekey = 'E_{}'.format(E)
+		kwlist = [enskey,methodkey,corrkey,syskey,potkey,Tkey,beadkey,Ekey]
+		
+		tarr,OTOCarr,stdarr = seed_collector(kwlist,rpext,tarr,OTOCarr)
 
 		if(corrkey!='OTOC'):
 			OTOCarr/=nbeads
 		#plt.plot(tarr,OTOCarr)
 		plt.plot(tarr,np.log(abs(OTOCarr)))
 		plt.show()
-		store_1D_plotdata(tarr,OTOCarr,'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,nbeads,dt),rpext)
+		store_1D_plotdata(tarr,OTOCarr,'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}_{}'.format(enskey,corrkey,potkey,Tkey,nbeads,dt,Ekey),rpext)
 
-	if(0):
+	if(1): ##Histograms of thermal ensembles
 		kwqlist = ['Thermalized_rp_qcart','nbeads_{}'.format(nbeads), 'beta_{}'.format(beta), potkey]
 		kwplist = ['Thermalized_rp_pcart','nbeads_{}'.format(nbeads), 'beta_{}'.format(beta), potkey]
 		
@@ -106,7 +159,7 @@ if(0):#RPMD
 		V/=nbeads
 		K/=nbeads
 		
-		bins = np.linspace(0.0,8.0,200)
+		bins = np.linspace(0.0,10.0,200)
 		dE = bins[1]-bins[0]
 		#countsV, bin_edgeV = np.histogram(V,bins=200)
 		#countsK, bin_edgeK = np.histogram(K,bins=200)
@@ -114,7 +167,7 @@ if(0):#RPMD
 		#print('counts V', countsV[:80], bin_edgeV[80])
 		#print('counts K', countsK[:80], bin_edgeK[80])
 
-		Ehist = plt.hist(x=E, bins=bins,density=True,color='r')
+		#Ehist = plt.hist(x=E, bins=bins,density=True,color='r')
 		Vhist = plt.hist(x=V, bins=bins,density=True,color='g',alpha=0.5)
 		Khist = plt.hist(x=K, bins=bins,density=True,color='b',alpha=0.5)
 		
@@ -126,7 +179,7 @@ if(0):#RPMD
 		#plt.axvline(x=Vb,ymin=0.0, ymax = 1.0,linestyle='--',color='m')
 		plt.show()
 
-	if(0):
+	if(0): ##Histograms of microcanonical ensembles
 		kwqlist = ['Microcanonical_rp_qcart','nbeads_{}'.format(nbeads), 'beta_{}'.format(beta), potkey]
 		kwplist = ['Microcanonical_rp_pcart','nbeads_{}'.format(nbeads), 'beta_{}'.format(beta), potkey]
 		
@@ -148,94 +201,44 @@ if(0):#RPMD
 		RGhist = plt.hist(x=RG, bins=bins,density=True)
 		plt.show()
 
-if(1):#RPMD static averages
-	methodkey = 'RPMD'
-	enskey = 'thermal'
-	corrkey = 'stat_avg'
-	sigmakey = 'sigma_0.21'
+	if(0):#RPMD static averages
+		methodkey = 'RPMD'
+		enskey = 'thermal'
+		corrkey = 'stat_avg'
+		sigmakey = 'sigma_0.21'
 
-	kwlist = [methodkey,corrkey,syskey,potkey,Tkey,beadkey,sigmakey]
+		kwlist = [methodkey,corrkey,syskey,potkey,Tkey,beadkey,sigmakey]
 
-	fname  = seed_finder(kwlist,rpext)
-	fname = rpext + fname[0] 
-	print('fname',fname)
-	
-	data = np.loadtxt(fname)[:,1]
-	
-	countarr = []
-	data_arr = []
-	count = 0
-	statavg = 0.0
-	for i in range(len(data)):
-		statavg+=data[i]
-		count+=1
-		countarr.append(count)
-		data_arr.append(statavg/count)
+		fname  = seed_finder(kwlist,rpext)
+		fname = rpext + fname[0] 
+		print('fname',fname)
 		
-	print('statavg,count',statavg/count,count)
-	plt.plot(countarr,data_arr)
-	plt.show()
+		data = np.loadtxt(fname)[:,1]
+		
+		countarr = []
+		data_arr = []
+		count = 0
+		statavg = 0.0
+		for i in range(len(data)):
+			statavg+=data[i]
+			count+=1
+			countarr.append(count)
+			data_arr.append(statavg/count)
+			
+		print('statavg,count',statavg/count,count)
+		plt.plot(countarr,data_arr)
+		plt.show()
 
-if(0):
-	methodkey = 'RPMD'
-	enskey = 'thermal'
-	corrkey = 'qq_TCF'
-	potkey='quartic_a_1.0'
-	dt = 0.01
-	Tkey='T_0.125'
-	
-	kwlist = [methodkey,corrkey,syskey,potkey,Tkey,beadkey,'dt_{}'.format(dt)]
-	
-	tarr = np.arange(0.0,time_total,dt)
-	OTOCarr = np.zeros_like(tarr) +0j
-
-	for sc in [1,3,5,10,13,16,20]:
-		tarr,OTOCarr,stdarr = seed_collector(kwlist,rpext,tarr,OTOCarr,allseeds=False,seedcount=sc,logerr=False)
-		print('std,C0',stdarr[0],OTOCarr[0]/nbeads)
-
-	if(corrkey!='OTOC'):
-		OTOCarr/=nbeads
-	#plt.plot(tarr,OTOCarr)
-	plt.plot(tarr,OTOCarr)
-	plt.errorbar(tarr,OTOCarr,yerr=stdarr/2,ecolor='m',errorevery=100,capsize=2.0)	
-	plt.show()
-	store_1D_plotdata(tarr,OTOCarr,'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,nbeads,dt),rpext)
-
-
-if(0):#RPMD/mc
-	methodkey = 'RPMD'
-	enskey  = 'mc'
-	kwlist = [enskey,methodkey,corrkey,syskey,potkey,Tkey,beadkey]
-	
-	tarr,OTOCarr = seed_collector(kwlist,rpext,tarr,OTOCarr)
-
-	if(corrkey!='OTOC'):
-		OTOCarr/=nbeads
-	#plt.plot(tarr,OTOCarr)
-	plt.plot(tarr,np.log(abs(OTOCarr)))
-	plt.show()
-	store_1D_plotdata(tarr,OTOCarr,'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,nbeads,dt),rpext)
-
-if(0):#CMD
-	methodkey = 'CMD'
-	gammakey = 'gamma_{}'.format(gamma)
-
-	kwlist = [methodkey,corrkey,syskey,potkey,Tkey,beadkey,gammakey]
-	
-	tarr,OTOCarr = seed_collector(kwlist,cext,OTOCarr)
-
-	plt.plot(tarr,np.log(abs(OTOCarr)))
-	plt.show()
-	store_1D_plotdata(tarr,OTOCarr,'CMD_{}_{}_{}_nbeads_{}_dt_{}_gamma_{}'.format(corrkey,potkey,Tkey,nbeads,dt,gamma),cext)
-
-if(0):#Classical
+if(0): ##Classical
 	if(1):
 		methodkey = 'Classical'
-		enskey = 'mc'#'thermal'
-
-		kwlist = [enskey,methodkey,corrkey,syskey,potkey,Tkey]
+		enskey = 'thermal'
+		corrkey = 'qq_TCF'#'singcomm'#'OTOC'
+	
+		E = 4.09#3.125#2.125#
+		kwlist = [enskey,methodkey,corrkey,syskey,potkey,Tkey]#,'E_{}_'.format(E)]
 		
-		tarr,OTOCarr = seed_collector(kwlist,Cext,tarr,OTOCarr)
+		tarr,OTOCarr,stdarr = seed_collector(kwlist,Cext,tarr,OTOCarr)
 
 		plt.plot(tarr,np.log(abs(OTOCarr)))
 		plt.show()
@@ -268,3 +271,47 @@ if(0):#Classical
 		#plt.hist(x=K, bins=50,color='b',alpha=0.25)
 		plt.axvline(x=Vb,ymin=0.0, ymax = 1.0,linestyle='--',color='k')
 		plt.show()	
+
+
+#--------------------------------------------------------------------------------------------------------
+
+if(0):
+	methodkey = 'RPMD'
+	enskey = 'thermal'
+	corrkey = 'qq_TCF'
+	potkey='quartic_a_1.0'
+	dt = 0.01
+	Tkey='T_0.125'
+	
+	kwlist = [methodkey,corrkey,syskey,potkey,Tkey,beadkey,'dt_{}'.format(dt)]
+	
+	tarr = np.arange(0.0,time_total,dt)
+	OTOCarr = np.zeros_like(tarr) +0j
+
+	for sc in [1,3,5,10,13,16,20]:
+		tarr,OTOCarr,stdarr = seed_collector(kwlist,rpext,tarr,OTOCarr,allseeds=False,seedcount=sc,logerr=False)
+		print('std,C0',stdarr[0],OTOCarr[0]/nbeads)
+
+	if(corrkey!='OTOC'):
+		OTOCarr/=nbeads
+	#plt.plot(tarr,OTOCarr)
+	plt.plot(tarr,OTOCarr)
+	plt.errorbar(tarr,OTOCarr,yerr=stdarr/2,ecolor='m',errorevery=100,capsize=2.0)	
+	plt.show()
+	store_1D_plotdata(tarr,OTOCarr,'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,nbeads,dt),rpext)
+
+
+
+if(0):#CMD
+	methodkey = 'CMD'
+	gammakey = 'gamma_{}'.format(gamma)
+
+	kwlist = [methodkey,corrkey,syskey,potkey,Tkey,beadkey,gammakey]
+	
+	tarr,OTOCarr = seed_collector(kwlist,cext,OTOCarr)
+
+	plt.plot(tarr,np.log(abs(OTOCarr)))
+	plt.show()
+	store_1D_plotdata(tarr,OTOCarr,'CMD_{}_{}_{}_nbeads_{}_dt_{}_gamma_{}'.format(corrkey,potkey,Tkey,nbeads,dt,gamma),cext)
+
+

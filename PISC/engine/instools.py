@@ -243,7 +243,7 @@ def find_instanton(m,pes,qinit,beta,nbeads,ax=None,plt=None,plot=False,dim=2,sca
 	while(step!="terminate"):
 		upd_step(step,cart=True)  # Change here when the e.v. along saddle point coordinate is "soft"
 		step = 	insta.eigvec_follow_step_inst()
-		if(count%10000==0 and plot is True):
+		if(count%1000==0 and plot is True):
 			#vals,vecs = np.linalg.eigh(pes.ddpot)
 			#qarr.append(rp.q)
 			#vecsarr.append(vecs)

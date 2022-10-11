@@ -9,16 +9,18 @@ from PISC.potentials.Quartic_bistable import quartic_bistable
 from PISC.engine.thermostat import PILE_L
 from PISC.engine.simulation import RP_Simulation
 
-### Things to check:
-#1. Initialization of p,q and M matrix
-#2. Normal mode transformations
-#3. RSP Matrix
-#4. Normal mode force and Hessian
-#5. Also check whether the bind function does everything required
-#6. Check rp.mats2cart, rp.cart2mats
-#7. Compare normal mode force with bead mode force
-#8. Multiply RSP matrix with rp.q and rp.p and compare it with normal 
-#   integration -  This is better to be done when checking integrators.
+"""
+ Things to check:
+1. Initialization of p,q and M matrix
+2. Normal mode transformations
+3. RSP Matrix
+4. Normal mode force and Hessian
+5. Also check whether the bind function does everything required
+6. Check rp.mats2cart, rp.cart2mats
+7. Compare normal mode force with bead mode force
+8. Multiply RSP matrix with rp.q and rp.p and compare it with normal 
+   integration.
+"""
 
 hbar = 1.0
 dim = 2

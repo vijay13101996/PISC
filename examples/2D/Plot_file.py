@@ -7,27 +7,28 @@ from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr,
 
 dim=2
 
-alpha = 0.382
-D = 9.375 
-
 lamda = 2.0
-g = 0.08
+g = 0.02#8
+Vb = lamda**4/(64*g)
+
+alpha = 0.382
+D = 3*Vb#9.375 
 
 z = 1.0
  
 Tc = 0.5*lamda/np.pi
-times = 1.0
+times = 10.0
 T = times*Tc
 beta=1/T
 
 m = 0.5
 N = 1000
 dt_therm = 0.01
-dt = 0.005
+dt = 0.002
 time_therm = 40.0
 time_total = 5.0
 
-nbeads = 8
+nbeads = 4
 
 potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
 	
@@ -50,22 +51,29 @@ syskey = 'Selene'
 fig,ax = plt.subplots()
 
 if(0):
-	dt=0.002
+	dt=0.001
 	corrkey = 'OTOC'
-	enskey ='thermal'
+	enskey = 'thermal'
 	Tkey = 'T_{}Tc'.format(times)
 
 	ext = 'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,nbeads,dt)
 	ext = rpext+ext
-	plot_1D(ax,ext, label=r'$RPMD \; 2D \; z={}, T=T_c$'.format(z),color='c', log=True,linewidth=1)
-	slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,3.5,4.5)
+	plot_1D(ax,ext, label=r'$RPMD \; 2D \; z={}, T=1T_c$'.format(z),color='k', log=True,linewidth=1)
+	slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,1.0,2.0)
+	#ax.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k')
+	print('slope',slope/2)
+
+	ext = 'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,1,dt)
+	ext = rpext+ext
+	plot_1D(ax,ext, label=r'$RPMD \; 2D \; z={}, T=1T_c$'.format(z),color='c', log=True,linewidth=1)
+	slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,1.0,2.0)
 	#ax.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k')
 	print('slope',slope/2)
 
 if(1):
-	dt=0.002
+	dt=0.005
 	corrkey = 'OTOC'
-	enskey ='thermal'
+	enskey ='mc'#'thermal'
 	Tkey = 'T_{}Tc'.format(times)
 
 	ext = 'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,nbeads,dt)
@@ -94,7 +102,7 @@ if(1):
 		plot_1D(ax,ext, label=r'$RPMD\; 2D \; z=0.0, T=T_c$',color='b', log=True,linewidth=1)
 		slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,3.5,4.5)	
 		
-	if(1):
+	if(0):
 		potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,1.5)	
 		ext = 'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,nbeads,dt)
 		ext = rpext+ext

@@ -52,7 +52,8 @@ class SimUniverse(object):
 		self.time_run = time_run
 	
 	def set_ensparams(self,tau0 = 1.0, pile_lambda=100.0, E=None, qlist= None, plist = None, filt_func = None):
-		self.tau0 = tau0 
+		self.tau0 = tau0
+		print('tau0, pi',tau0) 
 		self.pile_lambda = pile_lambda
 		self.E = E
 		self.qlist = qlist
@@ -61,7 +62,7 @@ class SimUniverse(object):
 	
 	def gen_ensemble(self,ens,rng,rngSeed):
 		if(self.enskey== 'thermal'):
-			thermalize_rp(self.pathname,self.m,self.dim,self.N,self.nbeads,ens,self.pes,rng,self.time_ens,self.dt_ens,self.potkey,rngSeed,self.qlist)	
+			thermalize_rp(self.pathname,self.m,self.dim,self.N,self.nbeads,ens,self.pes,rng,self.time_ens,self.dt_ens,self.potkey,rngSeed,self.qlist,self.tau0,self.pile_lambda)	
 			qcart = read_arr('Thermalized_rp_qcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(self.N,self.nbeads,ens.beta,self.potkey,rngSeed),"{}/Datafiles".format(self.pathname))
 			pcart = read_arr('Thermalized_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(self.N,self.nbeads,ens.beta,self.potkey,rngSeed),"{}/Datafiles".format(self.pathname))
 			return qcart,pcart	
@@ -71,7 +72,7 @@ class SimUniverse(object):
 			pcart = read_arr('Microcanonical_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(self.N,self.nbeads,ens.beta,self.potkey,rngSeed),"{}/Datafiles".format(self.pathname)) 
 			return qcart,pcart	
 
-	def run_OTOC(self,sim):
+	def run_OTOC(self,sim,single=False):
 		tarr = []
 		Mqqarr = []
 		if(self.method == 'CMD'):
@@ -87,9 +88,16 @@ class SimUniverse(object):
 		else:
 			dt = self.dt
 			nsteps = int(self.time_run/dt)
+			q = sim.rp.q.copy()
+			sigma = 0.5
+			ind = np.where(abs(q) < sigma)
+			wgt = np.exp(-q/(2*sigma**2))/(2*np.pi*sigma)**0.5
 			for i in range(nsteps):
-				sim.step(mode="nve",var='monodromy',pc=False)	
-				Mqq = np.mean(abs(sim.rp.Mqq[:,0,0,0,0]**2))
+				sim.step(mode="nve",var='monodromy')
+				if(single):
+					Mqq = np.mean(sim.rp.Mqq[:,0,0,0,0])
+				else:
+					Mqq = np.mean(abs(sim.rp.Mqq[:,0,0,0,0]**2))
 				tarr.append(sim.t)
 				Mqqarr.append(Mqq)
 
@@ -107,7 +115,7 @@ class SimUniverse(object):
 				sim.step(mode="nvt",var='pq',pc=False)
 				if(i%stride == 0):
 					q = sim.rp.q[:,:,0].copy()
-					p = sim.rp.q[:,:,0].copy()
+					p = sim.rp.p[:,:,0].copy()
 					tarr.append(sim.t)
 					qarr.append(q)
 					parr.append(p)	
@@ -124,8 +132,10 @@ class SimUniverse(object):
 
 		qarr = np.array(qarr)
 		parr = np.array(parr)	
+		#NOTE: The correlation function is between vector quantities unless explicitly specified.
+		#This needs to be rewritten at some point
 		if(self.corrkey=='qq_TCF'):
-			tarr,tcf = gen_tcf(qarr,qarr,tarr)
+			tarr,tcf = gen_tcf(qarr,qarr,tarr,corraxis=0)
 		elif(self.corrkey=='qq2_TCF'):
 			tarr,tcf = gen_tcf(qarr**2,qarr**2,tarr)
 		elif(self.corrkey=='pp_TCF'):
@@ -170,6 +180,8 @@ class SimUniverse(object):
 			avg = np.mean(np.mean(op(sim.rp.qcart,sim.rp.pcart),axis=1))
 			self.store_scalar(avg,rngSeed)
 			return
+		elif(self.corrkey == 'singcomm'):
+			tarr, Carr = self.run_OTOC(sim,single=True)	
 		else:
 			return	
 	

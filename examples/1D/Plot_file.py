@@ -6,21 +6,23 @@ import os
 from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr, read_arr
 
 dim = 1
-lamda = 2.0
-g = 0.08
 
-Tc = lamda*(0.5/np.pi)
-times = 1.0
-T = times*Tc
+if(1): #Double Well potential
+	lamda = 2.0
+	g = 0.08#8
 
-m = 0.5
+	Tc = lamda*(0.5/np.pi)
+	times = 3.0
+	T = times*Tc
+
+	m = 0.5
+	
+	potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
+
 N = 1000
 dt = 0.002
-
-nbeads = 8
+nbeads = 16
 gamma = 16
-
-potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
 
 #Path extensions
 path = os.path.dirname(os.path.abspath(__file__))	
@@ -31,18 +33,92 @@ rpext = '{}/rpmd/Datafiles/'.format(path)
 
 fig,ax = plt.subplots()
 
+if(1):
+	dt = 0.002
+	corrkey = 'OTOC'
+	enskey = 'thermal'
+	Tkey = 'T_{}Tc'.format(times)
+
+	fname = 'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,1,dt)
+	ext = rpext+fname
+	plot_1D(ax,ext, label=r'$T={}Tc$,classical'.format(times),log=True,color='c',linewidth=2)
+		
+	fname = 'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,16,dt)
+	ext = rpext+fname
+	plot_1D(ax,ext, label=r'$T={}Tc$,RPMD'.format(times),log=True,color='r',linewidth=2)
+		
+	fname = 'Quantum_{}_{}_{}_{}_basis_{}_n_eigen_{}'.format('Kubo',corrkey,potkey,Tkey,100,70)	
+	ext = qext+fname
+	plot_1D(ax,ext, label=r'$T={}Tc$,Quantum'.format(times),log=True,color='k',linewidth=2)
+		
+
+if(0):
+	corrkey = 'qq_TCF'
+	enskey = 'thermal'
+	dt = 0.02
+	for times,c in zip([10.0],['k','c','r','g','b','y','m']):
+		Tkey = 'T_{}Tc'.format(times)
+		potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(0.382,9.375,lamda,0.08,1.0)
+		ext = 'Classical_{}_{}_{}_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,dt)
+		ext = Cext+ext
+		plot_1D(ax,ext, label=r'$T={}Tc$,classical'.format(times),color='c',linewidth=2)
+		
+		potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
+		ext = 'Quantum_qq_TCF_{}_T_{}Tc_basis_{}_n_eigen_{}'.format(potkey,times,100,70)
+		ext = qext+ext
+		plot_1D(ax,ext, label=r'$T={}Tc$'.format(times),color='k',linewidth=2)
+		
 if(0):
 	corrkey = 'OTOC'
 	enskey = 'mc'#'thermal'
 	Tkey = 'T_{}Tc'.format(times)
 
-	ext = 'Classical_{}_{}_{}_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,0.002)#dt)
+	E = 10.0
+	ext = 'Classical_{}_{}_{}_{}_dt_{}_E_{}'.format(enskey,corrkey,potkey,Tkey,0.002,E)
 	ext = Cext+ext
-	plot_1D(ax,ext, label=r'$Classical, T=T_c$',color='c', log=True,linewidth=1)
-	slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,1,2.)
+	plot_1D(ax,ext, label=r'$Classical, E={}$'.format(E),color='c', log=True,linewidth=1)
+	slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,0.6,1.25)#0.45,1.)
 	ax.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k')
 
-if(1):
+	E=1.3
+	ext = 'Quantum_{}_{}_{}_basis_{}_n_eigen_{}_E_{}'.format(enskey,corrkey,potkey,50,20, E)
+	ext = qext+ext
+	plot_1D(ax,ext, label=r'$Quantum, E={}$'.format(E),color='k', log=True,linewidth=1)
+	slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,0.45,1.0)
+	#ax.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k')
+
+	ext = 'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}_E_{}'.format(enskey,corrkey,potkey,Tkey,nbeads,0.005,E)
+	ext = rpext+ext
+	plot_1D(ax,ext, label=r'$RPMD, E={}, T=T_c$'.format(E),color='m', log=True,linewidth=1)
+	slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,0.45,1.0)
+	
+	plt.title('Microcanonical OTOCs, E={}'.format(E))
+
+if(0):
+	corrkey = 'OTOC'
+	enskey = 'mc'#'thermal'
+	Tkey = 'T_{}Tc'.format(1.0)
+
+	E = 2.75
+	td = 0.6
+	tu = 1.2
+	ext = 'Classical_{}_{}_{}_{}_dt_{}_E_{}'.format(enskey,corrkey,potkey,Tkey,0.002,E)
+	ext = Cext+ext
+	plot_1D(ax,ext, label=r'Classical mc double commutator, $E={}$'.format(E),color='k', log=True,linewidth=1)
+	slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,td,tu)
+	ax.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k')
+
+	corrkey = 'singcomm'
+	#enskey = 'thermal'
+	#Tkey = 'T_{}Tc'.format(times)
+
+	ext = 'Classical_{}_{}_{}_{}_dt_{}_E_{}'.format(enskey,corrkey,potkey,Tkey,0.002,E)
+	ext = Cext+ext
+	plot_1D(ax,ext, label=r'Classical mc single commutator, $E={}$'.format(E),color='c', log=True,linewidth=1)
+	slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,td,tu)
+	#ax.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k')
+
+if(0):
 	corrkey = 'OTOC'
 	enskey = 'thermal'
 	Tkey = 'T_{}Tc'.format(times)

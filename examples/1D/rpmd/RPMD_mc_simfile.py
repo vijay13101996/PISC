@@ -21,7 +21,7 @@ print('Vb', Vb)
 pes = double_well(lamda,g)
 
 Tc = 0.5*lamda/np.pi
-times = 1.0
+times = 0.6
 T = times*Tc
 
 m = 0.5
@@ -30,7 +30,7 @@ dt_therm = 0.05
 dt = 0.005
 time_therm = 100.0
 time_total = 5.0
-nbeads = 8
+nbeads = 32
 
 method = 'RPMD'
 potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
@@ -42,15 +42,16 @@ enskey = 'mc'
 path = os.path.dirname(os.path.abspath(__file__))
 
 #--------------------------------------------------------------------
-E = 1.001*Vb
+E = 3.18#1.001*Vb
 qgrid = np.linspace(-10.0,10.0,int(1e5)+1)
 potgrid = pes.potential(qgrid)
 
 qlist = qgrid[np.where(potgrid<E)]
 qlist = qlist[:,np.newaxis]
+extkey = ['E_{}'.format(E)]
 #--------------------------------------------------------------------
 
-Sim_class = SimUniverse(method,path,sysname,potkey,corrkey,enskey,Tkey)
+Sim_class = SimUniverse(method,path,sysname,potkey,corrkey,enskey,Tkey,extkey)
 Sim_class.set_sysparams(pes,T,m,dim)
 Sim_class.set_simparams(N,dt_therm,dt)
 Sim_class.set_methodparams(nbeads=nbeads)
