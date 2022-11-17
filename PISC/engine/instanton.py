@@ -66,7 +66,7 @@ class inst(object):
 		#print('vals',np.around(vals,4))
 		F = np.matmul(vecs.T,self.grad)
 		if((abs(F)<self.tol).all()):
-			print('F,q,vals,vecs',F,self.rp.qcart,vals,vecs)
+			print('F,q,vals,vecs',F,self.rp.qcart,np.around(vals,3),vecs)
 			return "terminate"
 		lamda = 0.0
 		alpha = 1.0
@@ -92,7 +92,7 @@ class inst(object):
 		F = np.matmul(vecs.T,self.grad)
 		if((abs(self.grad)<self.tol).all()):## Check this once again later!!!
 			print('F',np.linalg.norm(F))
-			print('vals',vals[:2])
+			print('vals',np.around(vals[:3],6))
 			return "terminate"
 		lamda = 0.0
 		alpha = 1.0

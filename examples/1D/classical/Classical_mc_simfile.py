@@ -12,7 +12,7 @@ import os
 
 dim=1
 lamda = 2.0
-g = 0.08
+g = 0.02
 
 Vb = lamda**4/(64*g)
 
@@ -24,7 +24,7 @@ T = times*Tc
 
 m = 0.5
 N = 1000
-dt_therm = 0.01
+dt_therm = 0.05
 dt = 0.002
 time_therm = 100.0
 time_total = 5.0
@@ -33,13 +33,13 @@ method = 'Classical'
 potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
 sysname = 'Selene'		
 Tkey = 'T_{}Tc'.format(times)#'{}Tc'.format(times)
-corrkey = 'OTOC'
+corrkey = 'OTOC'#'singcomm'
 enskey = 'mc'
 	
 path = os.path.dirname(os.path.abspath(__file__))
 
 #--------------------------------------------------------------------
-E = 1.001*Vb
+E = 4.09#1.5*Vb
 qgrid = np.linspace(-10,10,int(1e5)+1)
 potgrid = pes.potential(qgrid)
 

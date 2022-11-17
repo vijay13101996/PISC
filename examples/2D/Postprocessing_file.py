@@ -1,40 +1,66 @@
 import numpy as np
 from PISC.utils.plottools import plot_1D
-from PISC.utils.misc import find_OTOC_slope,seed_collector,seed_finder
+from PISC.utils.misc import find_OTOC_slope,estimate_OTOC_slope,seed_collector,seed_finder
 from matplotlib import pyplot as plt
 import os
 from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr, read_arr
-from PISC.potentials.Quartic_bistable import quartic_bistable
+from PISC.potentials import quartic_bistable, Harmonic_oblique
 from PISC.utils.nmtrans import FFT
-
 
 dim=2
 
-lamda = 2.0
-g = 0.08
-Vb = lamda**4/(64*g)
+if(1): ### Double well
+	lamda = 2.0
+	g = 0.08
+	Vb = lamda**4/(64*g)
 
-alpha = 0.382
-D = 3*Vb
+	alpha = 0.382
+	D = 3*Vb
 
-z = 0.5
- 
-Tc = 0.5*lamda/np.pi
-times = 1.0
-T = times*Tc
-beta=1/T
+	z = 1.0#0.5
+	 
+	Tc = 0.5*lamda/np.pi
+	times = 2.0
+	T = times*Tc
+	beta=1/T
+	Tkey = 'T_{}Tc'.format(times)
 
-m = 0.5
-N = 1000
-dt_therm = 0.05
-dt = 0.002
-time_therm = 100.0
-time_total = 5.0
+	m = 0.5
+	N = 1000
+	dt_therm = 0.05
+	dt = 0.002#05
+	time_therm = 50.0
+	time_total = 5.0#5.0
 
-nbeads = 8
+	potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
+	pes = quartic_bistable(alpha,D,lamda,g,z)
 
-potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
-pes = quartic_bistable(alpha,D,lamda,g,z)
+	#pos = np.zeros((1,2,1))
+	#pos[0,:,0] = [1,1]
+	#print('PES', pes.potential_xy(1,1))
+	#print('grad', pes.dpotential(pos))
+	#print('Hess',pes.ddpotential(pos))
+
+if(0):
+	m = 1.0
+	omega1 = 1.0
+	omega2 = 1.0
+	trans = np.array([[1.0,0.2],[0.2,1.0]])
+	
+	pes	= Harmonic_oblique(trans,m,omega1,omega2)	
+
+	T = 1.0
+	beta=1/T
+	
+	N = 1000
+	dt_therm = 0.05
+	dt = 0.02
+	time_therm = 50.0
+	time_total = 20.0
+	nbeads = 1
+
+	potkey = 'TESTharmonicObl'
+	Tkey = 'T_{}'.format(T)
 
 tarr = np.arange(0.0,time_total,dt)
 OTOCarr = np.zeros_like(tarr) +0j
@@ -47,27 +73,29 @@ Cext = '{}/classical/Datafiles/'.format(path)
 rpext = '{}/rpmd/Datafiles/'.format(path)
 
 #Simulation specifications
-corrkey = 'OTOC'#'qq_TCF'#
-beadkey = 'nbeads_{}_'.format(nbeads)
-Tkey = 'T_{}Tc'.format(times)
+corrkey = 'OTOC'#'pq_TCF'#'OTOC'#
 syskey = 'Selene'
 
 if(1):#RPMD
+	nbeads=1
+	beadkey = 'nbeads_{}_'.format(nbeads)
+	potkey_ = potkey+'_'
 	if(1):
 		methodkey = 'RPMD'
 		enskey='thermal'
 
-		kwlist = [methodkey,enskey,corrkey,syskey,potkey,Tkey,beadkey]
+		kwlist = [methodkey,enskey,corrkey,syskey,potkey_,Tkey,beadkey]
 		
 		tarr,OTOCarr,stdarr = seed_collector(kwlist,rpext,tarr,OTOCarr)
 
-		print('stdarr', stdarr[2499])
+		#print('stdarr', stdarr[2499])
 
 		if(corrkey!='OTOC'):
 			OTOCarr/=nbeads
-		#plt.plot(tarr,OTOCarr)
-		plt.plot(tarr,np.log(abs(OTOCarr)))
-		plt.errorbar(tarr,np.log(abs(OTOCarr)),yerr=stdarr/2,ecolor='m',errorevery=100,capsize=2.0)
+			plt.plot(tarr,OTOCarr)
+		else:
+			plt.plot(tarr,np.log(abs(OTOCarr)))
+		#plt.errorbar(tarr,np.log(abs(OTOCarr)),yerr=stdarr/2,ecolor='m',errorevery=100,capsize=2.0)
 		plt.show()
 		store_1D_plotdata(tarr,OTOCarr,'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,nbeads,dt),rpext,ebar=stdarr)
 
@@ -81,6 +109,9 @@ if(1):#RPMD
 		E=[]
 		V=[]
 		K=[]
+
+		xarr = []
+		yarr = [] 
 		for qfile,pfile in zip(fqlist,fplist):
 			qcart = read_arr(qfile,rpext)
 			pcart = read_arr(pfile,rpext)		
@@ -89,10 +120,14 @@ if(1):#RPMD
 			fft = FFT(1,nbeads)
 			q = fft.cart2mats(qcart)
 			p = fft.cart2mats(pcart)
-		
+
+			x = q[:,0,0]
+			y = q[:,1,0]
+			xarr.append(x)
+			yarr.append(y)		
 			#print('qfile,pfile', qfile,pfile)
 			omegan = nbeads/beta
-			potsys = np.sum(pes.potential(qcart)+0.6655,axis=1)
+			potsys = np.sum(pes.potential(qcart),axis=1)
 			potspr = np.sum(np.sum(0.5*m*omegan**2*(qcart-np.roll(qcart,1,axis=-1))**2,axis=2),axis=1)
 			pot = potsys+potspr
 			kin = np.sum(np.sum(pcart**2/(2*m),axis=1),axis=1)	
@@ -111,11 +146,14 @@ if(1):#RPMD
 		E/=nbeads
 		V/=nbeads
 		K/=nbeads
-		
-		bins = np.linspace(0.0,8.0,200)
+
+		plt.scatter(xarr,yarr)
+		plt.show()	
+	
+		bins = np.linspace(0.0,10.0,200)
 		dE = bins[1]-bins[0]
 		
-		Ehist = plt.hist(x=E, bins=bins,density=True,color='r')
+		#Ehist = plt.hist(x=E, bins=bins,density=True,color='r')
 		Vhist = plt.hist(x=V, bins=bins,density=True,color='g',alpha=0.5)
 		Khist = plt.hist(x=K, bins=bins,density=True,color='b',alpha=0.5)
 		
@@ -124,7 +162,7 @@ if(1):#RPMD
 		plt.axvline(x=V.mean(),ymin=0.0, ymax = 1.0,linestyle='--',color='g')
 		plt.axvline(x=K.mean(),ymin=0.0, ymax = 1.0,linestyle='--',color='b')		
 		plt.axvline(x=E.mean(),ymin=0.0, ymax = 1.0,linestyle='--',color='r')			
-		plt.axvline(x=Vb,ymin=0.0, ymax = 1.0,linestyle='--',color='m')
+		#plt.axvline(x=Vb,ymin=0.0, ymax = 1.0,linestyle='--',color='m')
 		plt.show()
 
 	if(0): #Radius of gyration histogram 
@@ -151,7 +189,7 @@ if(1):#RPMD
 
 if(0):#RPMD/mc
 	methodkey = 'RPMD'
-	enskey  = 'mc'
+	enskey  = 'thermal'#'mc'
 	kwlist = [enskey,methodkey,corrkey,syskey,potkey,Tkey,beadkey]
 	
 	tarr,OTOCarr,stdarr = seed_collector(kwlist,rpext,tarr,OTOCarr)
@@ -175,26 +213,29 @@ if(0):#CMD
 	plt.show()
 	store_1D_plotdata(tarr,OTOCarr,'CMD_{}_{}_{}_nbeads_{}_dt_{}_gamma_{}'.format(corrkey,potkey,Tkey,nbeads,dt,gamma),cext)
 
-if(0):#Classical
+if(1):#Classical
 	if(1):
 		methodkey = 'Classical'
-		enskey = 'thermal'#'mc'
+		enskey = 'thermal'#
 
-		kwlist = [enskey,methodkey,corrkey,syskey,potkey,Tkey]
+		kwlist = [enskey,methodkey,corrkey,syskey,potkey,Tkey,'dt_{}'.format(dt)]
 		
-		tarr,OTOCarr,stdarr = seed_collector(kwlist,Cext,tarr,OTOCarr)
+		tarr,OTOCarr,stdarr = seed_collector(kwlist,Cext,tarr,OTOCarr,allseeds=True,seedcount=1000)
+		#estimate_OTOC_slope(kwlist,Cext,tarr,OTOCarr,2.9,3.9,allseeds=False,seedcount=1000,logerr=True)
+	
+		#print('stdarr', stdarr[1250])
+		#plt.plot(tarr,np.log((OTOCarr)))
+		#plt.errorbar(tarr,np.log(abs(OTOCarr)),yerr=stdarr/2,ecolor='m',errorevery=100,capsize=2.0)
+		#plt.show()
+		store_1D_plotdata(tarr,OTOCarr,'Classical_{}_{}_{}_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,dt),Cext,ebar=stdarr)
 
-		plt.plot(tarr,np.log(abs(OTOCarr)))
-		plt.show()
-		store_1D_plotdata(tarr,OTOCarr,'Classical_{}_{}_{}_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,dt),Cext)
 
-
-	if(0): 
-		#kwqlist = ['Thermalized_rp_qcart', 'beta_{}'.format(beta), potkey]
-		#kwplist = ['Thermalized_rp_pcart', 'beta_{}'.format(beta), potkey]
+	if(0): #Histograms 
+		kwqlist = ['Thermalized_rp_qcart', 'beta_{}'.format(beta), potkey]
+		kwplist = ['Thermalized_rp_pcart', 'beta_{}'.format(beta), potkey]
 		
-		kwqlist = ['Microcanonical_rp_qcart', 'beta_{}'.format(beta), potkey]
-		kwplist = ['Microcanonical_rp_pcart', 'beta_{}'.format(beta), potkey]
+		#kwqlist = ['Microcanonical_rp_qcart', 'beta_{}'.format(beta), potkey]
+		#kwplist = ['Microcanonical_rp_pcart', 'beta_{}'.format(beta), potkey]
 		
 		fqlist = seed_finder(kwqlist,Cext,dropext=True)
 		fplist = seed_finder(kwplist,Cext,dropext=True)
@@ -218,12 +259,14 @@ if(0):#Classical
 				pxarr.extend(px)
 				pyarr.extend(py)
 
-			plt.scatter(xarr,pxarr)
+			plt.scatter(xarr,yarr,s=2)
 			plt.show()
-			plt.scatter(yarr,pyarr)
-			plt.show()		
+			#plt.scatter(xarr,pxarr)
+			#plt.show()
+			#plt.scatter(yarr,pyarr)
+			#plt.show()		
 
-		if(0):	# Energy_histogram
+		if(1):	# Energy_histogram
 			E=[]
 			V=[]
 			K=[]
@@ -232,16 +275,18 @@ if(0):#Classical
 				pcart = read_arr(pfile,Cext)[:,:,0]		
 				#print('qfile,pfile', qfile,pfile)
 		
-				pot = pes.potential(qcart)
+				pot = pes.potential_xy(qcart[:,0],qcart[:,1])
 				kin = np.sum(pcart**2/(2*m),axis=1)
 				Etot = pot+kin
 				E.extend(pot+kin)
 				V.extend(pot)
 				K.extend(kin)
 
-			plt.hist(x=E, bins=100,color='r')
-			plt.hist(x=V, bins=50,color='g',alpha=0.5)
-			plt.hist(x=K, bins=50,color='b',alpha=0.5)
-			plt.axvline(x=Vb,ymin=0.0, ymax = 1.0,linestyle='--',color='k')
+			K =np.array(K)
+			#plt.hist(x=E, bins=100,color='r')
+			plt.hist(x=V, bins=100,color='g',alpha=0.5)
+			plt.hist(x=K, bins=100,color='b',alpha=0.5)
+			#plt.axvline(x=Vb,ymin=0.0, ymax = 1.0,linestyle='--',color='k')
 			plt.axvline(x=2*m/beta,ymin=0.0, ymax = 1.0,linestyle='--',color='k')
+			plt.axvline(x=K.mean(),ymin=0.0, ymax = 1.0,linestyle='--',color='b')			
 			plt.show()

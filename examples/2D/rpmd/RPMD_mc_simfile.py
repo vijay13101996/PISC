@@ -12,29 +12,29 @@ import os
 
 dim=2
 
-alpha = 0.382
-D = 9.375 
-
 lamda = 2.0
 g = 0.08
 
-z = 1.0
-
 Vb = lamda**4/(64*g)
  
+alpha = 0.382
+D = 3*Vb#9.375 
+
+z = 1.0#1.0
+
 pes = quartic_bistable(alpha,D,lamda,g,z)
 
 Tc = 0.5*lamda/np.pi
-times = 1.0
+times = 10.0
 T = times*Tc
 
 m = 0.5
 N = 100
 dt_therm = 0.05
-dt = 0.005
+dt = 0.002
 time_therm = 100.0
 time_total = 5.0
-nbeads = 8
+nbeads = 1
 
 method = 'RPMD'
 potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)

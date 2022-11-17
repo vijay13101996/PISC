@@ -7,6 +7,8 @@ from PISC.potentials.Coupled_harmonic import coupled_harmonic
 from PISC.potentials.double_well_potential import double_well
 from PISC.potentials.harmonic_1D import harmonic as harmonic1D
 from PISC.potentials.harmonic_2D import Harmonic as harmonic2D
+from PISC.potentials.harmonic_oblique_2D import Harmonic_oblique
+from PISC.potentials.Four_well import four_well 
 from PISC.potentials.Heller_Davis import  heller_davis
 from PISC.potentials.Henon_Heiles import  henon_heiles
 from PISC.potentials.Matsubara_M3_Quartic import  Matsubara_Quartic

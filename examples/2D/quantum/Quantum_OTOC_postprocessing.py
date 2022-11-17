@@ -1,8 +1,7 @@
 import numpy as np
 from PISC.dvr.dvr import DVR2D
 from PISC.husimi.Husimi import Husimi_2D,Husimi_1D
-from PISC.potentials.Coupled_harmonic import coupled_harmonic
-from PISC.potentials.Quartic_bistable import quartic_bistable
+from PISC.potentials import coupled_harmonic, quartic_bistable, Harmonic_oblique
 from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr, read_arr
 from PISC.utils.plottools import plot_1D
 from PISC.engine import OTOC_f_1D
@@ -11,7 +10,7 @@ from matplotlib import pyplot as plt
 import os 
 import time 
 
-if(0): # Coupled harmonic
+if(1): # Coupled harmonic
 	L = 10.0
 	lbx = -L
 	ubx = L
@@ -53,30 +52,58 @@ if(0): # Coupled harmonic
 		#plt.contour(x,y,potgrid,levels=[0.1,vals[0],vals[1],vals[3],vals[4],vals[5],vals[7],vals[100]])
 		plt.show()
 
-if(1): # Double well 2D
+
+if(1): # Oblique harmonic
 	L = 10.0#
-	lbx = -6.0#-7.0
-	ubx = 6.0#7.0
-	lby = -3#-5.0
-	uby = 12
+	lbx = -10.0#
+	ubx = 10.0#
+	lby = -10.0#
+	uby = 10.0
 	m = 0.5#8.0
-	ngrid = 100
+	ngrid = 200
+	ngridx = ngrid
+	ngridy = ngrid
+
+	omega1 = 1.0
+	omega2 = 1.0
+	trans = np.array([[1.0,0.7],[0.2,1.0]])
+	
+	pes	= Harmonic_oblique(trans,m,omega1,omega2)	
+	
+	xgrid = np.linspace(lbx,ubx,101)#200)
+	ygrid = np.linspace(lby,uby,101)#200)
+	x,y = np.meshgrid(xgrid,ygrid)
+
+	potgrid = pes.potential_xy(x,y)
+	
+	plt.contour(x,y,potgrid,colors='k',levels=np.arange(0.0,10,0.5))	
+	plt.show()
+
+
+if(0): # Double well 2D
+	L = 10.0#
+	lbx = -10.0#-7.0
+	ubx = 10.0#7.0
+	lby = -3#-5.0
+	uby = 7
+	m = 0.5#8.0
+	ngrid = 200
 	ngridx = ngrid
 	ngridy = ngrid
 
 	w = 0.1	
 	
 	lamda = 2.0
-	g = 0.08
+	g = 0.02
 
 	Vb = lamda**4/(64*g)
 
 	D = 3*Vb
-	alpha = 0.382
+	alpha = 0.382#1.147
 		
 	print('Vb', lamda**4/(64*g))
 
-	z = 0.0	
+	z = 1.0	
 
 	Tc = lamda*0.5/np.pi
 	T_au = 10*Tc#10.0 
