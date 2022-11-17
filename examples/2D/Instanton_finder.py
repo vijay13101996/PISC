@@ -1,15 +1,7 @@
 import numpy as np
 import PISC
-from PISC.engine.integrators import Symplectic_order_II, Symplectic_order_IV, Runge_Kutta_order_VIII
-from PISC.engine.beads import RingPolymer
-from PISC.engine.ensemble import Ensemble
-from PISC.engine.motion import Motion
-from PISC.potentials.Coupled_harmonic import coupled_harmonic
 from PISC.potentials.Quartic_bistable import quartic_bistable
 from PISC.potentials.Four_well import four_well 
-from PISC.engine.thermostat import PILE_L
-from PISC.engine.simulation import RP_Simulation
-from PISC.engine.instanton import inst
 from matplotlib import pyplot as plt
 from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr, read_arr
 from PISC.engine.instools import find_minima, find_saddle, find_instanton, find_extrema, inst_init, inst_double
@@ -20,19 +12,27 @@ from PISC.utils.nmtrans import FFT
 ### Potential parameters
 m=0.5
 
-if(0):
-	D = 9.375
-	alpha = 0.37
+path = os.path.dirname(os.path.abspath(__file__))
 
+if(1):
 	lamda = 2.0
 	g = 0.08
+	Vb = lamda**4/(64*g)
+	
+	D = 3*Vb
+	alpha = 0.382
 
-	z = 1.5
+	z = 1.0
 
 	pes = quartic_bistable(alpha,D,lamda,g,z)
 
 	# Simulation parameters
-	T_au = 0.95*lamda*0.5/np.pi
+	Tc = lamda*0.5/np.pi
+	times = 0.5#0.95
+	T_au = times*Tc
+	
+	potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
+	Tkey = 'T_{}Tc'.format(times)
 
 	#---------------------------------------------------------------------
 	# Plot extent and axis
@@ -45,7 +45,7 @@ if(0):
 	ngridx = ngrid
 	ngridy = ngrid
 
-if(1):
+if(0): #Four well potential
 	lamdax = 2.0
 	gx = 0.08
 	lamday = 2.0
@@ -74,19 +74,9 @@ if(1):
 
 beta = 1.0/T_au 
 
-N = 1000
-dt_therm = 0.01
-dt = 0.005
-time_therm = 20.0
-time_total = 10.0#15.0
-time_relax = 10.0
-
-rngSeed = 1
-N = 1
 dim = 2
 nbeads = 32
-T = T_au	
-
+	
 xgrid = np.linspace(lbx,ubx,200)
 ygrid = np.linspace(lby,uby,200)
 x,y = np.meshgrid(xgrid,ygrid)
@@ -94,10 +84,10 @@ x,y = np.meshgrid(xgrid,ygrid)
 potgrid = pes.potential_xy(x,y)
 fig,ax = plt.subplots()
 
-ax.contour(x,y,potgrid,levels=np.arange(0.0,Vb,Vb/20))#D,D/20))
+ax.contour(x,y,potgrid,levels=np.arange(0.0,D,D/20))
 #ax = fig.add_subplot(111, projection='3d')
 #ax.plot_surface(x,y,-potgrid)
-plt.show()
+#plt.show()
 # ---------------------------------------------------------------------
 if(0):
 	qinit = [0.5,0.6]
@@ -110,7 +100,7 @@ if(0):
 	print('sp',sp)
 
 if(1):
-	sp=np.array([0.0,2.5])#0.0])
+	sp=np.array([0.0,0.0])
 	eigvec = np.array([1.0,0.0])#vecs[0]
 	
 	nb = 4
@@ -123,15 +113,17 @@ if(1):
 		omegan = nb/beta
 		potspr = np.sum(np.sum(0.5*m*omegan**2*(instanton-np.roll(instanton,1,axis=-1))**2,axis=2),axis=1)	
 		potsys = np.sum(pes.potential(instanton),axis=1)
-		print('Centroid energy', (potsys)/nb)	
+		#print('Centroid energy', (potsys)/nb)	
 		ax.scatter(instanton[0,0],instanton[0,1],label='nbeads = {}'.format(nb))
 		print('Instanton config. with nbeads=', nb, 'computed')	
 		qinit=inst_double(instanton)
 		nb*=2
+
+	store_arr(qinit,'Instanton_{}_{}_nbeads_{}'.format(potkey, Tkey,nbeads),'{}/rpmd/Datafiles/'.format(path)) 	 
 	
 	### Increasing tolerance for the last 'doubling'. This can also probably be replaced with a gradient descent step	
-	#instanton = find_extrema(m,pes,instanton,ax,plt,plot=True,dim=2,stepsize=1e-6,tol=1e-4)
-	#instanton = find_instanton(m,pes,qinit,beta,nb,ax,plt,plot=False,dim=2,scale=1.0,stepsize=1e-6,tol=1e-4)	
+	#instanton = find_extrema(m,pes,instanton,ax,plt,plot=True,dim=2,stepsize=1e-5,tol=1e-3)
+	#instanton = find_instanton(m,pes,qinit,beta,nb,ax,plt,plot=False,dim=2,scale=1.0,stepsize=1e-5,tol=1e-3)	
 	#ax.scatter(instanton[0,0],instanton[0,1],label='nbeads = {}'.format(nb))	
 	plt.legend()
 	plt.show()	

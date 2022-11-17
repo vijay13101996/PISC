@@ -12,7 +12,7 @@ import os
 
 dim=1
 lamda = 2.0#
-g = 0.085#
+g = 0.08#
 
 Vb=lamda**4/(64*g)
 
@@ -21,7 +21,7 @@ print('Vb', Vb)
 pes = double_well(lamda,g)
 
 Tc = 0.5*lamda/np.pi
-times = 1.0
+times = 3.0#0.6
 T = times*Tc
 
 m = 0.5
@@ -42,15 +42,16 @@ enskey = 'mc'
 path = os.path.dirname(os.path.abspath(__file__))
 
 #--------------------------------------------------------------------
-E = 1.001*Vb
+E = 1.3#1.001*Vb
 qgrid = np.linspace(-10.0,10.0,int(1e5)+1)
 potgrid = pes.potential(qgrid)
 
 qlist = qgrid[np.where(potgrid<E)]
 qlist = qlist[:,np.newaxis]
+extkey = ['E_{}'.format(E)]
 #--------------------------------------------------------------------
 
-Sim_class = SimUniverse(method,path,sysname,potkey,corrkey,enskey,Tkey)
+Sim_class = SimUniverse(method,path,sysname,potkey,corrkey,enskey,Tkey,extkey)
 Sim_class.set_sysparams(pes,T,m,dim)
 Sim_class.set_simparams(N,dt_therm,dt)
 Sim_class.set_methodparams(nbeads=nbeads)
@@ -59,8 +60,8 @@ Sim_class.set_runtime(time_therm,time_total)
 
 start_time=time.time()
 func = partial(Sim_class.run_seed)
-seeds = range(1000)
-seed_split = chunks(seeds,10)
+seeds = range(100)
+seed_split = chunks(seeds,5)
 
 param_dict = {'Temperature':Tkey,'CType':corrkey,'Ensemble':enskey,'m':m,\
 	'therm_time':time_therm,'time_total':time_total,'nbeads':nbeads,'dt':dt,'dt_therm':dt_therm}

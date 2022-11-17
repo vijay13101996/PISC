@@ -7,6 +7,8 @@ import numpy as np
 import scipy
 import scipy.integrate
 from scipy.integrate import odeint, ode
+from PISC.utils.misc import hess_compress, hess_mul
+
 ### Work left to do:
 # 1. Declare the order of the integrator and splitting inside the Integrator class object.  
 # 2. Figure out how to do 4th order integration with the ring polymer springs.
@@ -50,10 +52,10 @@ class Symplectic_order_II(Integrator):
 			self.rp.p[...,1:]-=self.pes.dpot[...,1:]*self.motion.pdt
 
 	def Bv(self,centmove=True):
-		hess = self.pes.ddpot.swapaxes(2,3).reshape(-1,self.pes.ndim*self.rp.nbeads,\
-			self.pes.ndim*self.rp.nbeads)
+		hess = hess_compress(self.pes.ddpot,self.rp)
+		#self.pes.ddpot.swapaxes(2,3).reshape(-1,self.pes.ndim*self.rp.nbeads,self.pes.ndim*self.rp.nbeads)
 		dq=self.rp.dq.reshape(-1,self.pes.ndim*self.rp.nbeads)
-		dpc= np.einsum('ijk,ik->ik',hess,dq)
+		dpc= np.einsum('ijk,ik->ij',hess,dq)
 		dpc=dpc.reshape(-1,self.pes.ndim,self.rp.nbeads)
 		if(centmove):
 			self.rp.dp-=dpc*self.motion.pdt	
@@ -67,9 +69,10 @@ class Symplectic_order_II(Integrator):
 			self.rp.p[...,self.rp.nmats:]-=self.rp.dpot[...,self.rp.nmats:]*self.motion.pdt
 
 	def bv(self):
-		hess = self.rp.ddpot.swapaxes(2,3).reshape(-1,self.rp.ndim*self.rp.nbeads,self.rp.ndim*self.rp.nbeads)
+		hess = hess_compress(self.rp.ddpot,self.rp)
+		#self.rp.ddpot.swapaxes(2,3).reshape(-1,self.rp.ndim*self.rp.nbeads,self.rp.ndim*self.rp.nbeads)
 		dq=self.rp.dq.reshape(-1,self.pes.ndim*self.rp.nbeads)
-		dpc= np.einsum('ijk,ik->ik',hess,dq)
+		dpc= np.einsum('ijk,ik->ij',hess,dq)
 		dpc=dpc.reshape(-1,self.pes.ndim,self.rp.nbeads)
 		self.rp.dp-=dpc*self.motion.pdt
 		if self.rp.nmats is None:	
@@ -78,17 +81,21 @@ class Symplectic_order_II(Integrator):
 			self.rp.p[...,self.rp.nmats:]-=dpc[...,self.rp.nmats:]*self.motion.pdt
 
 	def M1(self):
-		self.rp.Mpp-=(self.pes.ddpot)*self.motion.pdt*self.rp.Mqp
+		#self.rp.Mpp-=(self.pes.ddpot)*self.motion.pdt*self.rp.Mqp
+		hess_mul(self.pes.ddpot,self.rp.Mqp,self.rp.Mpp,self.rp,self.motion.pdt)		
 	
 	def m1(self):
-		self.rp.Mpp-=(self.rp.ddpot)*self.motion.pdt*self.rp.Mqp	
+		#self.rp.Mpp-=(self.rp.ddpot)*self.motion.pdt*self.rp.Mqp	
+		hess_mul(self.rp.ddpot,self.rp.Mqp,self.rp.Mpp,self.rp,self.motion.pdt)		
 
 	def M2(self):
-		self.rp.Mpq-=(self.pes.ddpot)*self.motion.pdt*self.rp.Mqq
-		
+		#self.rp.Mpq-=(self.pes.ddpot)*self.motion.pdt*self.rp.Mqq
+		hess_mul(self.pes.ddpot,self.rp.Mqq,self.rp.Mpq,self.rp,self.motion.pdt)		
+
 	def m2(self):
-		self.rp.Mpq-=(self.rp.ddpot)*self.motion.pdt*self.rp.Mqq
-		
+		#self.rp.Mpq-=(self.rp.ddpot)*self.motion.pdt*self.rp.Mqq
+		hess_mul(self.rp.ddpot,self.rp.Mqq,self.rp.Mpq,self.rp,self.motion.pdt)		
+
 	def M3(self):
 		self.rp.Mqp+=self.motion.qdt*self.rp.Mpp/self.rp.dynm3[:,:,None,:,None]
 	
@@ -187,10 +194,11 @@ class Symplectic_order_IV(Integrator):
 	
 	def Av(self,k):
 		self.rp.dq+=self.rp.dp*self.motion.qdt[k]/self.rp.dynm3
+	
 	def Bv(self,k,centmove=True):
 		hess = self.pes.ddpot.swapaxes(2,3).reshape(-1,self.pes.ndim*self.rp.nbeads,self.rp.ndim*self.rp.nbeads)
 		dq=self.rp.dq.reshape(-1,self.pes.ndim*self.rp.nbeads)
-		dpc= np.einsum('ijk,ik->ik',hess,dq)
+		dpc= np.einsum('ijk,ik->ij',hess,dq) #Check once again!
 		dpc=dpc.reshape(-1,self.pes.ndim,self.rp.nbeads)
 		if(centmove):
 			self.rp.dp-=dpc*self.motion.pdt[k]
@@ -200,25 +208,60 @@ class Symplectic_order_IV(Integrator):
 	def bv(self,k):
 		hess = self.rp.ddpot.swapaxes(2,3).reshape(-1,self.rp.ndim*self.rp.nbeads,self.rp.ndim*self.rp.nbeads)
 		dq=self.rp.dq.reshape(-1,self.pes.ndim*self.rp.nbeads)
-		dpc= np.einsum('ijk,ik->ik',hess,dq)
+		dpc= np.einsum('ijk,ik->ij',hess,dq) #Check once again!
 		dpc=dpc.reshape(-1,self.pes.ndim,self.rp.nbeads)
 		self.rp.dp-=dpc*self.motion.pdt[k]
 		if self.rp.nmats is None:	
 			self.rp.dp-=dpc*self.motion.pdt[k]
 		else:
 			self.rp.p[...,self.rp.nmats:]-=dpc[...,self.rp.nmats:]*self.motion.pdt[k]
+	
 	def M1(self,k):
-		self.rp.Mpp-=(self.pes.ddpot)*self.motion.pdt[k]*self.rp.Mqp
-		
+		#self.rp.Mpp -=(self.pes.ddpot)*self.motion.pdt[k]*self.rp.Mqp
+	
+		#print('Mpp before',self.rp.Mpp)	
+		#hess = hess_compress(self.pes.ddpot,self.rp)
+		#Mqp = hess_compress(self.rp.Mqp,self.rp)
+		#Mpp = hess_compress(self.rp.Mpp,self.rp)
+		#c2 = np.matmul(hess,Mqp)*self.motion.pdt[k]
+		#Mpp-=c2
+		#print('Mpp after',self.rp.Mpp,'\n')
+	
+		hess_mul(self.pes.ddpot,self.rp.Mqp,self.rp.Mpp,self.rp,self.motion.pdt[k])		
+			
 	def m1(self,k):
-		self.rp.Mpp-=(self.rp.ddpot)*self.motion.pdt[k]*self.rp.Mqp
+		#self.rp.Mpp-=(self.rp.ddpot)*self.motion.pdt[k]*self.rp.Mqp
+		
+		#hess = hess_compress(self.rp.ddpot,self.rp)
+		#Mqp = hess_compress(self.rp.Mqp,self.rp)
+		#Mpp = hess_compress(self.rp.Mpp,self.rp)
+		#c2 = np.matmul(hess,Mqp)*self.motion.pdt[k]
+		#Mpp-=c2
+
+		hess_mul(self.rp.ddpot,self.rp.Mqp,self.rp.Mpp,self.rp,self.motion.pdt[k])		
 		
 	def M2(self,k):
-		self.rp.Mpq-=(self.pes.ddpot)*self.motion.pdt[k]*self.rp.Mqq
+		#self.rp.Mpq-=(self.pes.ddpot)*self.motion.pdt[k]*self.rp.Mqq
 		
+		#hess = hess_compress(self.pes.ddpot,self.rp)
+		#Mqq = hess_compress(self.rp.Mqq,self.rp)
+		#Mpq = hess_compress(self.rp.Mpq,self.rp)
+		#c2 = np.matmul(hess,Mqq)*self.motion.pdt[k]
+		#Mpq-=c2
+
+		hess_mul(self.pes.ddpot,self.rp.Mqq,self.rp.Mpq,self.rp,self.motion.pdt[k])		
+
 	def m2(self,k):
-		self.rp.Mpq-=(self.rp.ddpot)*self.motion.pdt[k]*self.rp.Mqq
+		#self.rp.Mpq-=(self.rp.ddpot)*self.motion.pdt[k]*self.rp.Mqq
 		
+		#hess = hess_compress(self.rp.ddpot,self.rp)
+		#Mqq = hess_compress(self.rp.Mqq,self.rp)
+		#Mpq = hess_compress(self.rp.Mpq,self.rp)
+		#c2 = np.matmul(hess,Mqq)*self.motion.pdt[k]
+		#Mpq-=c2
+
+		hess_mul(self.rp.ddpot,self.rp.Mqq,self.rp.Mpq,self.rp,self.motion.pdt[k])		
+
 	def M3(self,k):
 		self.rp.Mqp+=self.motion.qdt[k]*self.rp.Mpp/self.rp.dynm3[:,:,None,:,None]
 		
@@ -280,14 +323,7 @@ class Symplectic_order_IV(Integrator):
 	def Monodromy_step_nosprings(self):	
 		for k in range(4):
 			self.Monodromy_kstep_nosprings(k)
-
-class Symplectic_order_IV_multidim(Symplectic_order_IV):	
-	def M1(self,k):
-		self.rp.Mpp-=self.motion.pdt[k]*np.einsum('ijk...,ikl...->ijl...',self.pes.ddpot,self.rp.Mqp)
 		
-	def M2(self,k):
-		self.rp.Mpq-=self.motion.pdt[k]*np.einsum('ijk...,ikl...->ijl...',self.pes.ddpot,self.rp.Mqq)
-			
 class Runge_Kutta_order_VIII(Integrator):
 	def int_func(self,y,t):		
 		N = self.rp.nsys*self.rp.nbeads*self.rp.ndim

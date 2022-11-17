@@ -24,9 +24,6 @@ b = -a
 Vb = lamda**4/(64*g)
 dt=0.01
 
-qcart = np.array([[[a]]])
-pcart = np.zeros_like(qcart) +  (2*m*Vb)**0.5
-
 beta = 2.0
 tau0 = 100.0
 print('therm energy', 1/beta, 'Vb', Vb)
@@ -35,6 +32,13 @@ pes = double_well(lamda,g)
 ens = Ensemble(beta=beta,ndim=1)
 motion = Motion(dt = dt,symporder=4) 
 rng = np.random.default_rng(1) 
+
+E = Vb + 0.05
+qcart = np.array([[[0.5]]])#
+V = pes.potential(qcart)
+print('V', V)
+
+pcart = np.zeros_like(qcart) + (2*m*(E-V))**0.5 # (2*m*Vb)**0.5
 
 rp = RingPolymer(qcart=qcart,pcart=pcart,m=m,mode='rp')
 rp.bind(ens,motion,rng)
@@ -49,7 +53,7 @@ propa.bind(ens, motion, rp, pes, rng, therm)
 sim = RP_Simulation()
 sim.bind(ens,motion,rng,rp,pes,propa,therm)
 
-time_total = 50
+time_total = 10
 time_total = time_total
 nsteps = int(time_total/dt)	
 
@@ -71,7 +75,7 @@ for i in range(nsteps):
 			tarr.append(sim.t)
 
 ax[0].plot(tarr,qarr)
-ax[1].plot(tarr,np.log(Mqqarr))
+ax[1].plot(tarr,np.log(Mqqarr)/tarr)
 plt.show()
 	
 if(0):

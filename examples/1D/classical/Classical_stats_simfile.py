@@ -12,7 +12,7 @@ import os
 
 dim=1
 lamda = 2.0
-g = 0.085
+g = 0.08
 
 Vb = lamda**4/(64*g)
 
@@ -32,7 +32,7 @@ potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
 sysname = 'Selene'		
 Tkey = 'T_{}Tc'.format(times)#'{}Tc'.format(times)
 corrkey = ''
-enskey = 'thermal'
+enskey = 'mc'
 	
 path = os.path.dirname(os.path.abspath(__file__))
 

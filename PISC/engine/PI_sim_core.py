@@ -12,7 +12,7 @@ from PISC.engine.thermalize_PILE_L import thermalize_rp
 from PISC.engine.gen_mc_ensemble import generate_rp
 
 class SimUniverse(object):
-	def __init__(self,method,pathname,sysname,potkey,corrkey,enskey,Tkey):
+	def __init__(self,method,pathname,sysname,potkey,corrkey,enskey,Tkey,ext_kwlist=None):
 		self.method = method
 		self.pathname = pathname
 		self.sysname = sysname
@@ -20,6 +20,7 @@ class SimUniverse(object):
 		self.corrkey = corrkey
 		self.enskey = enskey
 		self.Tkey = Tkey
+		self.ext_kwlist = ext_kwlist
 	
 	def set_sysparams(self,pes,T,mass,dim):
 		''' Set system paramenters 
@@ -51,7 +52,8 @@ class SimUniverse(object):
 		self.time_run = time_run
 	
 	def set_ensparams(self,tau0 = 1.0, pile_lambda=100.0, E=None, qlist= None, plist = None, filt_func = None):
-		self.tau0 = tau0 
+		self.tau0 = tau0
+		print('tau0, pi',tau0) 
 		self.pile_lambda = pile_lambda
 		self.E = E
 		self.qlist = qlist
@@ -60,7 +62,7 @@ class SimUniverse(object):
 	
 	def gen_ensemble(self,ens,rng,rngSeed):
 		if(self.enskey== 'thermal'):
-			thermalize_rp(self.pathname,self.m,self.dim,self.N,self.nbeads,ens,self.pes,rng,self.time_ens,self.dt_ens,self.potkey,rngSeed,self.qlist)	
+			thermalize_rp(self.pathname,self.m,self.dim,self.N,self.nbeads,ens,self.pes,rng,self.time_ens,self.dt_ens,self.potkey,rngSeed,self.qlist,self.tau0,self.pile_lambda)	
 			qcart = read_arr('Thermalized_rp_qcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(self.N,self.nbeads,ens.beta,self.potkey,rngSeed),"{}/Datafiles".format(self.pathname))
 			pcart = read_arr('Thermalized_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(self.N,self.nbeads,ens.beta,self.potkey,rngSeed),"{}/Datafiles".format(self.pathname))
 			return qcart,pcart	
@@ -70,7 +72,7 @@ class SimUniverse(object):
 			pcart = read_arr('Microcanonical_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(self.N,self.nbeads,ens.beta,self.potkey,rngSeed),"{}/Datafiles".format(self.pathname)) 
 			return qcart,pcart	
 
-	def run_OTOC(self,sim):
+	def run_OTOC(self,sim,single=False):
 		tarr = []
 		Mqqarr = []
 		if(self.method == 'CMD'):
@@ -86,30 +88,18 @@ class SimUniverse(object):
 		else:
 			dt = self.dt
 			nsteps = int(self.time_run/dt)
-			filt_condn = np.array([False for i in range(self.N)])
-			q0 = sim.rp.q[:,0,0].copy() 	
+			q = sim.rp.q.copy()
+			sigma = 0.5
+			ind = np.where(abs(q) < sigma)
+			wgt = np.exp(-q/(2*sigma**2))/(2*np.pi*sigma)**0.5
 			for i in range(nsteps):
-				sim.step(mode="nve",var='monodromy',pc=False)	
-				Mqq = abs(sim.rp.Mqq[:,0,0,0,0]**2)
-				qt = sim.rp.q[:,0,0]
-				ind = np.where(q0*qt < -1)
-				filt_condn[ind] = True
+				sim.step(mode="nve",var='monodromy')
+				if(single):
+					Mqq = np.mean(sim.rp.Mqq[:,0,0,0,0])
+				else:
+					Mqq = np.mean(abs(sim.rp.Mqq[:,0,0,0,0]**2))
 				tarr.append(sim.t)
 				Mqqarr.append(Mqq)
-			
-			ind_arr = np.where(filt_condn)[0]
-			print('indarr',len(ind_arr))
-			Mqqarr = np.array(Mqqarr)
-			Mqqarr = np.mean(Mqqarr[:,ind_arr],axis=1)
-
-			if(0):
-				dt = self.dt
-				nsteps = int(self.time_run/dt)
-				for i in range(nsteps):
-					sim.step(mode="nve",var='monodromy',pc=False)	
-					Mqq = np.mean(abs(sim.rp.Mqq[:,0,0,0,0]**2))
-					tarr.append(sim.t)
-					Mqqarr.append(Mqq)
 
 		return tarr, Mqqarr
 
@@ -125,7 +115,7 @@ class SimUniverse(object):
 				sim.step(mode="nvt",var='pq',pc=False)
 				if(i%stride == 0):
 					q = sim.rp.q[:,:,0].copy()
-					p = sim.rp.q[:,:,0].copy()
+					p = sim.rp.p[:,:,0].copy()
 					tarr.append(sim.t)
 					qarr.append(q)
 					parr.append(p)	
@@ -133,25 +123,33 @@ class SimUniverse(object):
 			dt = self.dt
 			nsteps = int(2*self.time_run/dt)	
 			for i in range(nsteps):
-				sim.step(mode="nve",var='pq',pc=False)
-				q = sim.rp.q[:,:,0]
-				p = sim.rp.p[:,:,0]
+				sim.step(mode="nve",var='pq')
+				q = sim.rp.q[:,:,0].copy()
+				p = sim.rp.p[:,:,0].copy()
 				tarr.append(sim.t)
 				qarr.append(q)
 				parr.append(p)
-	
+
+		qarr = np.array(qarr)
+		parr = np.array(parr)	
+		#NOTE: The correlation function is between vector quantities unless explicitly specified.
+		#This needs to be rewritten at some point
 		if(self.corrkey=='qq_TCF'):
-			tarr,tcf = gen_tcf(qarr,qarr,tarr)
+			tarr,tcf = gen_tcf(qarr,qarr,tarr,corraxis=0)
+		elif(self.corrkey=='qq2_TCF'):
+			tarr,tcf = gen_tcf(qarr**2,qarr**2,tarr)
 		elif(self.corrkey=='pp_TCF'):
-			tarr,tcf = gen_tcf(parr,parr,tarr)
+			tarr,tcf = gen_tcf(parr,parr,tarr,corraxis=0)
+		elif(self.corrkey=='pp2_TCF'):
+			tarr,tcf = gen_tcf(parr**2,parr**2,tarr)	
 		elif(self.corrkey=='qp_TCF'):
-			tarr,tcf = gen_tcf(qarr,parr,tarr)
+			tarr,tcf = gen_tcf(qarr,parr,tarr,corraxis=0)
 		elif(self.corrkey=='pq_TCF'):		
-			tarr,tcf = gen_tcf(parr,qarr,tarr)
+			tarr,tcf = gen_tcf(parr,qarr,tarr,corraxis=0)
 		
 		return tarr,tcf	
 	
-	def run_seed(self,rngSeed):
+	def run_seed(self,rngSeed,op=None):
 		print('Seed {} : T {}, nbeads {}'.format(rngSeed,self.T,self.nbeads))	
 		rng = np.random.default_rng(rngSeed)
 		ens = Ensemble(beta=1/self.T,ndim=self.dim)
@@ -177,12 +175,19 @@ class SimUniverse(object):
 			tarr, Carr = self.run_OTOC(sim)
 		elif('TCF' in self.corrkey):
 			tarr, Carr = self.run_TCF(sim)
+		elif(self.corrkey =='stat_avg'):
+			# The assumption here is that 'op' is scalar-valued function (i.e. returns a scalar for every bead)
+			avg = np.mean(np.mean(op(sim.rp.qcart,sim.rp.pcart),axis=1))
+			self.store_scalar(avg,rngSeed)
+			return
+		elif(self.corrkey == 'singcomm'):
+			tarr, Carr = self.run_OTOC(sim,single=True)	
 		else:
 			return	
 	
-		self.store_data(tarr,Carr,rngSeed)
+		self.store_time_series(tarr,Carr,rngSeed)
 
-	def store_data(self,tarr,Carr,rngSeed,ext_kwlist=None): 
+	def assign_fname(self,rngSeed):
 		key = [self.method,self.enskey,self.corrkey,self.sysname,self.potkey,self.Tkey,'N_{}'.format(self.N),'dt_{}'.format(self.dt)]
 		fext = '_'.join(key)
 		if(self.method=='Classical'):
@@ -191,9 +196,29 @@ class SimUniverse(object):
 			methext = '_nbeads_{}_'.format(self.nbeads)
 		elif(self.method=='CMD'):
 			methext = '_nbeads_{}_gamma_{}_'.format(self.nbeads,self.gamma)
-		seedext = 'seed_{}'.format(rngSeed)
-
-		if(ext_kwlist is None):
-			fname = ''.join([fext,methext,seedext])	
 		
-		store_1D_plotdata(tarr,Carr,fname,'{}/Datafiles'.format(self.pathname))		
+		if(self.corrkey!='stat_avg'):
+			seedext = 'seed_{}'.format(rngSeed)
+		else:
+			seedext = ''
+
+		if(self.ext_kwlist is None):
+			fname = ''.join([fext,methext,seedext])	
+		else:
+			namelst = [fext,methext]
+			namelst.append('_'.join(self.ext_kwlist) + '_')
+			namelst.append(seedext)
+			fname = ''.join(namelst)
+
+		return fname
+
+	def store_time_series(self,tarr,Carr,rngSeed): 
+		fname = self.assign_fname(rngSeed)	
+		store_1D_plotdata(tarr,Carr,fname,'{}/Datafiles'.format(self.pathname))	
+
+	def store_scalar(self,scalar,rngSeed):
+		# Scalar values are stored in the same filename
+		fname = self.assign_fname(rngSeed)
+		f = open('{}/Datafiles/{}.txt'.format(self.pathname,fname),'a')
+		f.write(str(rngSeed) + "  " + str(scalar) + '\n')
+		f.close()	

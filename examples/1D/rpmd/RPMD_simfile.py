@@ -5,52 +5,100 @@ import pickle
 import multiprocessing as mp
 from functools import partial
 from PISC.utils.mptools import chunks, batching
-from PISC.potentials.double_well_potential import double_well
-from PISC.potentials.Quartic import quartic
+from PISC.potentials import double_well,quartic,morse
 from PISC.engine.PI_sim_core import SimUniverse
 import time
 import os 
 
 dim=1
-lamda = 2.0
-g = 0.085
 
-print('Vb', lamda**4/(64*g))
+if(1): #Double well potential
+	lamda = 2.0
+	g = 0.08
 
-pes = double_well(lamda,g)
+	print('Vb', lamda**4/(64*g))
 
-Tc = 0.5*lamda/np.pi
-times = 1.0
-T = times*Tc
+	pes = double_well(lamda,g)
 
-m = 0.5
-N = 1000
-dt_therm = 0.05
-dt = 0.001
-time_therm = 50.0
-time_total = 5.0
+	Tc = 0.5*lamda/np.pi
+	times = 3.5#0.6
+	T = times*Tc
 
-nbeads = 16
+	m = 0.5
+	N = 1000
+	dt_therm = 0.05
+	dt = 0.02
+	time_therm = 50.0
+	time_total = 50.0
+
+	nbeads = 1
+
+	potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
+	Tkey = 'T_{}Tc'.format(times)
+	
+if(0): #Quartic potential from Mano's paper
+	a = 1.0
+
+	pes = quartic(a)
+
+	T = 1.0/8
+	
+	m = 1.0
+	N = 1000
+	dt_therm = 0.05
+	dt = 0.02
+
+	time_therm = 50.0
+	time_total = 20.0
+	
+	nbeads = 16
+
+	method = 'RPMD'
+	potkey = 'TESTquart'.format(a)
+	sysname = 'Selene'		
+	Tkey = 'T_{}'.format(T)
+	corrkey = 'qq_TCF'
+	enskey = 'thermal'
+
+if(0): #Morse
+	m=0.5
+	D = 9.375
+	alpha = 0.382
+	pes = morse(D,alpha)
+	
+	w_m = (2*D*alpha**2/m)**0.5
+	Vb = D/3
+
+	print('alpha, w_m', alpha, Vb/w_m)
+	T = 3.18
+	potkey = 'morse'
+	Tkey = 'T_{}'.format(T)
+	
+	N = 1000
+	dt_therm = 0.05
+	dt = 0.02
+	time_therm = 50.0
+	time_total = 5.0
+
+	nbeads = 1
 
 method = 'RPMD'
-potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
 sysname = 'Selene'		
-Tkey = 'T_{}Tc'.format(times)#'{}Tc'.format(times)
-corrkey = 'OTOC'
+corrkey = 'qp_TCF'#'OTOC'
 enskey = 'thermal'
-	
+
 path = os.path.dirname(os.path.abspath(__file__))
 
 Sim_class = SimUniverse(method,path,sysname,potkey,corrkey,enskey,Tkey)
 Sim_class.set_sysparams(pes,T,m,dim)
 Sim_class.set_simparams(N,dt_therm,dt)
 Sim_class.set_methodparams(nbeads=nbeads)
-Sim_class.set_ensparams(tau0=1.0,pile_lambda=100.0)
+Sim_class.set_ensparams(tau0=1e-2,pile_lambda=100.0)
 Sim_class.set_runtime(time_therm,time_total)
 
 start_time=time.time()
 func = partial(Sim_class.run_seed)
-seeds = range(1000)
+seeds = range(100)
 seed_split = chunks(seeds,10)
 
 param_dict = {'Temperature':Tkey,'CType':corrkey,'Ensemble':enskey,'m':m,\
