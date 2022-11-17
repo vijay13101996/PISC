@@ -13,7 +13,7 @@ import os
 dim=2
 
 lamda = 2.0
-g = 0.02#8
+g = 0.08
 
 Vb = lamda**4/(64*g)
  

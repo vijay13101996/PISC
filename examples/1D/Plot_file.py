@@ -12,7 +12,7 @@ if(1): #Double Well potential
 	g = 0.08#8
 
 	Tc = lamda*(0.5/np.pi)
-	times = 3.0
+	times = 5.0
 	T = times*Tc
 
 	m = 0.5
@@ -34,8 +34,28 @@ rpext = '{}/rpmd/Datafiles/'.format(path)
 fig,ax = plt.subplots()
 
 if(1):
-	dt = 0.002
-	corrkey = 'OTOC'
+	dt = 0.005
+	corrkey = 'singcomm'#'OTOC'
+	enskey = 'thermal'
+	Tkey = 'T_{}Tc'.format(times)
+	
+	fname = 'Classical_{}_{}_{}_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,dt)
+	ext = Cext+fname
+	plot_1D(ax,ext, label=r'Unfiltered'.format(times),log=False,color='k',linewidth=2)
+		
+
+	for sigma,c in zip([0.5,1.0,5.0,10.0],['r','g','b','c']):
+		potkey = 'FILT_{}_g_{}_sigma_{}_q0_{}'.format(lamda,g,sigma,0.0)
+		fname = 'Classical_{}_{}_{}_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,dt)
+		ext = Cext+fname
+		plot_1D(ax,ext, label=r'$\sigma={}$'.format(sigma),log=False,color=c,linewidth=2)
+		
+	
+
+
+if(0):
+	dt = 0.02
+	corrkey = 'qq_TCF'#'OTOC'
 	enskey = 'thermal'
 	Tkey = 'T_{}Tc'.format(times)
 

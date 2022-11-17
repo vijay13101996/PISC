@@ -13,7 +13,7 @@ import matplotlib
 matplotlib.rcParams['axes.unicode_minus'] = False
 ### Potential parameters
 m=0.5#0.5
-N=10
+N=30
 dt=0.005
 
 lamda = 2.0
@@ -28,7 +28,7 @@ potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,
 
 ### Temperature is only relevant for the ring-polymer Poincare section
 Tc = 0.5*lamda/np.pi
-times = 1.0
+times = 3.0
 T = times*Tc
 Tkey = 'T_{}Tc'.format(times) 
 
@@ -40,7 +40,7 @@ pathname = os.path.dirname(os.path.abspath(__file__))
 
 w_db = np.sqrt(lamda/m)
 w_m = (2*D*alpha**2/m)**0.5
-E = 1.01*Vb#6.52 #1.001*Vb #+ w_m/2
+E = 1.001*Vb#6.52 #1.001*Vb #+ w_m/2
 
 minima = find_minima(m,D,alpha,lamda,g,z)
 xmin,ymin = minima
@@ -65,16 +65,16 @@ nbeads = 8
 PSOS = Poincare_SOS('Classical',pathname,potkey,Tkey)
 PSOS.set_sysparams(pes,T,m,2)
 PSOS.set_simparams(N,dt,dt,nbeads=nbeads,rngSeed=1)	
-PSOS.set_runtime(5.0,5.0)
+PSOS.set_runtime(50.0,500.0)
 if(1):
-	xg = np.linspace(xmin-0.1,xmin+0.1,int(1e2)+1)
-	yg = np.linspace(ymin-0.1,ymin+0.1,int(1e3)+1)
+	#xg = np.linspace(xmin-0.1,xmin+0.1,int(1e2)+1)
+	#yg = np.linspace(ymin-0.1,ymin+0.1,int(1e3)+1)
 
 	#xg = np.linspace(0,2*xmin,int(1e2)+1)
 	#yg = np.linspace(-2*abs(ymin),4*abs(ymin),int(1e3)+1)
 
-	#xg = np.linspace(0.0,5,int(1e2)+1)
-	#yg = np.linspace(-3,3,int(1e2)+1)
+	xg = np.linspace(-1.0,5,int(1e2)+1)
+	yg = np.linspace(-4,4,int(1e2)+1)
 
 	xgrid,ygrid = np.meshgrid(xg,yg)
 	potgrid = pes.potential_xy(xgrid,ygrid)
@@ -101,7 +101,7 @@ if(1):
 	plt.ylabel(r'$p_x$')
 	
 	plt.show()
-	fname = 'Classical_Poincare_Section_x_px_{}_E_{}'.format(potkey,E)
+	#fname = 'Classical_Poincare_Section_x_px_{}_E_{}'.format(potkey,E)
 	store_1D_plotdata(X,PX,fname,'{}/Datafiles'.format(pathname))
 				
 if(0): ## Collect the data from the Poincare section and plot. 

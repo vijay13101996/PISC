@@ -43,7 +43,7 @@ if(0): # Morse potential
 	Tkey = 'T_{}'.format(T_au)
 	
 if(1): #Double well potential
-	L = 6.0
+	L = 10.0#6.0
 	lb = -L
 	ub = L
 	m = 0.5
@@ -52,11 +52,11 @@ if(1): #Double well potential
 	#2.0: 0.08,0.172,0.31
 
 	lamda = 2.0
-	g = 0.08
+	g = 0.02#8
 	pes = double_well(lamda,g)
 	
 	Tc = lamda*(0.5/np.pi)    
-	times = 3.0#0.95#0.8
+	times = 20.0#0.8
 	T_au = times*Tc
 
 	potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
@@ -85,7 +85,7 @@ DVR = DVR1D(ngrid,lb,ub,m,pes.potential)
 vals,vecs = DVR.Diagonalize(neig_total=ngrid-10) 
 
 print('vals',vals[:5],vecs.shape)
-
+print('delta omega', vals[1]-vals[0])
 if(0): # Plots of PES and WF
 	qgrid = np.linspace(lb,ub,ngrid-1)
 	potgrid = pes.potential(qgrid)
@@ -114,36 +114,37 @@ if(0): # Plots of PES and WF
 	plt.show()
 
 x_arr = DVR.grid[1:DVR.ngrid]
-basis_N = 100
-n_eigen = 70
+basis_N = 140
+n_eigen = 90
 
 k_arr = np.arange(basis_N) +1
 m_arr = np.arange(basis_N) +1
 
-t_arr = np.linspace(0,20.0,1000)
-OTOC_arr = np.zeros_like(t_arr) +0j
+t_arr = np.linspace(0,5.0,2000)
+C_arr = np.zeros_like(t_arr) +0j
 
 path = os.path.dirname(os.path.abspath(__file__))
 
-corrkey = 'OTOC'#'qq_TCF'
+corrkey = 'OTOC'#'qq_TCF'#'OTOC'#'qp_TCF'
 enskey = 'Kubo'#'mc'#'Kubo'
 
-corrcode = {'OTOC':'xxC','qq_TCF':'qq1'}
+corrcode = {'OTOC':'xxC','qq_TCF':'qq1','qp_TCF':'qp1'}
 enscode = {'Kubo':'kubo','Standard':'stan'}	
 
 if(1): #Thermal correlators
 	if(enskey == 'Symmetrized'):
-		C_arr = OTOC_f_1D_omp_updated.otoc_tools.lambda_corr_arr_t(vecs,m,x_arr,DVR.dx,DVR.dx,k_arr,vals,m_arr,t_arr,beta,n_eigen,corrcode[corrkey],0.5,OTOC_arr)
+		C_arr = OTOC_f_1D_omp_updated.otoc_tools.lambda_corr_arr_t(vecs,m,x_arr,DVR.dx,DVR.dx,k_arr,vals,m_arr,t_arr,beta,n_eigen,corrcode[corrkey],0.5,C_arr)
 	else:
-		C_arr = OTOC_f_1D_omp_updated.otoc_tools.therm_corr_arr_t(vecs,m,x_arr,DVR.dx,DVR.dx,k_arr,vals,m_arr,t_arr,beta,n_eigen,corrcode[corrkey],enscode[enskey],OTOC_arr) 
+		C_arr = OTOC_f_1D_omp_updated.otoc_tools.therm_corr_arr_t(vecs,m,x_arr,DVR.dx,DVR.dx,k_arr,vals,m_arr,t_arr,beta,n_eigen,corrcode[corrkey],enscode[enskey],C_arr) 
 	fname = 'Quantum_{}_{}_{}_{}_basis_{}_n_eigen_{}'.format(enskey,corrkey,potkey,Tkey,basis_N,n_eigen)	
-
 	print('fname',fname)	
+
 if(0): #Microcanonical correlators
 	n = 2
-	C_arr = OTOC_f_1D_omp_updated.otoc_tools.corr_mc_arr_t(vecs,m,x_arr,DVR.dx,DVR.dx,k_arr,vals,n+1,m_arr,t_arr,corrcode,OTOC_arr)	
-	fname = 'Quantum_mc_{}_{}_{}_n_{}_basis_{}'.format(corrkey,potkey,Tkey,n,basis_N)
-	
+	C_arr = OTOC_f_1D_omp_updated.otoc_tools.corr_mc_arr_t(vecs,m,x_arr,DVR.dx,DVR.dx,k_arr,vals,n+1,m_arr,t_arr,corrcode[corrkey],C_arr)	
+	fname = 'Quantum_mc_{}_{}_n_{}_basis_{}'.format(corrkey,potkey,n,basis_N)
+	print('fname', fname)	
+
 path = os.path.dirname(os.path.abspath(__file__))	
 store_1D_plotdata(t_arr,C_arr,fname,'{}/Datafiles'.format(path))
 

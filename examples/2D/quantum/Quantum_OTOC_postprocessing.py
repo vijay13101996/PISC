@@ -10,7 +10,7 @@ from matplotlib import pyplot as plt
 import os 
 import time 
 
-if(0): # Coupled harmonic
+if(1): # Coupled harmonic
 	L = 10.0
 	lbx = -L
 	ubx = L

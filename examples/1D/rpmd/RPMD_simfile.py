@@ -21,22 +21,21 @@ if(1): #Double well potential
 	pes = double_well(lamda,g)
 
 	Tc = 0.5*lamda/np.pi
-	times = 3.0
+	times = 3.5#0.6
 	T = times*Tc
 
 	m = 0.5
 	N = 1000
 	dt_therm = 0.05
-	dt = 0.002
+	dt = 0.02
 	time_therm = 50.0
-	time_total = 5.0
+	time_total = 50.0
 
-	nbeads = 16
+	nbeads = 1
 
 	potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
 	Tkey = 'T_{}Tc'.format(times)
 	
-
 if(0): #Quartic potential from Mano's paper
 	a = 1.0
 
@@ -71,7 +70,7 @@ if(0): #Morse
 	Vb = D/3
 
 	print('alpha, w_m', alpha, Vb/w_m)
-	T = 3.18*0.3
+	T = 3.18
 	potkey = 'morse'
 	Tkey = 'T_{}'.format(T)
 	
@@ -85,7 +84,7 @@ if(0): #Morse
 
 method = 'RPMD'
 sysname = 'Selene'		
-corrkey = 'OTOC'#'qq_TCF'#'OTOC'
+corrkey = 'qp_TCF'#'OTOC'
 enskey = 'thermal'
 
 path = os.path.dirname(os.path.abspath(__file__))
@@ -94,12 +93,12 @@ Sim_class = SimUniverse(method,path,sysname,potkey,corrkey,enskey,Tkey)
 Sim_class.set_sysparams(pes,T,m,dim)
 Sim_class.set_simparams(N,dt_therm,dt)
 Sim_class.set_methodparams(nbeads=nbeads)
-Sim_class.set_ensparams(tau0=1.0,pile_lambda=100.0)
+Sim_class.set_ensparams(tau0=1e-2,pile_lambda=100.0)
 Sim_class.set_runtime(time_therm,time_total)
 
 start_time=time.time()
 func = partial(Sim_class.run_seed)
-seeds = range(1000)
+seeds = range(100)
 seed_split = chunks(seeds,10)
 
 param_dict = {'Temperature':Tkey,'CType':corrkey,'Ensemble':enskey,'m':m,\

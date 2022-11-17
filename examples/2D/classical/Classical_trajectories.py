@@ -100,19 +100,17 @@ fig,ax = plt.subplots(1)
 path = '/home/vgs23/PISC/examples/2D/rpmd/'
 instanton = read_arr('Instanton_{}_{}_nbeads_{}'.format(potkey,Tkey,nbeads),'{}/Datafiles'.format(path)) #instanton
 
-plt.xlabel(r'x')
-#plt.ylabel(r'y')	
-		
-xl_fs = 11
-yl_fs = 11
+	
+xl_fs = 14
+yl_fs = 14
 tp_fs = 9
 ti_fs = 13
 
-mss = 5
-msl = 6
+mss = 7
+msl = 8
 
 
-ax.contour(xgrid,ygrid,potgrid,levels=np.arange(-0.3,0.75*D,D/10),colors='k',linewidths=1.0)	
+ax.contour(xgrid,ygrid,potgrid,levels=np.arange(-0.3,0.4*D,D/10),colors='k',linewidths=1.0)	
 #ax.scatter(instanton[0,0],instanton[0,1],color='g', s=10)	
 #ax.plot(instanton[0,0],instanton[0,1],color='navy',alpha=0.5,lw=4,marker='o')#,path_effects=[path_effects.SimpleLineShadow(),path_effects.Normal()])	
 xi = instanton[0,0]
@@ -142,8 +140,8 @@ x,y = rp.q[0,:,0]/nbeads**0.5
 xarr.append(x)
 yarr.append(y)
 
-ax.set_xlabel(r'$x$',fontsize=yl_fs)
-#ax.set_ylabel(r'$y$',fontsize=xl_fs)
+ax.set_xlabel(r'$x$',fontsize=xl_fs)
+ax.set_ylabel(r'$y$',fontsize=yl_fs)
 
 plt.rcParams.update({'font.size': 10, 'font.family': 'serif','font.serif':'Times New Roman'})
 matplotlib.rcParams['axes.unicode_minus'] = False
@@ -151,13 +149,15 @@ matplotlib.rcParams['axes.unicode_minus'] = False
 line, = plt.plot(xarr,yarr,color='g',lw=1.5)
 scatter1 = plt.scatter(x,y,s=mss,facecolor='k', edgecolor='k') 
 scatter2 = plt.scatter(xb,yb,s=msl,facecolor='navy',edgecolor='navy',alpha=0.75,zorder=3)
-timeax = plt.annotate('t=0.0', xy=(3.75, 3.1), xytext=(-0.7, 2.7),fontsize=ti_fs)
+timeax = plt.annotate('t=0.0', xy=(3.75, 3.1), xytext=(0.41, 0.8),xycoords = 'axes fraction',fontsize=ti_fs)
 
 ax.set_xticks([])
 ax.set_yticks([])
+ax.set_ylim([-1.8,2.0])
+ax.set_xlim([-4,4])
 ax.tick_params(axis='both', which='major', labelsize=tp_fs)
 
-fig.set_size_inches(2.4, 1.6)	
+fig.set_size_inches(3,2)#2.4, 1.6)	
 		
 def animate(i):
 	xb = rp.qcart[0,0,:]
@@ -188,10 +188,10 @@ def animate(i):
 	#axb.remove()
 
 # Frames 9,62,159 are the best
-for i in range(62):
+for i in range(159):
 	animate(i)
 
-fig.savefig('/home/vgs23/Images/Animation_snapshot_2_D1.pdf', dpi=400,bbox_inches='tight',pad_inches=0.0)
+#fig.savefig('/home/vgs23/Images/Animation_snapshot_3_thesis.pdf', dpi=200,bbox_inches='tight',pad_inches=0.0)
 
 
 #anim = animation.FuncAnimation(fig, animate, frames=range(nframes),repeat=False)

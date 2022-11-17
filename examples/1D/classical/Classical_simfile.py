@@ -10,20 +10,20 @@ import os
 
 dim=1
 lamda = 2.0
-g = 0.08
+g = 0.02#8
 
 pes = double_well(lamda,g)
 
 Tc = 0.5*lamda/np.pi
-times = 5.0
+times = 20.0
 T = times*Tc
 
 m = 0.5
 N = 1000
 dt_therm = 0.05
-dt = 0.02
-time_therm = 40.0
-time_total = 20.0
+dt = 0.005
+time_therm = 50.0#40.0
+time_total = 5.0
 
 path = os.path.dirname(os.path.abspath(__file__))
 
@@ -31,7 +31,7 @@ method = 'Classical'
 potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
 sysname = 'Selene'		
 Tkey = 'T_{}Tc'.format(times)#'{}Tc'.format(times)
-corrkey = 'qq_TCF'#'OTOC'
+corrkey = 'OTOC'#'singcomm'#'qq_TCF'#'OTOC'
 enskey = 'thermal'
 #extkey = ['filtered']
 	

@@ -139,13 +139,13 @@ class SimUniverse(object):
 		elif(self.corrkey=='qq2_TCF'):
 			tarr,tcf = gen_tcf(qarr**2,qarr**2,tarr)
 		elif(self.corrkey=='pp_TCF'):
-			tarr,tcf = gen_tcf(parr,parr,tarr)
+			tarr,tcf = gen_tcf(parr,parr,tarr,corraxis=0)
 		elif(self.corrkey=='pp2_TCF'):
 			tarr,tcf = gen_tcf(parr**2,parr**2,tarr)	
 		elif(self.corrkey=='qp_TCF'):
-			tarr,tcf = gen_tcf(qarr,parr,tarr)
+			tarr,tcf = gen_tcf(qarr,parr,tarr,corraxis=0)
 		elif(self.corrkey=='pq_TCF'):		
-			tarr,tcf = gen_tcf(parr,qarr,tarr)
+			tarr,tcf = gen_tcf(parr,qarr,tarr,corraxis=0)
 		
 		return tarr,tcf	
 	

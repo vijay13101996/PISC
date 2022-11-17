@@ -8,7 +8,7 @@ from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr,
 dim=2
 
 lamda = 2.0
-g = 0.02#8
+g = 0.08
 Vb = lamda**4/(64*g)
 
 alpha = 0.382
@@ -17,7 +17,7 @@ D = 3*Vb#9.375
 z = 1.0
  
 Tc = 0.5*lamda/np.pi
-times = 10.0
+times = 2.0
 T = times*Tc
 beta=1/T
 
@@ -28,7 +28,7 @@ dt = 0.002
 time_therm = 40.0
 time_total = 5.0
 
-nbeads = 4
+nbeads = 1
 
 potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
 	
@@ -50,8 +50,8 @@ syskey = 'Selene'
 
 fig,ax = plt.subplots()
 
-if(0):
-	dt=0.001
+if(1):
+	dt=0.002
 	corrkey = 'OTOC'
 	enskey = 'thermal'
 	Tkey = 'T_{}Tc'.format(times)
@@ -59,18 +59,18 @@ if(0):
 	ext = 'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,nbeads,dt)
 	ext = rpext+ext
 	plot_1D(ax,ext, label=r'$RPMD \; 2D \; z={}, T=1T_c$'.format(z),color='k', log=True,linewidth=1)
-	slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,1.0,2.0)
-	#ax.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k')
-	print('slope',slope/2)
+	slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,2.3,3.3)
+	ax.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k')
+	print('slope',slope)
 
 	ext = 'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,1,dt)
 	ext = rpext+ext
-	plot_1D(ax,ext, label=r'$RPMD \; 2D \; z={}, T=1T_c$'.format(z),color='c', log=True,linewidth=1)
-	slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,1.0,2.0)
+	#plot_1D(ax,ext, label=r'$RPMD \; 2D \; z={}, T=1T_c$'.format(z),color='c', log=True,linewidth=1)
+	#slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,1.0,2.0)
 	#ax.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k')
-	print('slope',slope/2)
+	#print('slope',slope/2)
 
-if(1):
+if(0):
 	dt=0.005
 	corrkey = 'OTOC'
 	enskey ='mc'#'thermal'

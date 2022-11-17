@@ -13,7 +13,7 @@ import os
 dim=2
 
 lamda = 2.0
-g = 0.02
+g = 0.08
 
 Vb = lamda**4/(64*g)
 
@@ -25,21 +25,21 @@ z = 1.0
 pes = quartic_bistable(alpha,D,lamda,g,z)
 
 Tc = 0.5*lamda/np.pi
-times = 10.0#0.6
+times = 3.0#0.6
 T = times*Tc
 
 m = 0.5
 N = 1000
 dt_therm = 0.05
-dt = 0.02#0.002
+dt = 0.002#0.002
 time_therm = 50.0
-time_total = 20.0#5.0
+time_total = 5.0#5.0
 
 method = 'Classical'
 potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
 sysname = 'Selene'		
 Tkey = 'T_{}Tc'.format(times)
-corrkey = 'qq_TCF'#'OTOC'
+corrkey = 'OTOC'
 enskey = 'thermal'
 	
 path = os.path.dirname(os.path.abspath(__file__))
@@ -72,12 +72,12 @@ Sim_class = SimUniverse(method,path,sysname,potkey,corrkey,enskey,Tkey)
 Sim_class.set_sysparams(pes,T,m,dim)
 Sim_class.set_simparams(N,dt_therm,dt)
 Sim_class.set_methodparams(nbeads=1)
-Sim_class.set_ensparams(tau0=1.0,qlist=qlist)
+Sim_class.set_ensparams(tau0=1e-2)#,qlist=qlist)
 Sim_class.set_runtime(time_therm,time_total)
 
 start_time=time.time()
 func = partial(Sim_class.run_seed)
-seeds = range(100)
+seeds = range(100,1000)
 seed_split = chunks(seeds,10)
 
 param_dict = {'Temperature':Tkey,'CType':corrkey,'m':m,\

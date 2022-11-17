@@ -11,17 +11,18 @@ dim = 1
 
 if(1): #Double well potential
 	lamda = 2.0
-	g = 0.08
+	g = 0.02#8
 	Vb = lamda**4/(64*g)
 
 	Tc = lamda*(0.5/np.pi)
-	times = 3.0
+	times = 20.0#0.6
 	T = times*Tc
 	beta=1/T
+	print('T',T)
 
 	m = 0.5
 	N = 1000
-	dt = 0.002
+	dt = 0.005
 
 	time_total = 5.0#
 
@@ -58,7 +59,7 @@ if(0): #Morse
 	Vb = D/3
 
 	print('alpha, w_m', alpha, Vb/w_m)
-	T = 3.18*0.3
+	T = 3.18#*0.3
 	beta = 1/T
 	potkey = 'morse'
 	Tkey = 'T_{}'.format(T)
@@ -80,11 +81,11 @@ Cext = '{}/classical/Datafiles/'.format(path)
 rpext = '{}/rpmd/Datafiles/'.format(path)
 
 #Simulation specifications
-corrkey = 'OTOC'#'qq_TCF'
+corrkey = 'qp_TCF'
 syskey = 'Selene'
 
-if(1):#RPMD
-	nbeads = 16
+if(0):#RPMD
+	nbeads = 1
 	beadkey = 'nbeads_{}_'.format(nbeads)
 	if(1): ##Collect files of thermal ensembles
 		methodkey = 'RPMD'
@@ -105,7 +106,7 @@ if(1):#RPMD
 	if(0): ##Collect files of microcanonical ensembles
 		methodkey = 'RPMD'
 		enskey  = 'mc'
-		E = 3.18
+		E = 1.3
 		Ekey = 'E_{}'.format(E)
 		kwlist = [enskey,methodkey,corrkey,syskey,potkey,Tkey,beadkey,Ekey]
 		
@@ -118,7 +119,7 @@ if(1):#RPMD
 		plt.show()
 		store_1D_plotdata(tarr,OTOCarr,'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}_{}'.format(enskey,corrkey,potkey,Tkey,nbeads,dt,Ekey),rpext)
 
-	if(1): ##Histograms of thermal ensembles
+	if(0): ##Histograms of thermal ensembles
 		kwqlist = ['Thermalized_rp_qcart','nbeads_{}'.format(nbeads), 'beta_{}'.format(beta), potkey]
 		kwplist = ['Thermalized_rp_pcart','nbeads_{}'.format(nbeads), 'beta_{}'.format(beta), potkey]
 		
@@ -229,13 +230,17 @@ if(1):#RPMD
 		plt.plot(countarr,data_arr)
 		plt.show()
 
-if(0): ##Classical
+if(1): ##Classical
+	sigma = 10.0
+	q0 = 0.0
+	#potkey = 'FILT_{}_g_{}_sigma_{}_q0_{}'.format(lamda,g,sigma,q0)
+	
 	if(1):
 		methodkey = 'Classical'
 		enskey = 'thermal'
-		corrkey = 'qq_TCF'#'singcomm'#'OTOC'
+		corrkey = 'OTOC'#'qq_TCF'#'singcomm'#'OTOC'
 	
-		E = 4.09#3.125#2.125#
+		#E = 4.09#3.125#2.125#
 		kwlist = [enskey,methodkey,corrkey,syskey,potkey,Tkey]#,'E_{}_'.format(E)]
 		
 		tarr,OTOCarr,stdarr = seed_collector(kwlist,Cext,tarr,OTOCarr)

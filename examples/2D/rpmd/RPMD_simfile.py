@@ -25,15 +25,15 @@ if(1): ### 2D Double well
 	pes = quartic_bistable(alpha,D,lamda,g,z)
 
 	Tc = 0.5*lamda/np.pi
-	times = 10.0
+	times = 2.0
 	T = times*Tc
 
 	m = 0.5
 	N = 1000
 	dt_therm = 0.05
-	dt = 0.02
+	dt = 0.002
 	time_therm = 50.0
-	time_total = 20.0
+	time_total = 5.0
 	nbeads = 1
 
 	potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
@@ -63,7 +63,7 @@ path = os.path.dirname(os.path.abspath(__file__))
 
 method = 'RPMD'
 sysname = 'Selene'		
-corrkey = 'qq_TCF'#'OTOC'
+corrkey = 'OTOC'#'pq_TCF'#'OTOC'
 enskey = 'thermal'
 ### -----------------------------------------------------------------------------
 E = T
@@ -93,12 +93,12 @@ Sim_class = SimUniverse(method,path,sysname,potkey,corrkey,enskey,Tkey)
 Sim_class.set_sysparams(pes,T,m,dim)
 Sim_class.set_simparams(N,dt_therm,dt)
 Sim_class.set_methodparams(nbeads=nbeads)
-Sim_class.set_ensparams(tau0=1e-2,pile_lambda=1000.0,qlist=qlist)
+Sim_class.set_ensparams(tau0=1.0,pile_lambda=1000.0,qlist=qlist)
 Sim_class.set_runtime(time_therm,time_total)
 
 start_time=time.time()
 func = partial(Sim_class.run_seed)
-seeds = range(100)
+seeds = range(100,200)
 seed_split = chunks(seeds,10)
 
 param_dict = {'Temperature':Tkey,'CType':corrkey,'m':m,\

@@ -81,13 +81,14 @@ def plot_Cn(path,alpha,D,lamda,g,z,n,ax,lbltxt,basis_N=100):
 	C = OTOC_f_2D_omp_updated.otoc_tools.corr_mc_arr_t(vecs,DVR.m,x_arr,DVR.dx,DVR.dy,k_arr,vals,n+1,m_arr,t_arr,'xxC',OTOC_arr)
 	ax.plot(t_arr, np.log(abs(C)), label=lbltxt)
 
-def plot_thermal_OTOC(path,alpha,D,lamda,g,z,beta,ax,lbltxt,basis_N=50,n_eigen=20,k=1.0,reg='Kubo'):
+def plot_thermal_OTOC(path,alpha,D,lamda,g,z,beta,ax,lbltxt,basis_N=50,n_eigen=20,k=1.0,reg='Kubo',t_arr=None):
 	vals,vecs,DVR = load_data(path,alpha,D,lamda,g,z,k)
 	x_arr = DVR.pos_mat(0)
 	k_arr = np.arange(basis_N) +1
 	m_arr = np.arange(basis_N) +1
 
-	t_arr = np.linspace(0.0,5.0,1000)
+	if(t_arr is None):
+		t_arr = np.linspace(0.0,5.0,1000)
 	OTOC_arr = np.zeros_like(t_arr)+0j 
 	
 	if(reg=='Kubo'):
@@ -101,23 +102,25 @@ def plot_thermal_OTOC(path,alpha,D,lamda,g,z,beta,ax,lbltxt,basis_N=50,n_eigen=2
 	store_1D_plotdata(t_arr,CT,fname,'{}/Datafiles'.format(path))
 	#ax.plot(t_arr,np.log(abs(CT)), label=lbltxt)
 
-def plot_thermal_TCF(path,alpha,D,lamda,g,z,beta,ax,lbltxt,basis_N=50,n_eigen=20,k=1.0,reg='Kubo',tcftype='qq1'):
+def plot_thermal_TCF(path,alpha,D,lamda,g,z,beta,ax,lbltxt,basis_N=50,n_eigen=20,k=1.0,reg='Kubo',tcftype='qq1',t_arr=None):
 	vals,vecs,DVR = load_data(path,alpha,D,lamda,g,z,k)
 	x_arr = DVR.pos_mat(0)
 	k_arr = np.arange(basis_N) +1
 	m_arr = np.arange(basis_N) +1
 
-	t_arr = np.linspace(0.0,20.0,1000)
+	if(t_arr is None):
+		t_arr = np.linspace(0.0,20.0,1000)
 	OTOC_arr = np.zeros_like(t_arr)+0j 
 	
 	if(reg=='Kubo'):
-		CT = OTOC_f_2D_omp_updated.otoc_tools.therm_corr_arr_t(vecs,DVR.m,x_arr,DVR.dx,DVR.dy,k_arr,vals,m_arr,t_arr,beta,n_eigen,'qq1','kubo',OTOC_arr)
+		CT = OTOC_f_2D_omp_updated.otoc_tools.therm_corr_arr_t(vecs,DVR.m,x_arr,DVR.dx,DVR.dy,k_arr,vals,m_arr,t_arr,beta,n_eigen,tcftype,'kubo',OTOC_arr)
 	elif(reg=='Standard'):	
-		CT = OTOC_f_2D_omp_updated.otoc_tools.therm_corr_arr_t(vecs,DVR.m,x_arr,DVR.dx,DVR.dy,k_arr,vals,m_arr,t_arr,beta,n_eigen,'qq1','stan',OTOC_arr)
+		CT = OTOC_f_2D_omp_updated.otoc_tools.therm_corr_arr_t(vecs,DVR.m,x_arr,DVR.dx,DVR.dy,k_arr,vals,m_arr,t_arr,beta,n_eigen,tcftype,'stan',OTOC_arr)
 	elif(reg=='Symmetric'):
-		CT = OTOC_f_2D_omp_updated.otoc_tools.lambda_corr_arr_t(vecs,DVR.m,x_arr,DVR.dx,DVR.dy,k_arr,vals,m_arr,t_arr,beta,n_eigen,'qq1',0.5,OTOC_arr)
+		CT = OTOC_f_2D_omp_updated.otoc_tools.lambda_corr_arr_t(vecs,DVR.m,x_arr,DVR.dx,DVR.dy,k_arr,vals,m_arr,t_arr,beta,n_eigen,tcftype,0.5,OTOC_arr)
 	potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
-	fname = 'Quantum_{}_qq_TCF_{}_beta_{}_neigen_{}_basis_{}'.format(reg,potkey,beta,n_eigen,basis_N)
+	fname = 'Quantum_{}_{}_TCF_{}_beta_{}_neigen_{}_basis_{}'.format(reg,tcftype[:2],potkey,beta,n_eigen,basis_N)
+	print('fname',fname)
 	store_1D_plotdata(t_arr,CT,fname,'{}/Datafiles'.format(path))
 	ax.plot(t_arr,np.log(abs(CT)), label=lbltxt)
 

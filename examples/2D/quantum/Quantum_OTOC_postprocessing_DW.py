@@ -39,17 +39,18 @@ alpha_list2 = [0.382]#,0.45,0.52]#,0.53,0.54,0.55]#,0.6]
 alpha_list3 = [0.52]
 alpha_list4 = [1.147]
 
-if(1): # b_nm,C_n for different alpha
+if(0): # b_nm,C_n for different alpha
 	#for z in [1.0]:#0.0,0.5,1.0]:
 		#print('z',z) 
 		#plot_thermal_OTOC(path,alpha,D,lamda,g,z,beta,ax,lbltxt=r'$\z={}$'.format(z),basis_N=50,n_eigen=20,reg='Kubo')
 
-	for times in [10.0]:#0.6,0.95,10.0]:#[1.0,1.1,1.2,1.3,1.4,1.5]:
+	for times in [1.6,1.8,2.0,2.2,2.4,2.6,2.8]:#[3.0,0.95,0.6]:#np.arange(0.7,1.5,0.1):#[3.0]:#0.6,0.95,10.0]:#[1.0,1.1,1.2,1.3,1.4,1.5]:
 		T = times*Tc
-		print('T', times)
 		beta = 1/T
-		#plot_thermal_OTOC(path,alpha,D,lamda,g,z,beta,ax,lbltxt=r'$\z={}$'.format(z),basis_N=50,n_eigen=20,reg='Kubo')
-		plot_thermal_TCF(path,alpha,D,lamda,g,z,beta,ax,lbltxt=r'$T={}Tc$'.format(times),basis_N=140,n_eigen=120,reg='Kubo')
+		print('T', times,beta)	
+		t_arr = np.linspace(0.0,5.0,1000)
+		plot_thermal_OTOC(path,alpha,D,lamda,g,z,beta,ax,lbltxt=r'z={}'.format(z),basis_N=70,n_eigen=40,reg='Kubo')
+		#plot_thermal_TCF(path,alpha,D,lamda,g,z,beta,ax,lbltxt=r'$T={}Tc$'.format(times),basis_N=100,n_eigen=70,reg='Kubo', t_arr=t_arr,tcftype='qp1')
 
 	n=8#8
 	M=2
@@ -96,13 +97,14 @@ if(1): # b_nm,C_n for different alpha
 	plt.xlabel(r'$t$')
 	plt.ylabel(r'$C_T(t)$')
 
+
 if(0): # b_nm for different n,m's
 	for M in [3,8,9]:#range(5):
 		for n in [3,8,9]:#range(20):	
 			#plot_wf(path,alpha,D,lamda,g,z,n)	
 			plot_bnm(path,alpha,D,lamda,g,z,n,M,ax,lbltxt=r'$n,m={},{}$'.format(n,M))
 
-if(0):
+if(1):
 	def get_cmap(n, name='hsv'):
 		'''Returns a function that maps each index in 0, 1, ..., n-1 to a distinct 
 		RGB color; the keyword argument name must be a standard mpl colormap name.'''
@@ -111,23 +113,51 @@ if(0):
 	qext = '/home/vgs23/PISC/examples/2D/quantum/Datafiles/'
 	potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
 
-
-	fig,ax = plt.subplots()
-	T_arr = [0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5]#np.around(np.arange(0.7,0.951,0.05),2)
+	T_arr = np.arange(0.7,1.5,0.1)#[0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5]#np.around(np.arange(0.7,0.951,0.05),2)
+	T_arr = [T_arr[1],T_arr[2],0.95,T_arr[3],T_arr[5],T_arr[7],1.8,2.2,2.6,3.0]
 	cmap = get_cmap(len(T_arr))
 	print('cmap')
 	lamda_arr=[]
-	for times in T_arr:#zip(T_arr,cmap):#['k','r','g','b','m','y']):
+	t_arr = np.linspace(0.0,5.0,1000)
+		
+	for times,c in zip(T_arr,['k','r','g','b','m','y','c','tomato','olivedrab','slateblue','orangered','khaki','indianred','crimson','r']):
 		T = times*Tc
 		print('times', times)
 		beta = 1/T
-		ext = 'Quantum_Kubo_OTOC_{}_beta_{}_neigen_{}_basis_{}'.format(potkey,beta,20,50)
+		ext = 'Quantum_Kubo_OTOC_{}_beta_{}_neigen_{}_basis_{}'.format(potkey,beta,40,70)
+		print('ext',ext)
+		data = read_1D_plotdata('{}/{}.txt'.format(qext,ext))
 		ext =qext+ext
-		#plot_1D(ax,ext,label='T = {}Tc'.format(times),color=c, log=True,linewidth=2)
-		slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,1.25,2.1)
+		plot_1D(ax,ext,label='T = {}Tc'.format(np.around(times,2)),color=c, log=True,linewidth=2)
+		index = np.argmin(np.abs(np.log(data[10:,1])))
+		tst = data[index+10,0]
+		print('tst',tst) 
+		slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,tst,tst+0.55)
 		lamda_arr.append(slope)
+		ax.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k')
 
-	store_1D_plotdata(T_arr,lamda_arr,'Quantum_Lyapunov_exponent_{}'.format(potkey),'{}/Datafiles'.format(path))
+	if(0):
+		times = 0.95
+		T_arr.append(times)
+		T=times*Tc
+		beta=1/T
+		ext = 'Quantum_Kubo_OTOC_{}_beta_{}_neigen_{}_basis_{}'.format(potkey,beta,40,70)
+		print('ext',ext)
+		ext =qext+ext
+		plot_1D(ax,ext,label='T = {}Tc'.format(times),color=c, log=True,linewidth=2)
+		slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,1.2,2.1)
+		lamda_arr.append(slope)
+		ax.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k')
+	plt.legend(ncol=2)
+	plt.show()
 
-plt.legend()
+	plt.scatter(T_arr,lamda_arr)
+	plt.plot(T_arr,lamda_arr)
+	plt.xlabel(r'$T$ (in units of $T_c$)')
+	plt.ylabel(r'$\lambda_q$')
+	plt.show()
+	
+	print(T_arr,lamda_arr)	
+	store_1D_plotdata(T_arr,lamda_arr,'Quantum_Lyapunov_exponent_{}_ext_2'.format(potkey),'{}/Datafiles'.format(path))
+
 plt.show()

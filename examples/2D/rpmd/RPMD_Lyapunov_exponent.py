@@ -70,8 +70,8 @@ def run_var(sim,dt,time_run,tau,norm):
 			sim.step(mode="nve",var='variation')
 		#calculate centroid
 		cent_xy=sim.rp.q[...,0]/nbeads**0.5
-		qx_cent.append(cent_xy[0,0])
-		qy_cent.append(cent_xy[0,1])
+		#qx_cent.append(cent_xy[0,0])
+		#qy_cent.append(cent_xy[0,1])
 		#calculate w after nsteps
 		dp_cent=sim.rp.dp[...,0]
 		dq_cent=sim.rp.dq[...,0]
@@ -106,25 +106,48 @@ nbeads=32#32#32
 #print('dq,dp',dp,dq)
 
 
-
-
-rngSeed = 1
+rngSeed = 10
 
 lamda_arr  = []
+Hess_arr = []
 T_arr = np.around(np.arange(0.7,0.951,0.05),2)
-T_arr = np.append(T_arr,[0.97,0.99])
+#T_arr = np.append(T_arr,[0.97,0.99])
+
+qcart = read_arr('Instanton_{}_{}_nbeads_{}'.format(potkey,'T_0.9Tc',32),'{}/Datafiles'.format(path)) #instanton	
+data = 	read_1D_plotdata('{}/Datafiles/Yair_090Tc_n32.txt'.format(path)) #instanton
+
+#plt.scatter(qcart[:,0],qcart[:,1])
+#plt.scatter(data[:,0],data[:,1])
+#plt.show()
+
+#print('Pot Yair', data[:,2].sum()*0.0367493)
+
 if(0):
-	for times in T_arr:
+	for times in [0.9]:#T_arr:
 		Tkey='T_{}Tc'.format(times)
 		T=times*Tc
-		qcart = read_arr('Instanton_{}_{}_nbeads_{}'.format(potkey,Tkey,nbeads),'{}/Datafiles'.format(path)) #instanton
-		
-		store_1D_plotdata(qcart[0,0,:],qcart[0,1,:],'Instanton_{}_{}_nbeads_{}'.format(potkey,Tkey,nbeads) ,'{}/Datafiles'.format(path))
+		qcart = read_arr('Instanton_{}_{}_nbeads_{}'.format(potkey,Tkey,nbeads),'{}/Datafiles'.format(path)) #instanton	
+		qcartarr = 	read_arr('Instanton_{}_{}_nbeads_{}'.format(potkey,Tkey,nbeads),'{}/Datafiles'.format(path)) #instanton
+
+		sim=RP_Simulation()
+		rng = np.random.default_rng(rngSeed)
+		ens = Ensemble(beta=1/T,ndim=dim)
+		motion = Motion(dt=dt,symporder=2)#4
+		propa = Symplectic_order_II()#IV
+		rp=RingPolymer(qcart=qcart,m=m)
+		rp.bind(ens,motion,rng)
+		therm = PILE_L(tau0=1.0,pile_lambda=100.0)#only important due to initalization 
+		sim.bind(ens,motion,rng,rp,pes,propa,therm)
+
+		print(pes.potential_xy(qcart[0,0,0],qcart[0,1,0]))
+		#print('PES', pes.potential(qcart)[0,0])
+		pot = pes.potential(qcart)[0]
+		print('pot', pot.sum())
+		#store_1D_plotdata(qcart[0,0,:],qcart[0,1,:],'Instanton_{}_{}_nbeads_{}'.format(potkey,Tkey,nbeads) ,'{}/Datafiles'.format(path),ebar=pot)
 
 	print('Done')
 
 for times in T_arr:
-	print('Temp',times)
 	Tkey='T_{}Tc'.format(times)
 	T=times*Tc
 
@@ -136,20 +159,24 @@ for times in T_arr:
 	#xc_dev = q_nm[0,0,0]
 	xc_dev = qcart.sum(axis=2)[0,0]
 
-	print('xc', xc_dev,q_nm[0,0,0])
+	#print('xc', xc_dev,q_nm[0,0,0])
 		
 	pcart=np.zeros_like(qcart)
 	pcart[:,0,:] = -xc_dev
-
+	
+	rng = np.random.default_rng(rngSeed)
+	
 	dq=np.zeros_like(qcart)
 	dp=np.zeros_like(pcart)
-	dq[:,0,0]=-1e-3
-	dp[:,0,0]=1e-3
+	dq[:,0,0]=-1e-4
+	dp[:,0,0]=1e-4
+
+	dp[:,1,0]=1e-4*rng.uniform(-1,1)
+	dq[:,1,0]=1e-4*rng.uniform(-1,1)
 
 	#------------------------------------------------------------------------------
 	#Set up the simulation
 	sim=RP_Simulation()
-	rng = np.random.default_rng(rngSeed)
 	ens = Ensemble(beta=1/T,ndim=dim)
 	motion = Motion(dt=dt,symporder=2)#4
 	propa = Symplectic_order_II()#IV
@@ -158,14 +185,19 @@ for times in T_arr:
 	therm = PILE_L(tau0=1.0,pile_lambda=100.0)#only important due to initalization 
 	sim.bind(ens,motion,rng,rp,pes,propa,therm)
 
+	Hess = (rp.ddpot+pes.ddpot).swapaxes(2,3).reshape(len(rp.ddpot)*2*32,len(rp.ddpot)*2*32)
+	vals,vecs = np.linalg.eigh(Hess)
+	Hess_arr.append(-vals[0])
+	#print('Hess',vals[:3])	
+
 	q0 = q_nm[:,:,0]
 	rg = np.mean(np.sum((qcart-q0[:,:,None])**2,axis=1),axis=1)
-	print('potential', (rp.pot+pes.pot.sum())/nbeads,rg)
+	#print('potential', (rp.pot+pes.pot.sum())/nbeads,rg)
 	tarr,mLCE,qx_cent,qy_cent=run_var(sim,dt,time_run,tau,norm)
-	fig,ax=plt.subplots(3,sharex=True)
+	#fig,ax=plt.subplots(3,sharex=True)
 
 	lmax = max(mLCE)
-	print('mLCE', lmax) 
+	print('Temp',times, 'mLCE', lmax) 
 	#fname = 'Lambda_max_{}_{}_{}'.format(potkey,Tkey,nbeads)
 	#f = open('{}/Datafiles/{}.txt'.format(path,fname),'a')
 	#f.write(str(rngSeed) + "  " + str(lmax) + '\n')
@@ -173,14 +205,15 @@ for times in T_arr:
 
 	lamda_arr.append(lmax)
 
-	ax[0].plot(tarr,mLCE)
-	ax[1].plot(tarr,qx_cent)
-	ax[2].plot(tarr,qy_cent)
-	plt.show()
+	#ax[0].plot(tarr,mLCE)
+	#ax[1].plot(tarr,qx_cent)
+	#ax[2].plot(tarr,qy_cent)
+	#plt.show()
 
-store_1D_plotdata(T_arr,lamda_arr,'RPMD_Lyapunov_exponent_{}_nbeads_{}_ext'.format(potkey,nbeads),'{}/Datafiles'.format(path))
+#store_1D_plotdata(T_arr,lamda_arr,'RPMD_Lyapunov_exponent_{}_nbeads_{}_ext_2'.format(potkey,nbeads),'{}/Datafiles'.format(path))
 
 plt.scatter(T_arr,lamda_arr,marker='x',color='r')
+plt.scatter(T_arr,Hess_arr,color='g')
 T_ext = np.arange(1.0,10.1,0.5)
 lamda_ext = 2.0*np.ones_like(T_ext)
 plt.scatter(T_arr,lamda_arr,marker='x',color='b')

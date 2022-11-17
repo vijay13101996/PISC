@@ -2,6 +2,8 @@ import numpy as np
 from PISC.utils.readwrite import read_1D_plotdata
 import os
 from pathlib import Path
+from scipy.odr import *
+from scipy.optimize import *
 
 def pairwise_swap(a,l):
 	tempodd = a[...,1:l:2].copy()
@@ -32,21 +34,71 @@ def hess_mul(ddpot,arr_i,arr_o,rp,dt):
 	
 	#print('ddpot',np.around(ddpot[0,1,0],2))
 	#print('hess', np.around(hess[0],2))
-	
-def find_OTOC_slope(fname,tst,tend):
-	data = read_1D_plotdata('{}.txt'.format(fname))
-	t_arr = data[:,0]
-	OTOC_arr = np.log(abs(data[:,1]))
 
+def linear(x,m,c):
+	return m*x + c
+	
+def find_OTOC_slope(fname,tst,tend,witherror=False,return_cov=False):
+	data = read_1D_plotdata('{}.txt'.format(fname))
+	t_arr = np.real(data[:,0])
+	OTOC_arr = np.log(abs(data[:,1]))
+			
 	ist = (np.abs(t_arr - tst)).argmin()
 	iend = (np.abs(t_arr - tend)).argmin()
 
 	x_trunc = t_arr[ist:iend]
 	y_trunc = OTOC_arr[ist:iend]
-	slope,ic = np.polyfit(x_trunc,y_trunc,1)
-	print('slope',slope)
+	p,V = np.polyfit(x_trunc,y_trunc,1,cov=True)
+	slope, ic = p
+	print('slope, ic, cov',slope,ic,V[0,0]**0.5,V[1,1]**0.5)
+	if(witherror):
+		stdarr = np.real(data[:,2])
+		yerr_trunc = stdarr[ist:iend]
+		if(0):
+			popt,pcov =curve_fit(linear, x_trunc, y_trunc, sigma=yerr_trunc, absolute_sigma=True)		
+			slope,ic = popt
+			print('slope with scipy', slope)
+			print('covariance', pcov[0,0]**0.5, pcov[1,1]**0.5)
+		if(1):
+			p,V = np.polyfit(x_trunc,y_trunc,1,w=1/yerr_trunc,cov='unscaled')
+			slope, ic = p
+			print('slope with polyfit',slope)
+			print('covariance',V[0,0]**0.5,V[1,1]**0.5)
 
-	return slope,ic,x_trunc,y_trunc
+	if return_cov:
+		return slope,ic,x_trunc,y_trunc,V
+	else:
+		return slope,ic,x_trunc,y_trunc
+
+def estimate_OTOC_slope(kwlist,datapath,tarr,Carr,tst,tend,allseeds=True,seedcount=None,logerr=True):
+	flist = []
+	print('kwlist',kwlist)
+	for fname in os.listdir(datapath):
+		if all(kw in fname for kw in kwlist):
+			#print('f',fname)
+			flist.append(fname)
+
+	count=0
+	if(allseeds is False):	
+		flist=flist[:seedcount]
+	slope_arr = []
+
+	for f in flist:
+		data = read_1D_plotdata('{}/{}'.format(datapath,f))
+		t_arr = np.real(data[:,0])
+		OTOC_arr = np.log(abs(data[:,1]))
+		ist = (np.abs(t_arr - tst)).argmin()
+		iend = (np.abs(t_arr - tend)).argmin()
+
+		x_trunc = t_arr[ist:iend]
+		y_trunc = OTOC_arr[ist:iend]
+		slope,ic = np.polyfit(x_trunc,y_trunc,1)	
+		slope_arr.append(slope)
+		count+=1
+
+	mean = np.mean(slope_arr)
+	stderr = np.std(slope_arr)/np.sqrt(len(slope_arr))
+	print('mean, std error', mean, stderr)
 
 def seed_collector(kwlist,datapath,tarr,Carr,allseeds=True,seedcount=None,logerr=True):
 	flist = []
@@ -70,12 +122,12 @@ def seed_collector(kwlist,datapath,tarr,Carr,allseeds=True,seedcount=None,logerr
 	Carr_stack = np.array(Carr_stack)
 	mean = np.mean(Carr_stack,axis=0)
 	if(logerr):
-		std = np.std(np.log(Carr_stack),axis=0) 
+		stderr = np.std(np.log(Carr_stack),axis=0)#/np.sqrt(len(Carr_stack))
 	else:
-		std = np.std(Carr_stack,axis=0)
+		stderr = np.std(Carr_stack,axis=0)#/np.sqrt(len(Carr_stack))
 	print('count',count)
 	Carr[:] = mean
-	return tarr,Carr,std	
+	return tarr,Carr,stderr
 
 def seed_finder(kwlist,datapath,allseeds=True,sort=True,dropext=False):
 	flist = []
