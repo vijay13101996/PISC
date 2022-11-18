@@ -1,5 +1,5 @@
 import numpy as np
-import PISC
+#import PISC
 from PISC.engine.integrators import Symplectic_order_II, Symplectic_order_IV, Runge_Kutta_order_VIII
 from PISC.engine.beads import RingPolymer
 from PISC.engine.ensemble import Ensemble

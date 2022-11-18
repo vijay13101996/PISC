@@ -12,7 +12,7 @@ from PISC.engine.simulation import RP_Simulation, Matsubara_Simulation
 from matplotlib import pyplot as plt
 from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata
 import time     
-                
+start_time=time.time()                
 dim = 2         
 omega = 1
 g0 = 0.0#1/10.0
