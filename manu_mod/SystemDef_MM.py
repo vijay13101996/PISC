@@ -3,16 +3,17 @@ import os
 import ast
 from PISC.dvr.dvr import DVR2D
 from PISC.potentials.Quartic_bistable import quartic_bistable
-from PISC.utils.colour_tools import lighten_color
+#from PISC.utils.colour_tools import lighten_color
 from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr, read_arr
 from matplotlib import pyplot as plt
 import matplotlib
 
-path = os.path.dirname(os.path.abspath(__file__))	
+path = '/home/vgs23/PISC/examples/2D'#os.path.dirname(os.path.abspath(__file__))	
 qext = '{}/quantum'.format(path)
 Cext = '{}/classical'.format(path)
 
-plt.rcParams.update({'font.size': 10, 'font.family': 'serif','font.serif':'Times New Roman'})
+#plt.rcParams.update({'font.size': 10, 'font.family': 'serif','font.serif':'Times New Roman'})
+plt.rcParams.update({'font.size': 10, 'font.family': 'serif','font.style':'italic','font.serif':'Garamond'})
 matplotlib.rcParams['axes.unicode_minus'] = False
 
 if(1):#
@@ -78,9 +79,9 @@ if(0):  #PES plot
 	ax.set_xlim([-5.1,5.1])
 	ax.set_ylim([-2.5,5.5])
 	fig.set_size_inches(3, 2)
-	fig.savefig('/home/vgs23/Images/PES_D1.pdf', dpi=400,bbox_inches='tight',pad_inches=0.0)
+	fig.savefig('/home/vgs23/Images/PES_D3.pdf', dpi=400,bbox_inches='tight',pad_inches=0.0)
 
-	plt.show()
+	#plt.show()
 
 xgrid = np.linspace(lbx-0.1,ubx+0.1,201)
 ygrid = np.linspace(lby-0.1,uby+0.1,201)
@@ -115,18 +116,18 @@ if(0): #Wavefunction plot
 	fig.set_size_inches(3, 2)
 	plt.axis('image')
 	plt.axis('tight')
-	fig.savefig('/home/vgs23/Images/Wavefunction_D1.pdf', dpi=400,bbox_inches='tight',pad_inches=0.0)
+	fig.savefig('/home/vgs23/Images/Wavefunction_D3.pdf', dpi=400,bbox_inches='tight',pad_inches=0.0)
 
-	plt.show()
+	#plt.show()
 
-if(0): #Husimi section
+if(1): #Husimi section
 	nbasis = 201
-	dist = read_arr('Husimi_section_x_{}_nbasis_{}_E_{}'.format(potkey,nbasis,E_wf), '{}/Datafiles'.format(path))
+	dist = read_arr('Husimi_section_x_{}_nbasis_{}_E_{}'.format(potkey,nbasis,E_wf), '{}/quantum/Datafiles'.format(path))
 
 	dist_gfilt = np.zeros(dist.shape+(3,))
 	dist_gfilt[:,:,1] = 7*dist
 
-	with open('{}/Datafiles/Husimi_input_log_{}.txt'.format(path,potkey)) as f:	
+	with open('{}/quantum/Datafiles/Husimi_input_log_{}.txt'.format(path,potkey)) as f:	
 		for line in f:
 			pass
 		param_dict = ast.literal_eval(line)
@@ -152,11 +153,11 @@ if(0): #Husimi section
 	plt.axis('tight')
 	
 	fig.set_size_inches(3, 2)
-	fig.savefig('/home/vgs23/Images/Husimi_section_D1.pdf', dpi=400,bbox_inches='tight',pad_inches=0.0)
+	fig.savefig('/home/vgs23/Images/Husimi_section_D3.pdf', dpi=400,bbox_inches='tight',pad_inches=0.0)
 
-	plt.show()
+	#plt.show()
 
-if(1): # Poincare section
+if(0): # Poincare section
 	E = 6.52
 
 	fname = 'Classical_Poincare_Section_x_px_{}_E_{}_seed_1'.format(potkey,E)	
@@ -187,12 +188,12 @@ if(1): # Poincare section
 	ax.set_xlim([-4.1,4.1])
 	ax.set_ylim([-3.1,3.1])
 
-	#fig.set_size_inches(3, 2)
-	#fig.savefig('/home/vgs23/Images/Poincare_section_D1.pdf', dpi=400,bbox_inches='tight',pad_inches=0.0)
+	fig.set_size_inches(3, 2)
+	fig.savefig('/home/vgs23/Images/Poincare_section_D3.pdf', dpi=400,bbox_inches='tight',pad_inches=0.0)
 
-	fig.set_size_inches(6, 4)
-	fig.savefig('/home/vgs23/Images/Poincare_section_thesis.pdf', dpi=400,bbox_inches='tight',pad_inches=0.0)
+	#fig.set_size_inches(6, 4)
+	#fig.savefig('/home/vgs23/Images/Poincare_section_thesis.pdf', dpi=400,bbox_inches='tight',pad_inches=0.0)
 
-	plt.show()
+	#plt.show()
 
 

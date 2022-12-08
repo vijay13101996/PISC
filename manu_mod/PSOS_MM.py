@@ -9,7 +9,8 @@ import matplotlib
 
 rpext = '/home/vgs23/PISC/examples/2D/rpmd/Datafiles/'
 Cext ='/home/vgs23/PISC/examples/2D/classical/Datafiles/'
-plt.rcParams.update({'font.size': 10, 'font.family': 'serif','font.serif':'Times New Roman'})
+#plt.rcParams.update({'font.size': 10, 'font.family': 'serif','font.serif':'Times New Roman'})
+plt.rcParams.update({'font.size': 10, 'font.family': 'serif','font.style':'italic','font.serif':'Garamond'})
 matplotlib.rcParams['axes.unicode_minus'] = False
 
 m=0.5
@@ -60,12 +61,12 @@ if(0):
 	#ax.set_xlabel(r'$x$',fontsize=22)
 	
 	fig.set_size_inches(9,3 )
-	fig.savefig('/home/vgs23/Images/PSOS_Classical_D1.pdf'.format(g), dpi=400, bbox_inches='tight')
+	fig.savefig('/home/vgs23/Images/PSOS_Classical_D3.pdf'.format(g), dpi=400, bbox_inches='tight')
 	
 	plt.show()
 
-if(0):
-	fig,ax = plt.subplots(3)
+if(1):
+	fig,ax = plt.subplots(3,1)
 	plt.subplots_adjust(wspace=0, hspace=0)
 
 	Tkey = 'T_{}Tc'.format(10.0)
@@ -118,8 +119,8 @@ if(0):
 	ax[2].tick_params(axis='both', which='major', labelsize=tp_fs)
 
 	fig.set_size_inches(3,6)
-	fig.savefig('/home/vgs23/Images/PSOS_RP_D2.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)
-	plt.show()
+	fig.savefig('/home/vgs23/Images/PSOS_RP_D3.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)
+	#plt.show()
 
 if(0):
 	fig,ax = plt.subplots(1,3)
@@ -175,11 +176,10 @@ if(0):
 	#ax[2].tick_params(axis='both', which='major', labelsize=tp_fs)
 
 	fig.set_size_inches(8,2)
-	fig.savefig('/home/vgs23/Images/PSOS_RP_thesis.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)
-	plt.show()
+	fig.savefig('/home/vgs23/Images/PSOS_RP_D3.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)
+	#plt.show()
 
-
-if(1):
+if(0):
 	fig, ax = plt.subplots()
 	dt = 0.002
 	nbeads = 32
@@ -220,13 +220,12 @@ if(1):
 	ax.set_ylabel(r'$ln \; C_{mc}(t)$',fontsize=yl_fs)
 
 	fig.set_size_inches(3,4)#3, 4)
-	fig.savefig('/home/vgs23/Images/MC_OTOC_D2.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)
+	fig.savefig('/home/vgs23/Images/MC_OTOC_D3.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)
 	
 	#fig.set_size_inches(5,5)#3, 4)	
 	#fig.savefig('/home/vgs23/Images/MC_OTOC_thesis.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)
 	
-
-	plt.show()
+	#plt.show()
 
 
 

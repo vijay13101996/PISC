@@ -188,7 +188,8 @@ for times in T_arr:
 	Hess = (rp.ddpot+pes.ddpot).swapaxes(2,3).reshape(len(rp.ddpot)*2*32,len(rp.ddpot)*2*32)
 	vals,vecs = np.linalg.eigh(Hess)
 	Hess_arr.append(-vals[0])
-	#print('Hess',vals[:3])	
+	w1 = 2*np.pi*times*Tc
+	print('Hessval',-1.0*vals[:3],4-w1**2 ,'\n Hess',Hess[:3,:3])	
 
 	q0 = q_nm[:,:,0]
 	rg = np.mean(np.sum((qcart-q0[:,:,None])**2,axis=1),axis=1)
@@ -220,4 +221,4 @@ plt.scatter(T_arr,lamda_arr,marker='x',color='b')
 
 T_arr = np.arange(0.0,10.0,0.01)
 #plt.scatter(T_arr,2*np.pi*T_arr*Tc)
-plt.show()
+#plt.show()
