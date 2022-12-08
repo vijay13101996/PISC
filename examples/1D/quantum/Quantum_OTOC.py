@@ -75,11 +75,11 @@ if(1): #Asymmetric double well
 
 	lamda = 2.0
 	g = 0.08
-	k = 0.05
+	k = 0.04
 	pes = asym_double_well(lamda,g,k)
 	
 	Tc = lamda*(0.5/np.pi)    
-	times = 1.0#0.8
+	times = 10.0#0.8
 	T_au = times*Tc
 
 	potkey = 'asym_double_well_lambda_{}_g_{}_k_{}'.format(lamda,g,k)
@@ -173,7 +173,7 @@ path = os.path.dirname(os.path.abspath(__file__))
 store_1D_plotdata(t_arr,C_arr,fname,'{}/Datafiles'.format(path))
 
 fig,ax = plt.subplots()
-plt.plot(t_arr,C_arr)
+plt.plot(t_arr,np.log(abs(C_arr)))
 fig.savefig('/home/vgs23/Images/OTOC_temp.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)
 	
 
