@@ -104,6 +104,7 @@ class SimUniverse(object):
 		return tarr, Mqqarr
 
 	def run_R2(self,sim,A='p',B='q',C='q'):
+		""" Run simulation to compute second order (sym and asym) response functions """
 		tarr, qarr, parr, Marr = [], [], [], []
 		dt = self.dt
 		nsteps = int(self.time_run/dt)
