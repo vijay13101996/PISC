@@ -6,8 +6,8 @@ from PISC.engine.ensemble import Ensemble
 from PISC.engine.motion import Motion
 from PISC.engine.thermostat import PILE_L
 from PISC.engine.simulation import RP_Simulation
-from PISC.utils.readwrite import store_1D_plotdata, read_arr
-from PISC.utils.tcf_fft import gen_tcf
+from PISC.utils.readwrite import store_1D_plotdata, store_2D_imagedata, read_arr
+from PISC.utils.tcf_fft import gen_tcf, gen_2pt_tcf
 from PISC.engine.thermalize_PILE_L import thermalize_rp
 from PISC.engine.gen_mc_ensemble import generate_rp
 
@@ -95,13 +95,54 @@ class SimUniverse(object):
 			for i in range(nsteps):
 				sim.step(mode="nve",var='monodromy')
 				if(single):
-					Mqq = np.mean(sim.rp.Mqq[:,0,0,0,0])
+					Mqq = np.mean(sim.rp.Mqp[:,0,0,0,0]) # Change notations when required!
 				else:
 					Mqq = np.mean(abs(sim.rp.Mqq[:,0,0,0,0]**2))
 				tarr.append(sim.t)
 				Mqqarr.append(Mqq)
 
 		return tarr, Mqqarr
+
+	def run_R2(self,sim,A='p',B='q',C='q'):
+		tarr, qarr, parr, Marr = [], [], [], []
+		dt = self.dt
+		nsteps = int(self.time_run/dt)
+	
+		comm_dict = {'qq':[-1.0,'Mqp'],'qp':[1.0,'Mqq'], 'pq':[-1.0,'Mpp'], 'pp':[1.0,'Mpq']}
+		 
+
+		for i in range(nsteps):
+
+			Mqq = sim.rp.Mqq[:,0,0,0,0].copy()
+			Mqp = sim.rp.Mqp[:,0,0,0,0].copy()
+			Mpq = sim.rp.Mpq[:,0,0,0,0].copy()
+			Mpp = sim.rp.Mpp[:,0,0,0,0].copy()
+			q = sim.rp.q[:,:,0].copy()		
+			p = sim.rp.p[:,:,0].copy()
+		
+			Mval = comm_dict[B+A][0]*(vars()[comm_dict[B+A][1]])	
+			tarr.append(sim.t)
+			Marr.append(Mval)
+			qarr.append(q)
+			parr.append(p)
+			sim.step(mode="nve",var='monodromy')
+			
+			
+		# Modify this if not using the default ordering above	
+		print('Propagation completed')
+		
+		op_dict = {'q':qarr,'p':parr}
+		Aarr = np.array(op_dict[A].copy())
+		Barr = np.array(op_dict[B].copy())
+		Carr = np.array(op_dict[C].copy())
+		Marr = np.array(Marr.copy())
+		
+		tarr1,Csym = gen_2pt_tcf(tarr,Carr,Barr,Aarr)  # In the order t2,t1 and t0.
+		tarr2,Casym = gen_2pt_tcf(tarr,Carr,Marr)
+		if(np.alltrue(tarr1 == tarr2)):
+			tarr = tarr1
+
+		return tarr, Csym, Casym
 
 	def run_TCF(self,sim):
 		tarr = []
@@ -146,7 +187,6 @@ class SimUniverse(object):
 			tarr,tcf = gen_tcf(qarr,parr,tarr,corraxis=0)
 		elif(self.corrkey=='pq_TCF'):		
 			tarr,tcf = gen_tcf(parr,qarr,tarr,corraxis=0)
-		
 		return tarr,tcf	
 	
 	def run_seed(self,rngSeed,op=None):
@@ -181,13 +221,18 @@ class SimUniverse(object):
 			self.store_scalar(avg,rngSeed)
 			return
 		elif(self.corrkey == 'singcomm'):
-			tarr, Carr = self.run_OTOC(sim,single=True)	
+			tarr, Carr = self.run_OTOC(sim,single=True)
+		elif(self.corrkey == 'R2'):
+			tarr, Csym, Casym = self.run_R2(sim)
+			self.store_time_series_2D(tarr,Csym,rngSeed,'sym')
+			self.store_time_series_2D(tarr,Casym,rngSeed,'asym')	
+			return
 		else:
 			return	
 	
 		self.store_time_series(tarr,Carr,rngSeed)
 
-	def assign_fname(self,rngSeed):
+	def assign_fname(self,rngSeed,suffix=None):
 		key = [self.method,self.enskey,self.corrkey,self.sysname,self.potkey,self.Tkey,'N_{}'.format(self.N),'dt_{}'.format(self.dt)]
 		fext = '_'.join(key)
 		if(self.method=='Classical'):
@@ -202,10 +247,12 @@ class SimUniverse(object):
 		else:
 			seedext = ''
 
-		if(self.ext_kwlist is None):
+		if(self.ext_kwlist is None and suffix is None):
 			fname = ''.join([fext,methext,seedext])	
-		else:
-			namelst = [fext,methext]
+		elif(self.ext_kwlist is None):
+			fname = ''.join([fext,methext,suffix+'_',seedext])	
+		else:	
+			namelst = [fext,methext,suffix+'_']
 			namelst.append('_'.join(self.ext_kwlist) + '_')
 			namelst.append(seedext)
 			fname = ''.join(namelst)
@@ -215,6 +262,10 @@ class SimUniverse(object):
 	def store_time_series(self,tarr,Carr,rngSeed): 
 		fname = self.assign_fname(rngSeed)	
 		store_1D_plotdata(tarr,Carr,fname,'{}/Datafiles'.format(self.pathname))	
+
+	def store_time_series_2D(self,tarr,Carr,rngSeed,suffix=None): 
+		fname = self.assign_fname(rngSeed,suffix)	
+		store_2D_imagedata(tarr,tarr,Carr,fname,'{}/Datafiles'.format(self.pathname))	
 
 	def store_scalar(self,scalar,rngSeed):
 		# Scalar values are stored in the same filename

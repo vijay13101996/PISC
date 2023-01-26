@@ -42,6 +42,7 @@ w_db = np.sqrt(lamda/m)
 w_m = (2*D*alpha**2/m)**0.5
 E = 1.001*Vb#6.52 #1.001*Vb #+ w_m/2
 
+print('E',E)
 minima = find_minima(m,D,alpha,lamda,g,z)
 xmin,ymin = minima
 print('xmin, ymin,alpha*ymin', xmin, ymin,alpha*ymin)
@@ -61,7 +62,7 @@ qlist = []
 
 
 ### 'nbeads' can be set to >1 for ring-polymer simulations.
-nbeads = 8
+nbeads = 1#8
 PSOS = Poincare_SOS('Classical',pathname,potkey,Tkey)
 PSOS.set_sysparams(pes,T,m,2)
 PSOS.set_simparams(N,dt,dt,nbeads=nbeads,rngSeed=1)	
@@ -96,13 +97,13 @@ if(1):
 		X,PX,Y = PSOS.PSOS_X(y0=0.0)#ymin)
 		plt.scatter(X,PX,s=1)
 		
-	plt.title(r'$\alpha={}$, E=$V_b$+$3\omega_m/2$'.format(alpha) )#$N_b={}$'.format(nbeads))
+	plt.title(r'$\alpha={}$, E={}'.format(alpha,E))#E=$V_b$+$3\omega_m/2$'.format(alpha) )#$N_b={}$'.format(nbeads))
 	plt.xlabel(r'x')
 	plt.ylabel(r'$p_x$')
 	
 	plt.show()
 	#fname = 'Classical_Poincare_Section_x_px_{}_E_{}'.format(potkey,E)
-	store_1D_plotdata(X,PX,fname,'{}/Datafiles'.format(pathname))
+	#store_1D_plotdata(X,PX,fname,'{}/Datafiles'.format(pathname))
 				
 if(0): ## Collect the data from the Poincare section and plot. 
 	Y,PY,X = PSOS.PSOS_Y(x0=xmin)

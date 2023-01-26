@@ -1,15 +1,15 @@
 import numpy as np
 from PISC.utils.plottools import plot_1D
-from PISC.utils.misc import find_OTOC_slope,seed_collector,seed_finder
+from PISC.utils.misc import find_OTOC_slope,seed_collector,seed_finder,seed_collector_imagedata
 from matplotlib import pyplot as plt
 import os
-from PISC.potentials import double_well, quartic, morse
+from PISC.potentials import double_well, quartic, morse, mildly_anharmonic
 from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr, read_arr
 from PISC.utils.nmtrans import FFT
 
 dim = 1
 
-if(1): #Double well potential
+if(0): #Double well potential
 	lamda = 2.0
 	g = 0.02#8
 	Vb = lamda**4/(64*g)
@@ -36,19 +36,39 @@ if(0): #Quartic
 
 	pes = quartic(a)
 
-	T = 1.0/8
+	T = 1.0
 	
 	m = 1.0
 	N = 1000
 	dt_therm = 0.05
-	dt = 0.02
+	dt = 0.05
 
 	time_therm = 50.0
-	time_total = 20.0
+	time_total = 5.0
 
-	potkey = 'TESTquart'.format(a)
+	potkey = 'quartic_a_{}'.format(a)
 	Tkey = 'T_{}'.format(T)
+
+if(1): #Mildly anharmonic
+	omega = 1.0
+	a = 1.0#/10
+	b = 1.0#/100
 	
+	T = 1.0/8#times*Tc
+	
+	m=1.0
+	N = 1000
+	dt_therm = 0.05
+	dt = 0.01
+	
+	time_therm = 50.0
+	time_total = 10.0
+
+	pes = mildly_anharmonic(m,a,b)
+	
+	potkey = 'mildly_anharmonic_a_{}_b_{}'.format(a,b)
+	Tkey = 'T_{}'.format(T)
+
 if(0): #Morse
 	m=0.5
 	D = 9.375
@@ -81,11 +101,11 @@ Cext = '{}/classical/Datafiles/'.format(path)
 rpext = '{}/rpmd/Datafiles/'.format(path)
 
 #Simulation specifications
-corrkey = 'qp_TCF'
+corrkey = 'pq_TCF'#'singcomm' #
 syskey = 'Selene'
 
-if(0):#RPMD
-	nbeads = 1
+if(1):#RPMD
+	nbeads = 8
 	beadkey = 'nbeads_{}_'.format(nbeads)
 	if(1): ##Collect files of thermal ensembles
 		methodkey = 'RPMD'
@@ -230,7 +250,28 @@ if(0):#RPMD
 		plt.plot(countarr,data_arr)
 		plt.show()
 
-if(1): ##Classical
+	if(0):
+		methodkey = 'RPMD'
+		enskey = 'thermal'
+		corrkey = 'R2'
+		suffix = '_sym'
+		kwlist = [methodkey,corrkey,syskey,potkey,Tkey,beadkey,'dt_{}'.format(dt),suffix]
+		
+		X,Y,F = seed_collector_imagedata(kwlist,rpext,tarr)
+
+		#print(Y[:,30],X[:,30])
+		plt.title(r'$\beta={}, N_b={}$'.format(1/T,nbeads))
+		plt.plot(Y[:,30],F[:,30])
+		plt.xlabel('t')
+		plt.ylabel(r'$K_{xxx}^{sym}(t,t\'=3)$')
+		#plt.imshow(F)
+		plt.show()
+		#store_1D_plotdata(tarr,OTOCarr,'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,nbeads,dt),rpext)
+
+
+	
+
+if(0): ##Classical
 	sigma = 10.0
 	q0 = 0.0
 	#potkey = 'FILT_{}_g_{}_sigma_{}_q0_{}'.format(lamda,g,sigma,q0)

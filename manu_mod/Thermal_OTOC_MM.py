@@ -33,9 +33,9 @@ potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,
 
 fig,ax = plt.subplots(1,3)
 
-rpc = 'olivedrab'
-qc = 'darkorange'#'orangered'
-Cc = 'slateblue'
+rpc = 'limegreen'#'olivedrab'
+qc = 'orange'#'orangered'
+Cc = 'darkslateblue'
 
 xl_fs = 10.0
 yl_fs = 10.0
@@ -196,7 +196,8 @@ fig.set_size_inches(5.3, 2)
 fig.legend(loc = (0.35, 0.9),ncol=3, fontsize=le_fs)
 
 fig.savefig('/home/vgs23/Images/Thermal_OTOCs_D3.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)
-#plt.show()
+#plt.gray()
+plt.show()
 
 
 #fig.set_size_inches(8, 2.5)

@@ -1,5 +1,5 @@
 import numpy as np
-from PISC.utils.readwrite import read_1D_plotdata
+from PISC.utils.readwrite import read_1D_plotdata, read_2D_imagedata
 import os
 from pathlib import Path
 from scipy.odr import *
@@ -128,6 +128,37 @@ def seed_collector(kwlist,datapath,tarr,Carr,allseeds=True,seedcount=None,logerr
 	print('count',count)
 	Carr[:] = mean
 	return tarr,Carr,stderr
+
+def seed_collector_imagedata(kwlist,datapath,allseeds=True,seedcount=None):
+	flist = []
+	print('kwlist',kwlist)
+	for fname in os.listdir(datapath):
+		if all(kw in fname for kw in kwlist):
+			#print('f',fname)
+			flist.append(fname)
+
+	count=0
+	if(allseeds is False):	
+		flist=flist[:seedcount]
+	
+	Carr_stack = []
+	X,Y,F = read_2D_imagedata('{}/{}'.format(datapath,flist[0]))
+	Carr = F.copy()
+	Carr_stack.append(F)
+	count+=1
+
+	for f in flist[1:]:
+		X,Y,F = read_2D_imagedata('{}/{}'.format(datapath,f))
+		Carr += F
+		Carr_stack.append(F)
+		count+=1
+
+	Carr_stack = np.array(Carr_stack)
+	mean = np.mean(Carr_stack,axis=0)
+	print('count',count)
+	F[:] = mean
+	return X,Y,F
+
 
 def seed_finder(kwlist,datapath,allseeds=True,sort=True,dropext=False):
 	flist = []

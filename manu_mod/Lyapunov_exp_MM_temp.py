@@ -39,9 +39,9 @@ xl_fs = 10#14
 yl_fs = 10
 tp_fs = 9 #12
 
-rpc = 'olivedrab'
-qc = 'darkorange'#'orangered'
-Cc = 'slateblue'
+rpc = 'limegreen'#'olivedrab'
+qc = 'orange'#'orangered'
+Cc = 'darkslateblue'
 
 fig,ax = plt.subplots()
 
@@ -147,5 +147,5 @@ if(1):
 	fig.savefig('/home/vgs23/Images/RP_lambda_D3.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)	
 	
 
-	#plt.show()
+	plt.show()
 

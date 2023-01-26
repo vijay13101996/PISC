@@ -17,3 +17,4 @@ from PISC.potentials.Quartic_bistable import  quartic_bistable
 from PISC.potentials.Quartic import quartic
 from PISC.potentials.trunc_harmonic import  trunc_harmonic
 from PISC.potentials.asym_double_well_potential import asym_double_well
+from PISC.potentials.mildly_anharmonic import mildly_anharmonic

@@ -7,7 +7,8 @@ import os
 from PISC.utils.plottools import plot_1D
 import matplotlib
 
-plt.rcParams.update({'font.size': 10, 'font.family': 'serif','font.serif':'Times New Roman'})
+#plt.rcParams.update({'font.size': 10, 'font.family': 'serif','font.serif':'Times New Roman'})
+plt.rcParams.update({'font.size': 10, 'font.family': 'serif','font.style':'italic','font.serif':'Garamond'})
 matplotlib.rcParams['axes.unicode_minus'] = False
 
 path = os.path.dirname(os.path.abspath(__file__))
@@ -15,9 +16,9 @@ Cext = '/home/vgs23/PISC/examples/1D/classical/Datafiles/'
 qext = '/home/vgs23/PISC/examples/1D/quantum/Datafiles/'
 rpext = '/home/vgs23/PISC/examples/1D/rpmd/Datafiles/'
 
-xl_fs = 18
-yl_fs = 18
-tp_fs = 16
+xl_fs = 16
+yl_fs = 16
+tp_fs = 14
 le_fs = 10
 ti_fs = 9
 
@@ -63,19 +64,19 @@ Earr = [1.3,3.18]#[1.39,4.09,6.64,12.59]#
 
 for i in range(2): #
 	ax[i,0].set_ylim([0,7.5])#19])
-	ax[i,0].plot(qgrid_inf,potgrid_inf,color='indianred',lw=3)
+	ax[i,0].plot(qgrid_inf,potgrid_inf,color='k',lw=2)
 	qgridl = qgrid[:idxl+1]
 	potgridl = potgrid[:idxl+1]
 	qgridr = qgrid[idxr-1:]
 	potgridr = potgrid[idxr-1:]
-	ax[i,0].plot(qgridl,potgridl,color='slateblue',lw=2)
-	ax[i,0].plot(qgridr,potgridr,color='slateblue',lw=2)
+	ax[i,0].plot(qgridl,potgridl,color='k',lw=2)
+	ax[i,0].plot(qgridr,potgridr,color='k',lw=2)
 
 	for j in range(15):
 		if(j==narr[i]):
 			ax[i,0].axhline(y=vals[j],color='crimson',lw=2.,zorder=10)
 		else:
-			ax[i,0].axhline(y=vals[j],color='khaki',lw=1.5)
+			ax[i,0].axhline(y=vals[j],color='grey',lw=1.5)
 	ax[i,0].axhline(y=Einf, ls='--',color='g')
 	ax[i,0].set_ylabel(r'$V(x)$',fontsize=yl_fs)
 
@@ -101,8 +102,6 @@ for i in range(2): #
 	ax[i,1].tick_params(axis='both', which='major', labelsize=tp_fs)
 
 
-
-
 ax[1,0].set_xlabel(r'$x$',fontsize=xl_fs) #
 ax[1,1].set_xlabel(r'$t$',fontsize=xl_fs) #
 
@@ -119,6 +118,6 @@ ax[1,1].legend(fontsize=le_fs,ncol=1)
 #fig.suptitle('Microcanonical OTOCs for the 1D double well, $\lambda = {}, g={}$'.format(lamda,g),fontsize=20) 	
 plt.subplots_adjust(hspace=0.1,wspace=0.3)
 fig.set_size_inches(8, 8)
-fig.savefig('/home/vgs23/Images/S8_D2.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)
+fig.savefig('/home/vgs23/Images/S8_D3.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)
 plt.show()
 

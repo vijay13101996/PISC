@@ -38,9 +38,9 @@ xl_fs = 12#14
 yl_fs = 12
 tp_fs = 10 #12
 
-rpc = 'olivedrab'
-qc = 'orangered'
-Cc = 'slateblue'
+rpc = 'limegreen'#'olivedrab'
+qc = 'darkorange'#'orangered'
+Cc = 'darkslateblue'
 
 fig,ax = plt.subplots()
 
@@ -130,7 +130,7 @@ if(1):
 	plt.legend()
 	plt.gca().xaxis.set_major_formatter(FormatStrFormatter('%g'))
 	fig.set_size_inches(2.5, 2)
-	fig.savefig('/home/vgs23/Images/RP_lambda_D2.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)
+	#fig.savefig('/home/vgs23/Images/RP_lambda_D3.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)
 	
 	#handles, labels = ax.get_legend_handles_labels()
 	#handles = [h[0] if isinstance(h, container.ErrorbarContainer) else h for h in handles]
@@ -139,5 +139,5 @@ if(1):
 	#fig.set_size_inches(5, 3)
 	#fig.savefig('/home/vgs23/Images/RP_lambda_thesis.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)	
 	
-	#plt.show()
+	plt.show()
 
