@@ -62,11 +62,11 @@ def gen_2pt_tcf(tarr, Carr, Barr, Aarr=None,dt_tcf = 0.1,trans_sym=False):
 			Car = np.asfortranarray(Car)
 			if(Aarr is not None):
 				Aar = np.asfortranarray(Aar)
-				tcf = tcf_fort_tools.tcf_tools.two_pt_3op_tcf(Aar,Bar,Car,tcf_fort)
-			else:	
-				tcf = tcf_fort_tools.tcf_tools.two_pt_2op_tcf(Bar,Car,tcf_fort)
-			#print('corr',tcf)	
+				tcf = tcf_fort_tools_omp.tcf_tools.two_pt_3op_tcf(Aar,Bar,Car,tcf_fort)
+			else:
+				tcf = tcf_fort_tools_omp.tcf_tools.two_pt_2op_tcf(Bar,Car,tcf_fort)
 		if(0): #PYTHON
+			tcf[:] = 0.0
 			for i in range(tlen): #t1 axis
 				for j in range(tlen): #t2 axis
 					#Dot product and Ensemble average in the same order.
@@ -74,6 +74,6 @@ def gen_2pt_tcf(tarr, Carr, Barr, Aarr=None,dt_tcf = 0.1,trans_sym=False):
 						tcf[i,j] = np.mean(np.sum(Car[j]*Bar[i],axis=1),axis=0) 	
 					else:
 						tcf[i,j] = np.mean(np.sum(Car[j]*Bar[i]*Aar[0],axis=1),axis=0)
-			#print('tcf',tcf)
-		return tarr, tcf	
+					
+		return tar, tcf	
 

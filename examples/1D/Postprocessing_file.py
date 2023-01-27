@@ -51,10 +51,10 @@ if(0): #Quartic
 
 if(1): #Mildly anharmonic
 	omega = 1.0
-	a = 1.0#/10
-	b = 1.0#/100
+	a = 1.0/10
+	b = 1.0/100
 	
-	T = 1.0/8#times*Tc
+	T = 1.0#times*Tc
 	
 	m=1.0
 	N = 1000
@@ -62,7 +62,7 @@ if(1): #Mildly anharmonic
 	dt = 0.01
 	
 	time_therm = 50.0
-	time_total = 10.0
+	time_total = 30.0
 
 	pes = mildly_anharmonic(m,a,b)
 	
@@ -94,7 +94,7 @@ tarr = np.arange(0.0,time_total,dt)
 OTOCarr = np.zeros_like(tarr) +0j
 
 #Path extensions
-path = os.path.dirname(os.path.abspath(__file__))	
+path = '/scratch/vgs23/PISC/examples/1D'#os.path.dirname(os.path.abspath(__file__))	
 qext = '{}/quantum/Datafiles/'.format(path)
 cext = '{}/cmd/Datafiles/'.format(path)
 Cext = '{}/classical/Datafiles/'.format(path)
@@ -105,9 +105,9 @@ corrkey = 'pq_TCF'#'singcomm' #
 syskey = 'Selene'
 
 if(1):#RPMD
-	nbeads = 8
+	nbeads = 1
 	beadkey = 'nbeads_{}_'.format(nbeads)
-	if(1): ##Collect files of thermal ensembles
+	if(0): ##Collect files of thermal ensembles
 		methodkey = 'RPMD'
 		enskey = 'thermal'
 
@@ -250,7 +250,7 @@ if(1):#RPMD
 		plt.plot(countarr,data_arr)
 		plt.show()
 
-	if(0):
+	if(1):
 		methodkey = 'RPMD'
 		enskey = 'thermal'
 		corrkey = 'R2'

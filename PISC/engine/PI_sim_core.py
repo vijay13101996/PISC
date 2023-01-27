@@ -103,14 +103,17 @@ class SimUniverse(object):
 
 		return tarr, Mqqarr
 
-	def run_R2(self,sim,A='p',B='q',C='q'):
+	def run_R2(self,sim,A='q',B='q',C='q'):
+		""" Run simulation to compute second order (sym and asym) response functions """
+
+		# IMPORTANT: Be careful when you use it for 2D! There are parts used in this code,
+		# which are 1D-specific.
 		tarr, qarr, parr, Marr = [], [], [], []
 		dt = self.dt
 		nsteps = int(self.time_run/dt)
 	
 		comm_dict = {'qq':[-1.0,'Mqp'],'qp':[1.0,'Mqq'], 'pq':[-1.0,'Mpp'], 'pp':[1.0,'Mpq']}
 		 
-
 		for i in range(nsteps):
 
 			Mqq = sim.rp.Mqq[:,0,0,0,0].copy()
@@ -131,12 +134,14 @@ class SimUniverse(object):
 		# Modify this if not using the default ordering above	
 		print('Propagation completed')
 		
-		op_dict = {'q':qarr,'p':parr}
+		op_dict = {'I':np.ones_like(np.array(qarr)),'q':qarr,'p':parr}
 		Aarr = np.array(op_dict[A].copy())
 		Barr = np.array(op_dict[B].copy())
 		Carr = np.array(op_dict[C].copy())
-		Marr = np.array(Marr.copy())
-		
+
+		Marr = np.array(Marr.copy()) 
+		Marr = Marr[:,:,None] # NEEDS TO CHANGE FOR 2D
+
 		tarr1,Csym = gen_2pt_tcf(tarr,Carr,Barr,Aarr)  # In the order t2,t1 and t0.
 		tarr2,Casym = gen_2pt_tcf(tarr,Carr,Marr)
 		if(np.alltrue(tarr1 == tarr2)):

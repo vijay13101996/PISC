@@ -15,9 +15,9 @@ module tcf_tools
 			Corr = 0.0d0
 			dp = 0.0d0
 			!print*, 'tlen, N, ndim', tlen, N, ndim, shape(B)
-			!$OMP PARALLEL DO PRIVATE(i)	
+			!$OMP PARALLEL DO PRIVATE(i,dp)	
 			do i=1,tlen
-				!$OMP PARALLEL DO PRIVATE(j)
+				!!$OMP PARALLEL DO PRIVATE(j)
 				do j=1,tlen
 					do k=1,N
 						dp = 0.0d0
@@ -28,7 +28,7 @@ module tcf_tools
 					end do
 					Corr(i,j) = Corr(i,j)/N
 				end do
-				!$OMP END PARALLEL DO
+				!!$OMP END PARALLEL DO
 			end do
 			!$OMP END PARALLEL DO
 		end subroutine two_pt_3op_tcf
@@ -42,10 +42,10 @@ module tcf_tools
 			real(kind=8), dimension(tlen,tlen), intent(inout) :: Corr
 			Corr = 0.0d0
 			dp = 0.0d0
-			!print*, 'tlen, N, ndim', tlen, N, ndim, shape(B)
-			!$OMP PARALLEL DO PRIVATE(i)	
+			!print*, 'shape', shape(B), shape(C)
+			!$OMP PARALLEL DO PRIVATE(i, dp)	
 			do i=1,tlen
-				!$OMP PARALLEL DO PRIVATE(j)
+				!!$OMP PARALLEL DO PRIVATE(j)
 				do j=1,tlen
 					do k=1,N
 						dp = 0.0d0
@@ -53,10 +53,11 @@ module tcf_tools
 							dp(k) = dp(k) + C(j,k,d)*B(i,k,d)
 						end do
 						Corr(i,j) = Corr(i,j) + dp(k)
+						!print*, 'k, dpk, fort', k, dp(k)
 					end do
 					Corr(i,j) = Corr(i,j)/N
 				end do
-				!$OMP END PARALLEL DO
+				!!$OMP END PARALLEL DO
 			end do
 			!$OMP END PARALLEL DO
 		end subroutine two_pt_2op_tcf
