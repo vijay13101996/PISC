@@ -105,7 +105,7 @@ corrkey = 'pq_TCF'#'singcomm' #
 syskey = 'Selene'
 
 if(1):#RPMD
-	nbeads = 1
+	nbeads = 4
 	beadkey = 'nbeads_{}_'.format(nbeads)
 	if(0): ##Collect files of thermal ensembles
 		methodkey = 'RPMD'
@@ -258,6 +258,7 @@ if(1):#RPMD
 		kwlist = [methodkey,corrkey,syskey,potkey,Tkey,beadkey,'dt_{}'.format(dt),suffix]
 		
 		X,Y,F = seed_collector_imagedata(kwlist,rpext,tarr)
+		#F/=nbeads
 
 		#print(Y[:,30],X[:,30])
 		plt.title(r'$\beta={}, N_b={}$'.format(1/T,nbeads))
@@ -267,9 +268,6 @@ if(1):#RPMD
 		#plt.imshow(F)
 		plt.show()
 		#store_1D_plotdata(tarr,OTOCarr,'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,nbeads,dt),rpext)
-
-
-	
 
 if(0): ##Classical
 	sigma = 10.0

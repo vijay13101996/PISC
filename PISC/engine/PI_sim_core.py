@@ -103,20 +103,15 @@ class SimUniverse(object):
 
 		return tarr, Mqqarr
 
-<<<<<<< HEAD
 	def run_R2(self,sim,A='q',B='q',C='q'):
 		""" Run simulation to compute second order (sym and asym) response functions """
-
 		# IMPORTANT: Be careful when you use it for 2D! There are parts used in this code,
 		# which are 1D-specific.
-=======
-	def run_R2(self,sim,A='p',B='q',C='q'):
-		""" Run simulation to compute second order (sym and asym) response functions """
->>>>>>> origin/feat/nls
+	
 		tarr, qarr, parr, Marr = [], [], [], []
 		dt = self.dt
 		nsteps = int(self.time_run/dt)
-	
+		sqrtnbeads = sim.rp.nbeads**0.5
 		comm_dict = {'qq':[-1.0,'Mqp'],'qp':[1.0,'Mqq'], 'pq':[-1.0,'Mpp'], 'pp':[1.0,'Mpq']}
 		 
 		for i in range(nsteps):
@@ -131,12 +126,10 @@ class SimUniverse(object):
 			Mval = comm_dict[B+A][0]*(vars()[comm_dict[B+A][1]])	
 			tarr.append(sim.t)
 			Marr.append(Mval)
-			qarr.append(q)
-			parr.append(p)
+			qarr.append(q/sqrtnbeads)  #Needed to define centroids correctly
+			parr.append(p/sqrtnbeads)
 			sim.step(mode="nve",var='monodromy')
-			
-			
-		# Modify this if not using the default ordering above	
+				
 		print('Propagation completed')
 		
 		op_dict = {'I':np.ones_like(np.array(qarr)),'q':qarr,'p':parr}
