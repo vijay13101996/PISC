@@ -4,7 +4,7 @@ from PISC.utils.misc import find_OTOC_slope,seed_collector,seed_finder,seed_coll
 from matplotlib import pyplot as plt
 import os
 from PISC.potentials import double_well, quartic, morse, mildly_anharmonic
-from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr, read_arr
+from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr, read_arr, store_2D_imagedata_column
 from PISC.utils.nmtrans import FFT
 
 dim = 1
@@ -105,7 +105,7 @@ corrkey = 'pq_TCF'#'singcomm' #
 syskey = 'Selene'
 
 if(1):#RPMD
-	nbeads = 4
+	nbeads = 1
 	beadkey = 'nbeads_{}_'.format(nbeads)
 	if(0): ##Collect files of thermal ensembles
 		methodkey = 'RPMD'
@@ -254,20 +254,33 @@ if(1):#RPMD
 		methodkey = 'RPMD'
 		enskey = 'thermal'
 		corrkey = 'R2'
-		suffix = '_sym'
-		kwlist = [methodkey,corrkey,syskey,potkey,Tkey,beadkey,'dt_{}'.format(dt),suffix]
+		suffix = '_asym'
+		kwlist = [methodkey,corrkey,syskey,potkey,Tkey,beadkey,'dt_{}'.format(dt),suffix]#,'qqq']
 		
 		X,Y,F = seed_collector_imagedata(kwlist,rpext,tarr)
+		X[:,len(X)//2+1:] = X[:,:-len(X)//2:-1]
+		Y[len(Y)//2+1:,:] = Y[:-len(Y)//2:-1,:]
+		F[:,len(X)//2+1:] = F[:,:-len(X)//2:-1]
+		F[len(Y)//2+1:,:] = F[:-len(Y)//2:-1,:]
+	
+		X=np.roll(X,len(X)//2,axis=1)
+		Y=np.roll(Y,len(Y)//2,axis=0)	
+		F=np.roll(np.roll(F,len(X)//2,axis=1), len(Y)//2, axis=0)
+				
+		#print('Y', Y.shape, F.shape,X)
 		#F/=nbeads
-
-		#print(Y[:,30],X[:,30])
+		#plt.scatter(X.flatten(), Y.flatten(), c=F.flatten())	
+		#plt.scatter(0,0,c='r')
+		#print('length', X.shape)	
+		#print(Y[:,300+30],X[:,330])
 		plt.title(r'$\beta={}, N_b={}$'.format(1/T,nbeads))
-		plt.plot(Y[:,30],F[:,30])
+		plt.plot(Y[:,330],F[:,330])
 		plt.xlabel('t')
 		plt.ylabel(r'$K_{xxx}^{sym}(t,t\'=3)$')
-		#plt.imshow(F)
+		#plt.imshow(F,extent=[X[0].min(),X[0].max(0),Y[:,0].min(),Y[:,0].max()])	
 		plt.show()
-		#store_1D_plotdata(tarr,OTOCarr,'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,nbeads,dt),rpext)
+		store_2D_imagedata_column(X,Y,F,'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}{}'.format(enskey,corrkey,potkey,Tkey,nbeads,dt,suffix),rpext,extcol=np.zeros_like(X))
+
 
 if(0): ##Classical
 	sigma = 10.0

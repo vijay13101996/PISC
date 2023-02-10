@@ -19,7 +19,7 @@ def gen_tcf(Aarr,Barr,tarr,corraxis=None):
 	tarr = tarr[:len(tcf)]
 	return tarr,tcf
 
-def gen_2pt_tcf(tarr, Carr, Barr, Aarr=None,dt_tcf = 0.1,trans_sym=False):
+def gen_2pt_tcf(dt,tarr, Carr, Barr, Aarr=None,dt_tcf = 0.1,trans_sym=False):
 	# The ordering is C[t2]B[t1]A[t0]. If A is not provided
 	# then it is C[t2]B[t1]. If trans_sym is false, t0 is set to 0
 	# by default, as it a 2-point TCF.
@@ -41,9 +41,6 @@ def gen_2pt_tcf(tarr, Carr, Barr, Aarr=None,dt_tcf = 0.1,trans_sym=False):
 			return tarr, tcf  		
 
 	else:
-		
-		#print('Barr', np.shape(Carr))
-		dt = tarr[1]-tarr[0]
 		stride=1
 		if(dt<dt_tcf):
 			stride = int(dt_tcf//dt)	
@@ -54,7 +51,6 @@ def gen_2pt_tcf(tarr, Carr, Barr, Aarr=None,dt_tcf = 0.1,trans_sym=False):
 			Aar = Aarr[::stride]
 		tlen = len(tar)	
 		tcf = np.zeros((tlen,tlen))
-		#print('Barr after', np.shape(Carr))
 
 		if(1): #FORTRAN	
 			tcf_fort = np.ascontiguousarray(tcf)

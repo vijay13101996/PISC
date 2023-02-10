@@ -34,10 +34,12 @@ class SimUniverse(object):
 		self.m = mass
 		self.dim = dim 
 		
-	def set_simparams(self,N,dt_ens=1e-2,dt=5e-3):	
+	def set_simparams(self,N,dt_ens=1e-2,dt=5e-3,extparam=None):	
 		self.N = N
 		self.dt_ens = dt_ens
 		self.dt = dt
+		if extparam is not None:
+			self.extparam = extparam
 
 	def set_methodparams(self,nbeads=1,gamma=1):
 		if(self.method=='Classical'):
@@ -103,33 +105,50 @@ class SimUniverse(object):
 
 		return tarr, Mqqarr
 
-	def run_R2(self,sim,A='q',B='q',C='q'):
+	def run_R2(self,sim,A='p',B='p',C='q'):
 		""" Run simulation to compute second order (sym and asym) response functions """
 		# IMPORTANT: Be careful when you use it for 2D! There are parts used in this code,
 		# which are 1D-specific.
 	
 		tarr, qarr, parr, Marr = [], [], [], []
 		dt = self.dt
-		nsteps = int(self.time_run/dt)
+		nsteps = int(self.time_run/dt) + 1
 		sqrtnbeads = sim.rp.nbeads**0.5
-		comm_dict = {'qq':[-1.0,'Mqp'],'qp':[1.0,'Mqq'], 'pq':[-1.0,'Mpp'], 'pp':[1.0,'Mpq']}
-		 
-		for i in range(nsteps):
+		#comm_dict = {'qq':[-1.0,'Mqp'],'qp':[1.0,'Mqq'], 'pq':[-1.0,'Mpp'], 'pp':[1.0,'Mpq']}
 
-			Mqq = sim.rp.Mqq[:,0,0,0,0].copy()
-			Mqp = sim.rp.Mqp[:,0,0,0,0].copy()
-			Mpq = sim.rp.Mpq[:,0,0,0,0].copy()
+		def record_var():
+			#Mqq = sim.rp.Mqq[:,0,0,0,0].copy()
+			#Mqp = sim.rp.Mqp[:,0,0,0,0].copy()
+			#Mpq = sim.rp.Mpq[:,0,0,0,0].copy()
 			Mpp = sim.rp.Mpp[:,0,0,0,0].copy()
 			q = sim.rp.q[:,:,0].copy()		
 			p = sim.rp.p[:,:,0].copy()
 		
-			Mval = comm_dict[B+A][0]*(vars()[comm_dict[B+A][1]])	
+			Mval = -Mpp#comm_dict[B+A][0]*(vars()[comm_dict[B+A][1]])	
 			tarr.append(sim.t)
 			Marr.append(Mval)
-			qarr.append(q/sqrtnbeads)  #Needed to define centroids correctly
+			qarr.append(q/sqrtnbeads)  #Needed to define centroids with correct scaling
 			parr.append(p/sqrtnbeads)
+					
+		pcart = sim.rp.pcart.copy()
+		qcart = sim.rp.qcart.copy() 
+ 
+		#Forward propagation
+		for i in range(nsteps):
+			record_var()
 			sim.step(mode="nve",var='monodromy')
-				
+		
+		#Reinitialising position and momenta for backward propagation
+		sim.rp = RingPolymer(qcart=qcart,pcart=pcart,m=sim.rp.m,mode='rp') #Only RPMD here!
+		sim.motion = Motion(dt=-self.dt,symporder=sim.motion.order)
+		sim.bind(sim.ens,sim.motion,sim.rng,sim.rp,sim.pes,sim.propa,sim.therm)
+		sim.t = 0.0	
+
+		#Backward propagation
+		for i in range(nsteps-1):
+			sim.step(mode="nve",var='monodromy')
+			record_var()
+
 		print('Propagation completed')
 		
 		op_dict = {'I':np.ones_like(np.array(qarr)),'q':qarr,'p':parr}
@@ -139,9 +158,10 @@ class SimUniverse(object):
 
 		Marr = np.array(Marr.copy()) 
 		Marr = Marr[:,:,None] # NEEDS TO CHANGE FOR 2D
-
-		tarr1,Csym = gen_2pt_tcf(tarr,Carr,Barr,Aarr)  # In the order t2,t1 and t0.
-		tarr2,Casym = gen_2pt_tcf(tarr,Carr,Marr)
+		tarr = np.array(tarr)
+	
+		tarr1,Csym = gen_2pt_tcf(dt,tarr,Carr,Barr,Aarr)  # In the order t2,t1 and t0.
+		tarr2,Casym = gen_2pt_tcf(dt,tarr,Carr,Marr)
 		if(np.alltrue(tarr1 == tarr2)):
 			tarr = tarr1
 
@@ -225,8 +245,8 @@ class SimUniverse(object):
 			return
 		elif(self.corrkey == 'singcomm'):
 			tarr, Carr = self.run_OTOC(sim,single=True)
-		elif(self.corrkey == 'R2'):
-			tarr, Csym, Casym = self.run_R2(sim)
+		elif(self.corrkey == 'R2' and self.extparam is not None):
+			tarr, Csym, Casym = self.run_R2(sim,self.extparam[0],self.extparam[1],self.extparam[2])
 			self.store_time_series_2D(tarr,Csym,rngSeed,'sym')
 			self.store_time_series_2D(tarr,Casym,rngSeed,'asym')	
 			return

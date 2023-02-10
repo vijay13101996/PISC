@@ -17,6 +17,19 @@ def read_1D_plotdata(fname):
 	data = np.loadtxt("{}".format(fname),dtype=complex)
 	return data
 
+def store_2D_imagedata_column(X,Y,F,fname,fpath=None,extcol=None):
+	if extcol is None:
+		data = np.column_stack([X.flatten(), Y.flatten(), F.flatten()])
+	else:
+		data = np.column_stack([X.flatten(), Y.flatten(), F.flatten(), extcol.flatten()])
+	
+	if(fpath is None):
+		datafile_path = "/home/vgs23/Pickle_files/{}.txt".format(fname)
+	else:
+		datafile_path = "{}/{}.txt".format(fpath,fname)
+	
+	np.savetxt(datafile_path,data)
+
 def store_2D_imagedata(X,Y,F,fname,fpath=None):
 	if(len(np.array(X).shape) == 1 and len(np.array(Y).shape) ==1):
 		x,y = np.meshgrid(X,Y)

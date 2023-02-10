@@ -21,8 +21,8 @@ if(1): #Double Well potential
 
 if(1): #Mildly anharmonic
 	omega = 1.0
-	a = 1.0#/10
-	b = 1.0#/100
+	a = 1.0/10
+	b = 1.0/100
 	
 	T = 1.0/8#times*Tc
 	
@@ -38,7 +38,7 @@ nbeads = 1
 gamma = 16
 
 #Path extensions
-path = os.path.dirname(os.path.abspath(__file__))	
+path = '/scratch/vgs23/PISC/examples/1D/'#os.path.dirname(os.path.abspath(__file__))
 qext = '{}/quantum/Datafiles/'.format(path)
 cext = '{}/cmd/Datafiles/'.format(path)
 Cext = '{}/classical/Datafiles/'.format(path)
@@ -47,6 +47,16 @@ rpext = '{}/rpmd/Datafiles/'.format(path)
 fig,ax = plt.subplots()
 
 if(1):
+	nbeads = 16
+	corrkey = 'R2'
+	suffix = '_asym'
+	enskey = 'thermal'
+	data =np.loadtxt('{}RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}{}.txt'.format(rpext,enskey,corrkey,potkey,Tkey,nbeads,dt,suffix))
+	X = data[:,0]
+	Y = data[:,1]
+	F = data[:,2]
+	plt.scatter(X,Y,c=F)
+if(0):
 	for nbeads,sty in zip([1,8],['-','-.']):
 		#nbeads = 1
 		corrkey = 'singcomm'

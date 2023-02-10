@@ -36,7 +36,9 @@ dt = 0.01
 time_therm = 50.0
 time_total = 30.0
 
-nbeads = 16
+nbeads = 1
+
+op_list = ['p','p','q']
 
 method = 'RPMD'
 
@@ -44,13 +46,14 @@ sysname = 'Selene'
 Tkey = 'T_{}'.format(T)#'{}Tc'.format(times)
 corrkey = 'R2'
 enskey = 'thermal'
-
+#ext_kwlist = ['qqq']
 	
-path = '/scratch/vgs23/PISC/examples/1D/rpmd'#os.path.dirname(os.path.abspath(__file__))
+path = os.path.dirname(os.path.abspath(__file__))
+#'/scratch/vgs23/PISC/examples/1D/rpmd'#
 
-Sim_class = SimUniverse(method,path,sysname,potkey,corrkey,enskey,Tkey)
+Sim_class = SimUniverse(method,path,sysname,potkey,corrkey,enskey,Tkey)#,ext_kwlist)
 Sim_class.set_sysparams(pes,T,m,dim)
-Sim_class.set_simparams(N,dt_therm,dt)
+Sim_class.set_simparams(N,dt_therm,dt,op_list)
 Sim_class.set_methodparams(nbeads=nbeads)
 Sim_class.set_ensparams(tau0=1.0,pile_lambda=100.0)
 Sim_class.set_runtime(time_therm,time_total)
