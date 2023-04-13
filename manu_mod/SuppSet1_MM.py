@@ -3,24 +3,25 @@ import os
 import ast
 from PISC.dvr.dvr import DVR2D
 from PISC.potentials.Quartic_bistable import quartic_bistable
-from PISC.utils.colour_tools import lighten_color
+#from PISC.utils.colour_tools import lighten_color
 from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr, read_arr
 from matplotlib import pyplot as plt
 import matplotlib
 import itertools
-
-path = os.path.dirname(os.path.abspath(__file__))	
+path = '/home/vgs23/PISC/examples/2D'
+#path = os.path.dirname(os.path.abspath(__file__))	
 qext = '{}/quantum'.format(path)
 Cext = '{}/classical'.format(path)
 
-plt.rcParams.update({'font.size': 10, 'font.family': 'serif','font.serif':'Times New Roman'})
+
+plt.rcParams.update({'font.size': 10, 'font.family': 'serif','font.style':'italic','font.serif':'Garamond'})
 matplotlib.rcParams['axes.unicode_minus'] = False
 
-tp_fs = 15
-xl_fs = 18
-yl_fs = 18
+tp_fs = 13
+xl_fs = 16
+yl_fs = 16
 
-le_fs = 10.
+le_fs = 9.5
 ti_fs = 12
 if(1): #Gather system data to plot
 	hbar = 1.0
@@ -33,7 +34,7 @@ if(1): #Gather system data to plot
 	lamda = 2.0
 	g = 0.08
 
-	z = 1.0
+	z = 0.0
 
 	Tc = lamda*0.5/np.pi
 	T_au = Tc#10.0 
@@ -78,7 +79,7 @@ ubpx = param_dict['ubpx']
 neig_total = 200
 DVR = DVR2D(ngridx,ngridy,lbx,ubx,lby,uby,m,pes.potential_xy,hbar=hbar)		
 
-narr = [0,2]#[3,8,9] #[3,6,7]
+narr = [3,8,9] #[3,6,7]
 
 if(1):
 	fig, ax = plt.subplots(2,len(narr))
@@ -88,7 +89,7 @@ if(1):
 		wf = DVR.eigenstate(vecs[:,n])
 		wf2 = abs(wf)**2
 		ax[0,i].imshow(wf2,extent=[xgrid[0],xgrid[len(xgrid)-1],ygrid[0],ygrid[len(ygrid)-1]],origin='lower',cmap=plt.get_cmap('magma'))	
-		ax[0,i].set_xlabel(r'$x$',fontsize=xl_fs)	
+		#ax[0,i].set_xlabel(r'$x$',fontsize=xl_fs)	
 		ax[0,0].set_ylabel(r'$y$',fontsize=yl_fs)
 		#ax[0,i].scatter(0.0,0.0,color='k',marker='X')
 		ax[0,i].tick_params(axis='both', which='major', labelsize=tp_fs)
@@ -105,7 +106,7 @@ if(1):
 		dist = read_arr('Husimi_section_x_{}_nbasis_{}_n_{}'.format(potkey,nbasis,n), '{}/Datafiles'.format(qext))
 
 		dist_gfilt = np.zeros(dist.shape+(3,))
-		dist_gfilt[:,:,1] = 5*dist
+		dist_gfilt[:,:,1] = 4.5*dist
 
 		ax[1,i].imshow(dist_gfilt,extent=[lbx,ubx,lbpx,ubpx],origin='lower')
 		if(i!=0):
@@ -121,7 +122,7 @@ if(1):
 			
 	fig.subplots_adjust(hspace = 0.25,wspace=0.1)
 	fig.set_size_inches(6, 4)	
-	#fig.savefig('/home/vgs23/Images/S1_a_D1.pdf', dpi=400,bbox_inches='tight',pad_inches=0.0)
+	fig.savefig('/home/vgs23/Images/S3_a_D1.pdf', dpi=400,bbox_inches='tight',pad_inches=0.0)
 	plt.show()
 
 if(1):
@@ -147,7 +148,7 @@ if(1):
 	ax.set_xticks(np.arange(0.0,5.01))	
 	
 	fig.set_size_inches(3.5, 4)	
-	#fig.savefig('/home/vgs23/Images/S1_b_D1.pdf', dpi=400,bbox_inches='tight',pad_inches=0.0)
+	fig.savefig('/home/vgs23/Images/S3_b_D1.pdf', dpi=400,bbox_inches='tight',pad_inches=0.0)
 	
 	plt.show()
 

@@ -70,8 +70,8 @@ def run_var(sim,dt,time_run,tau,norm):
 			sim.step(mode="nve",var='variation')
 		#calculate centroid
 		cent_xy=sim.rp.q[...,0]/nbeads**0.5
-		#qx_cent.append(cent_xy[0,0])
-		#qy_cent.append(cent_xy[0,1])
+		qx_cent.append(cent_xy[0,0])
+		qy_cent.append(cent_xy[0,1])
 		#calculate w after nsteps
 		dp_cent=sim.rp.dp[...,0]
 		dq_cent=sim.rp.dq[...,0]
@@ -164,7 +164,7 @@ for times in T_arr:
 	pcart=np.zeros_like(qcart)
 	pcart[:,0,:] = -xc_dev
 	
-	rng = np.random.default_rng(rngSeed)
+	rng = np.random.default_rng(200)#rngSeed)
 	
 	dq=np.zeros_like(qcart)
 	dp=np.zeros_like(pcart)
@@ -221,4 +221,4 @@ plt.scatter(T_arr,lamda_arr,marker='x',color='b')
 
 T_arr = np.arange(0.0,10.0,0.01)
 #plt.scatter(T_arr,2*np.pi*T_arr*Tc)
-#plt.show()
+plt.show()

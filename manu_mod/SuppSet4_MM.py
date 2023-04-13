@@ -22,7 +22,7 @@ tp_fs = 14
 le_fs = 10
 ti_fs = 9
 
-rpc = 'olivedrab'
+rpc = 'limegreen'#'olivedrab'
 qc = 'orangered'
 Cc = 'slateblue'
 
@@ -82,16 +82,16 @@ for i in range(2): #
 
 	ext = 'Quantum_mc_OTOC_{}_n_{}_basis_50'.format(potkey,narr[i])
 	ext =qext+ext
-	plot_1D(ax[i,1],ext,label=r'$Quantum$',color=qc, log=True,linewidth=1)
+	plot_1D(ax[i,1],ext,label=r'$Quantum$',color=qc, log=True,linewidth=1.5)
 	
 	ext = 'Classical_mc_OTOC_{}_T_1.0Tc_dt_0.002_E_{}'.format(potkey,Earr[i])
 	ext = Cext+ext
-	plot_1D(ax[i,1],ext,label=r'$Classical$',color=Cc, log=True,linewidth=1)
+	plot_1D(ax[i,1],ext,label=r'$Classical$',color=Cc, log=True,linewidth=1.5)
 
 	for times,nbeads,sty in zip([3.0,0.95,0.6],[16,16,32],['-','--','-.']):
 		ext = 'RPMD_mc_OTOC_inv_harmonic_lambda_2.0_g_{}_T_{}Tc_nbeads_{}_dt_0.005_E_{}'.format(g,times,nbeads,Earr[i])
 		ext = rpext+ext
-		plot_1D(ax[i,1],ext,label='$T={}T_c$'.format(times),color=rpc,style=sty, log=True,linewidth=1)
+		plot_1D(ax[i,1],ext,label='$T={}T_c$'.format(times),color=rpc,style=sty, log=True,linewidth=1.5)
 
 	ax[i,1].set_ylabel(r'$ln \: C_{mc}(t)$',fontsize=xl_fs)
 	if(i<1): #
@@ -118,6 +118,6 @@ ax[1,1].legend(fontsize=le_fs,ncol=1)
 #fig.suptitle('Microcanonical OTOCs for the 1D double well, $\lambda = {}, g={}$'.format(lamda,g),fontsize=20) 	
 plt.subplots_adjust(hspace=0.1,wspace=0.3)
 fig.set_size_inches(8, 8)
-fig.savefig('/home/vgs23/Images/S8_D3.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)
+fig.savefig('/home/vgs23/Images/S8_thesis.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)
 plt.show()
 

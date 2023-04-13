@@ -38,7 +38,8 @@ nbeads = 1
 gamma = 16
 
 #Path extensions
-path = '/scratch/vgs23/PISC/examples/1D/'#os.path.dirname(os.path.abspath(__file__))
+path = '/scratch/vgs23/PISC/examples/1D/'#
+path = os.path.dirname(os.path.abspath(__file__))
 qext = '{}/quantum/Datafiles/'.format(path)
 cext = '{}/cmd/Datafiles/'.format(path)
 Cext = '{}/classical/Datafiles/'.format(path)
@@ -46,7 +47,7 @@ rpext = '{}/rpmd/Datafiles/'.format(path)
 
 fig,ax = plt.subplots()
 
-if(1):
+if(0):
 	nbeads = 16
 	corrkey = 'R2'
 	suffix = '_asym'
@@ -56,6 +57,35 @@ if(1):
 	Y = data[:,1]
 	F = data[:,2]
 	plt.scatter(X,Y,c=F)
+
+if(1):
+	corrkey= 'qq_TCF'
+	Tkey = 'T_1.0'
+	potkey = 'quartic_a_1.0'
+	fname = 'Quantum_{}_{}_{}_{}_basis_{}_n_eigen_{}.txt'.format('Kubo',corrkey,potkey,Tkey,50,30)	
+	ext = qext+fname
+	data =np.loadtxt(ext,dtype=complex)
+	X = data[:,0]
+	Y = data[:,1]
+
+	fig, ax = plt.subplots(1)
+	ax.plot(X,Y,color='k',label=r'$Quantum$',lw=2)
+
+	fname = 'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}.txt'.format('thermal',corrkey,potkey,Tkey,1,0.01)
+	ext = rpext + fname
+	data =np.loadtxt(ext,dtype=complex)
+	X = data[:,0]
+	Y = data[:,1]
+
+	ax.plot(X,Y,color='r',label=r'$Classical$',lw=2)
+	ax.set_xlabel(r'$t$',fontsize=16)
+	ax.set_ylabel(r'$c_{qq}(t)$',fontsize=16)
+	ax.set_ylim([-0.6,0.8])
+	fig.set_size_inches(5, 3)	
+	ax.legend()	
+	fig.savefig('/home/vgs23/Images/cqq.png', dpi=400,bbox_inches='tight',pad_inches=0.0)
+	plt.show()
+
 if(0):
 	for nbeads,sty in zip([1,8],['-','-.']):
 		#nbeads = 1

@@ -29,7 +29,7 @@ if(0):
 	print('Vx',diff(V,x))
 	print('Vxx',diff(V,x,x))
 
-if(1):
+if(0):
 	T11 = sympy.Symbol('self.T11')
 	T12 = sympy.Symbol('self.T12')
 	T21 = sympy.Symbol('self.T21')
@@ -51,8 +51,34 @@ if(1):
 	print('Vyy=',diff(V,y,y))
 
 
+if(1): ###Tanimura's system bath potential
+	D = sympy.Symbol('self.D')	
+	alpha = sympy.Symbol('self.alpha')	
+	m = sympy.Symbol('self.m')	
+	mb = sympy.Symbol('self.mb')	
+	wb = sympy.Symbol('self.wb')	
+	VLL = sympy.Symbol('self.VLL')	
+	VSL = sympy.Symbol('self.VSL')	
+	cb = sympy.Symbol('self.cb')		
 
-	
+	s = sympy.Symbol('s')
+	b = sympy.Symbol('b')
+
+	Vs = D*(1-exp(-alpha*s))**2
+	Vc = VLL*s + 0.5*VSL*s**2
+	Vsb = 0.5*mb*wb**2*(b - cb*Vc/(mb*wb**2))**2
+	V = Vs + Vsb
+
+	print('V',V)
+	print('Vs=',diff(V,s))
+	print('Vb=',diff(V,b))
+	print('Vss=',diff(V,s,s))
+	print('Vsb=',diff(V,s,b))
+	print('Vbs=',diff(V,b,s))
+	print('Vbb=',diff(V,b,b))
+
+
+
 if(0):### Double-double well potential
 	lamdax = sympy.Symbol('self.lamdax')	
 	gx = sympy.Symbol('self.gx')

@@ -28,7 +28,7 @@ def generate_rp(pathname,m,dim,N,nbeads,ens,pes,rng,time_relax,dt_relax,potkey,r
 
 	if(plist is None): # Initialize (randomly) momenta if plist is None	
 		pcoeff = rng.dirichlet(np.ones(dim*nbeads),size=1)
-		pcoeff=pcoeff[0]
+		pcoeff= pcoeff[0]
 		count=0
 		# Initialize the centroid momenta along each component to the appropriate value so that the total energy is E	
 		for d in range(dim):

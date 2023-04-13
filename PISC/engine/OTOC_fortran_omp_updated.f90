@@ -16,6 +16,10 @@ module otoc_tools
 	public :: lambda_corr_elts
 	public :: lambda_corr_arr_t
 	public :: therm_corr_arr_t
+	public :: two_time_corr_mc_elts
+	public :: two_time_corr_mc_arr_t
+	public :: R2_corr_arr_t
+
 	contains
 		subroutine pos_matrix_elts(vecs,len1vecs,len2vecs,x_arr,lenx,dx,dy,n,k,pos_mat_elt)
 			integer, intent(in) :: n,k , len1vecs,len2vecs,lenx
@@ -29,6 +33,9 @@ module otoc_tools
 			do i = 1,len1vecs
 					pos_mat_elt = pos_mat_elt + vecs(i,n)*vecs(i,k)*x_arr(i)*dx*dy !! Change here for 1D 
 			end do
+			!if (pos_mat_elt > 1E-2) then
+			!	print*, 'pos', n,k, pos_mat_elt
+			!end if
 		end subroutine pos_matrix_elts
 
 		subroutine compute_pos_mat_arr(vecs,len1vecs,len2vecs,x_arr,lenx,dx,dy,n,k_arr,lenk,key,pos_mat)
@@ -293,7 +300,7 @@ module otoc_tools
 				end do
 			end if
 		end subroutine corr_mc_elts
-
+	
 		subroutine corr_mc_arr(vecs,len1vecs,len2vecs,mass,x_arr,&
 				lenx,dx,dy,k_arr,lenk,vals_arr,lenv,n_arr,lenn,m_arr,lenm,t,key,c_mc_arr)
 			integer, intent(in) :: len1vecs,len2vecs,lenx,lenv,lenm,lenn
@@ -340,6 +347,7 @@ module otoc_tools
 			end do
 			!$OMP END PARALLEL DO
 		end subroutine corr_mc_arr_t
+
 
 		subroutine stan_corr_elts(vecs,len1vecs,len2vecs,mass,x_arr,lenx,dx,dy,k_arr,lenk, &
 					vals_arr,lenv,m_arr,lenm,t,beta,n_eigen,key,corr_elt)
@@ -519,5 +527,134 @@ module otoc_tools
 				!$OMP END PARALLEL DO
 			end if
 		end subroutine therm_corr_arr_t
+
+		!!! 2nd order response code starts here
+		subroutine two_time_corr_mc_elts(vecs,len1vecs,len2vecs,mass,x_arr,&
+				lenx,dx,dy,k_arr,lenk,vals_arr,lenv,n,m_arr,lenm,t0,t1,t2,key,c_mc_elt)
+			integer, intent(in) :: len1vecs,len2vecs,lenx,lenv,lenm
+			real(kind=8), dimension(len1vecs,len2vecs), intent(in) :: vecs
+			real(kind=8), dimension(lenx), intent(in) :: x_arr
+			real(kind=8), intent(in) ::  dx,dy
+			integer, intent(in) :: lenk, n
+			integer, dimension(lenm),intent(in) :: m_arr
+			integer, dimension(lenk), intent(in) :: k_arr
+			real(kind=8), dimension(lenv), intent(in) :: vals_arr
+			real(kind=8), intent(in) :: t0,t1,t2, mass
+			integer :: i,j,k,m
+			!f2py complex,intent(in,out,copy) :: c_mc_elt
+			complex,intent(inout) :: c_mc_elt
+			real(kind=8), dimension(lenk) :: x_nk
+			real(kind=8), dimension(lenm) :: x_km, x_mn
+			real(kind=8) :: E_nk, E_km, E_mn
+			character*3, intent(in) :: key
+			complex :: corr,posmat,CBA,BCA,ACB,ABC
+			c_mc_elt = cmplx(0.0,0.0)
+			x_nk = 0.0
+			x_km = 0.0
+			x_mn = 0.0
+			corr = 0.0
+			CBA = 0.0
+			BCA = 0.0
+			ACB = 0.0
+			ABC = 0.0
+
+			call compute_pos_mat_arr(vecs,len1vecs,len2vecs,x_arr,lenx,dx,dy,n,k_arr,lenk,'ket',x_nk)
+			do i=1,lenk
+				k = k_arr(i) 
+				E_nk = vals_arr(n) - vals_arr(k)
+				call compute_pos_mat_arr(vecs,len1vecs,len2vecs,x_arr,lenx,dx,dy,k,m_arr,lenm,'ket',x_km)
+				call compute_pos_mat_arr(vecs,len1vecs,len2vecs,x_arr,lenx,dx,dy,n,m_arr,lenm,'bra',x_mn)
+				do j=1,lenm
+					m = m_arr(j)
+					E_km = vals_arr(k) - vals_arr(m)
+					E_mn = vals_arr(m) - vals_arr(n)
+					posmat = x_nk(i)*x_km(j)*x_mn(j)
+					if(key=='CBA') then
+					CBA = exp(cmplx(0.0,1.0)*E_nk*t2)*exp(cmplx(0.0,1.0)*E_km*t1)*exp(cmplx(0.0,1.0)*E_mn*t0)
+					corr = posmat*CBA
+					else if(key=='BCA') then
+					BCA = exp(cmplx(0.0,1.0)*E_nk*t1)*exp(cmplx(0.0,1.0)*E_km*t2)*exp(cmplx(0.0,1.0)*E_mn*t0) 
+					corr = posmat*BCA
+					else if(key=='ACB') then
+					ACB = exp(cmplx(0.0,1.0)*E_nk*t0)*exp(cmplx(0.0,1.0)*E_km*t2)*exp(cmplx(0.0,1.0)*E_mn*t1)
+					corr = posmat*ACB
+					else if(key=='ABC') then
+					ABC = exp(cmplx(0.0,1.0)*E_nk*t0)*exp(cmplx(0.0,1.0)*E_km*t1)*exp(cmplx(0.0,1.0)*E_mn*t2)
+					corr = posmat*ABC
+					else if(key=='all') then
+					CBA = exp(cmplx(0.0,1.0)*E_nk*t2)*exp(cmplx(0.0,1.0)*E_km*t1)*exp(cmplx(0.0,1.0)*E_mn*t0)
+					BCA = exp(cmplx(0.0,1.0)*E_nk*t1)*exp(cmplx(0.0,1.0)*E_km*t2)*exp(cmplx(0.0,1.0)*E_mn*t0) 
+					ACB = exp(cmplx(0.0,1.0)*E_nk*t0)*exp(cmplx(0.0,1.0)*E_km*t2)*exp(cmplx(0.0,1.0)*E_mn*t1)
+					ABC = exp(cmplx(0.0,1.0)*E_nk*t0)*exp(cmplx(0.0,1.0)*E_km*t1)*exp(cmplx(0.0,1.0)*E_mn*t2)
+					corr = posmat*(-CBA + BCA + ACB -ABC)
+					end if
+					
+					c_mc_elt = c_mc_elt + corr
+				end do
+			end do
+
+		end subroutine two_time_corr_mc_elts
+
+		subroutine two_time_corr_mc_arr_t(vecs,len1vecs,len2vecs,mass,x_arr,&
+				lenx,dx,dy,k_arr,lenk,vals_arr,lenv,n,m_arr,lenm,t2_arr,lent2,t1_arr,lent1,t0,key,c_mc_arr)
+
+			integer, intent(in) :: len1vecs,len2vecs,lenx,lenv,lenm,lenk,lent1,lent2,n
+			real(kind=8), dimension(len1vecs,len2vecs), intent(in) :: vecs
+			real(kind=8), dimension(lenx), intent(in) :: x_arr
+			real(kind=8), intent(in) ::  dx,dy,mass,t0
+			integer, dimension(lenm),intent(in) :: m_arr
+			integer, dimension(lenk), intent(in) :: k_arr
+			real(kind=8), dimension(lenv), intent(in) :: vals_arr
+			real(kind=8), dimension(lent1), intent(in) :: t1_arr
+			real(kind=8), dimension(lent2), intent(in) :: t2_arr
+			integer :: i,j
+			character*3, intent(in) :: key
+			!f2py complex,dimension(lent1,lent2),intent(in,out,copy) :: c_mc_arr
+			complex,dimension(lent1,lent2),intent(inout) :: c_mc_arr
+			real(kind=8) :: t1,t2
+			c_mc_arr = 0.0
+			!$OMP PARALLEL DO PRIVATE(i,j, t1,t2)
+			do i=1,lent1
+				do j=1,lent2
+					t1 = t1_arr(i)
+					t2 = t2_arr(j)
+					call two_time_corr_mc_elts(vecs,len1vecs,len2vecs,mass,x_arr,&
+						lenx,dx,dy,k_arr,lenk,vals_arr,lenv,n,m_arr,lenm,t0,t1,t2,key,c_mc_arr(i,j))
+				end do
+			end do
+			!$OMP END PARALLEL DO
+		end subroutine two_time_corr_mc_arr_t
+
+		subroutine R2_corr_arr_t(vecs,len1vecs,len2vecs,mass,x_arr,lenx,dx,dy,k_arr,lenk,&
+					vals_arr,lenv,m_arr,lenm,t2_arr,lent2,t1_arr,lent1,t0,beta,n_eigen,key,R2_corr_arr)
+			integer, intent(in) :: len1vecs,len2vecs,lenx,lenv,lenm,lenk,lent1,lent2,n_eigen
+			real(kind=8), dimension(len1vecs,len2vecs), intent(in) :: vecs
+			real(kind=8), dimension(lenx), intent(in) :: x_arr
+			real(kind=8), intent(in) ::  dx,dy,mass,t0,beta
+			integer, dimension(lenm),intent(in) :: m_arr
+			integer, dimension(lenk), intent(in) :: k_arr
+			real(kind=8), dimension(lenv), intent(in) :: vals_arr
+			real(kind=8), dimension(lent1), intent(in) :: t1_arr
+			real(kind=8), dimension(lent2), intent(in) :: t2_arr
+			character*3, intent(in) :: key
+			integer :: n
+			!f2py complex,dimension(lent1,lent2),intent(in,out,copy) :: R2_corr_arr
+			complex,dimension(lent1,lent2),intent(inout) :: R2_corr_arr
+			real(kind=8) :: En,Z
+			complex,dimension(lent1,lent2) :: c_mc_arr
+			
+			Z=0.0
+			R2_corr_arr = 0.0
+			do n=1,n_eigen
+				Z = Z + exp(-beta*vals_arr(n))
+			end do
+			do n=1,n_eigen
+				En = vals_arr(n)
+				call two_time_corr_mc_arr_t(vecs,len1vecs,len2vecs,mass,x_arr,&
+				lenx,dx,dy,k_arr,lenk,vals_arr,lenv,n,m_arr,lenm,t2_arr,lent2,t1_arr,lent1,t0,key,c_mc_arr)
+				R2_corr_arr = R2_corr_arr + exp(-beta*En)*c_mc_arr/Z
+			end do
+		
+		end subroutine R2_corr_arr_t
 
 end module otoc_tools

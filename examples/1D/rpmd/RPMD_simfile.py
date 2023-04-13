@@ -36,7 +36,7 @@ if(0): #Double well potential
 	potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
 	Tkey = 'T_{}Tc'.format(times)
 
-if(1): #Asymmetric double well potential
+if(0): #Asymmetric double well potential
 	lamda = 2.0
 	g = 0.08
 	k = 0.04
@@ -59,13 +59,12 @@ if(1): #Asymmetric double well potential
 	Tkey = 'T_{}Tc'.format(times)	
 
 	
-
 if(0): #Quartic potential from Mano's paper
 	a = 1.0
 
 	pes = quartic(a)
 
-	T = 1.0/8
+	T = 1.0
 	
 	m = 1.0
 	N = 1000
@@ -75,7 +74,7 @@ if(0): #Quartic potential from Mano's paper
 	time_therm = 50.0
 	time_total = 20.0
 	
-	nbeads = 16
+	nbeads = 1
 
 	method = 'RPMD'
 	potkey = 'TESTquart'.format(a)

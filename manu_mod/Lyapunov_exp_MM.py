@@ -129,7 +129,7 @@ if(1):
 
 	plt.legend()
 	plt.gca().xaxis.set_major_formatter(FormatStrFormatter('%g'))
-	fig.set_size_inches(2.5, 2)
+	fig.set_size_inches(5, 4)
 	#fig.savefig('/home/vgs23/Images/RP_lambda_D3.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)
 	
 	#handles, labels = ax.get_legend_handles_labels()

@@ -117,14 +117,14 @@ class SimUniverse(object):
 		#comm_dict = {'qq':[-1.0,'Mqp'],'qp':[1.0,'Mqq'], 'pq':[-1.0,'Mpp'], 'pp':[1.0,'Mpq']}
 
 		def record_var():
-			#Mqq = sim.rp.Mqq[:,0,0,0,0].copy()
+			Mqq = sim.rp.Mqq[:,0,0,0,0].copy()
 			#Mqp = sim.rp.Mqp[:,0,0,0,0].copy()
 			#Mpq = sim.rp.Mpq[:,0,0,0,0].copy()
 			Mpp = sim.rp.Mpp[:,0,0,0,0].copy()
-			q = sim.rp.q[:,:,0].copy()		
-			p = sim.rp.p[:,:,0].copy()
+			q = sim.rp.q[:,0,0].copy()		
+			p = sim.rp.p[:,0,0].copy()/sim.rp.m
 		
-			Mval = -Mpp#comm_dict[B+A][0]*(vars()[comm_dict[B+A][1]])	
+			Mval = Mqq/sim.rp.m#-Mpp#comm_dict[B+A][0]*(vars()[comm_dict[B+A][1]])	
 			tarr.append(sim.t)
 			Marr.append(Mval)
 			qarr.append(q/sqrtnbeads)  #Needed to define centroids with correct scaling
@@ -167,6 +167,26 @@ class SimUniverse(object):
 
 		return tarr, Csym, Casym
 
+	def run_R3(self,sim):
+		tarr, qarr, parr, Marr = [], [], [], []
+		dt = self.dt
+		nsteps = int(self.time_run/dt) + 1
+		sqrtnbeads = sim.rp.nbeads**0.5
+
+		def record_var():
+			Mqq = sim.rp.Mqq[:,0,0,0,0].copy()
+			#Mqp = sim.rp.Mqp[:,0,0,0,0].copy()
+			#Mpq = sim.rp.Mpq[:,0,0,0,0].copy()
+			Mpp = sim.rp.Mpp[:,0,0,0,0].copy()
+			q = sim.rp.q[:,:,0].copy()		
+			p = sim.rp.p[:,:,0].copy()
+			
+			tarr.append(sim.t)
+			Marr.append(Mval)
+			qarr.append(q/sqrtnbeads)  #Needed to define centroids with correct scaling
+			parr.append(p/sqrtnbeads)
+		
+
 	def run_TCF(self,sim):
 		tarr = []
 		qarr = []
@@ -185,14 +205,15 @@ class SimUniverse(object):
 					parr.append(p)	
 		else:
 			dt = self.dt
-			nsteps = int(2*self.time_run/dt)	
+			nsteps = int(2*self.time_run/dt) + 1	
 			for i in range(nsteps):
-				sim.step(mode="nve",var='pq')
 				q = sim.rp.q[:,:,0].copy()
 				p = sim.rp.p[:,:,0].copy()
 				tarr.append(sim.t)
 				qarr.append(q)
 				parr.append(p)
+				sim.step(mode="nve",var='pq')
+				
 
 		qarr = np.array(qarr)
 		parr = np.array(parr)	
@@ -233,7 +254,7 @@ class SimUniverse(object):
 			
 		sim = RP_Simulation()
 		sim.bind(ens,motion,rng,rp,self.pes,propa,therm)
-	
+		
 		if(self.corrkey =='OTOC'):
 			tarr, Carr = self.run_OTOC(sim)
 		elif('TCF' in self.corrkey):

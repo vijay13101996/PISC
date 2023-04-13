@@ -18,16 +18,16 @@ pes = quartic(a)
 
 Tc = 1.0#0.5*lamda/np.pi
 times = 1.0
-T = 0.125#times*Tc
+T = 1.0#times*Tc
 
 m = 1.0
 N = 1000
 dt_therm = 0.05
 dt = 0.01
 time_therm = 50.0
-time_total = 5.0
+time_total = 30.0
 
-nbeads = 32
+nbeads = 1
 
 method = 'RPMD'
 potkey = 'quartic_a_{}'.format(a) 
@@ -47,7 +47,7 @@ Sim_class.set_runtime(time_therm,time_total)
 
 start_time=time.time()
 func = partial(Sim_class.run_seed)
-seeds = range(1000)
+seeds = range(100,1000)
 seed_split = chunks(seeds,10)
 
 param_dict = {'Temperature':Tkey,'CType':corrkey,'Ensemble':enskey,'m':m,\

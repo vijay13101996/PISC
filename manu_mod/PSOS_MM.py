@@ -35,9 +35,9 @@ yticks = np.arange(-2,2.01)
 
 xl_fs = 14 
 yl_fs = 14
-tp_fs = 14
+tp_fs = 12
 
-le_fs = 8.5#9.5
+le_fs = 11#9.5
 ti_fs = 12
 
 ms = 0.05
@@ -65,7 +65,7 @@ if(0):
 	
 	plt.show()
 
-if(1):
+if(0):
 	fig,ax = plt.subplots(3,1)
 	plt.subplots_adjust(wspace=0, hspace=0)
 
@@ -119,10 +119,10 @@ if(1):
 	ax[2].tick_params(axis='both', which='major', labelsize=tp_fs)
 
 	fig.set_size_inches(3,6)
-	fig.savefig('/home/vgs23/Images/PSOS_RP_D3.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)
+	fig.savefig('/home/vgs23/Images/PSOS_RP_thesis.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)
 	#plt.show()
 
-if(0):
+if(1):
 	fig,ax = plt.subplots(1,3)
 	plt.subplots_adjust(wspace=0.1, hspace=0.0)
 
@@ -136,7 +136,7 @@ if(0):
 	ax[0].set_xlim(xlim)
 	ax[0].set_ylim(ylim)
 	
-	ax[0].set_title(r'$Classical$', fontsize=ti_fs,x=0.5,y=0.83)
+	ax[0].set_title(r'$Classical$', fontsize=ti_fs,x=0.5,y=0.81)
 	ax[0].tick_params(axis='both', which='major', labelsize=tp_fs)
 	ax[0].set_ylabel(r'$p_x$',fontsize=yl_fs)
 	ax[0].set_yticks(yticks)
@@ -168,18 +168,18 @@ if(0):
 		ax[i].set_xticks([-2.5,0,2.5])
 		ax[i].tick_params(axis='both', which='major', labelsize=tp_fs)
 	
-	ax[2].set_title(r'$T=0.95T_c$', fontsize=ti_fs,x=0.5,y=0.83)
-	ax[1].set_title(r'$T=3T_c$', fontsize=ti_fs,x=0.5,y=0.83)
+	ax[2].set_title(r'$T=0.95T_c$', fontsize=ti_fs,x=0.5,y=0.81)
+	ax[1].set_title(r'$T=3T_c$', fontsize=ti_fs,x=0.5,y=0.81)
 
 	ax[1].set_yticks([])#np.arange(-2,2.01))
 	ax[2].set_yticks([])#np.arange(-2,2.01))
 	#ax[2].tick_params(axis='both', which='major', labelsize=tp_fs)
 
-	fig.set_size_inches(8,2)
-	fig.savefig('/home/vgs23/Images/PSOS_RP_D3.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)
+	fig.set_size_inches(8,2.)
+	fig.savefig('/home/vgs23/Images/PSOS_RP_thesis.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)
 	#plt.show()
 
-if(0):
+if(1):
 	fig, ax = plt.subplots()
 	dt = 0.002
 	nbeads = 32
@@ -219,13 +219,13 @@ if(0):
 	ax.set_xlabel(r'$t$',fontsize=xl_fs)
 	ax.set_ylabel(r'$ln \; C_{mc}(t)$',fontsize=yl_fs)
 
-	fig.set_size_inches(3,4)#3, 4)
-	fig.savefig('/home/vgs23/Images/MC_OTOC_D3.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)
+	#fig.set_size_inches(3,4)#3, 4)
+	#fig.savefig('/home/vgs23/Images/MC_OTOC_D3.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)
 	
-	#fig.set_size_inches(5,5)#3, 4)	
-	#fig.savefig('/home/vgs23/Images/MC_OTOC_thesis.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)
+	fig.set_size_inches(5,5)#3, 4)	
+	fig.savefig('/home/vgs23/Images/MC_OTOC_thesis.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)
 	
-	#plt.show()
+	plt.show()
 
 
 
