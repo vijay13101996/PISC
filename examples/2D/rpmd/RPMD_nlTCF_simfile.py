@@ -29,7 +29,7 @@ D = m*wc**2/(2*alpha**2)
 #wb = 0.0072901 #(= w_10)
 VLL = -0.75*wb#0.05*wb
 VSL = 0.75*wb#0.05*wb
-cb = 0.35*wb#0.65*wb#0.75*wb
+cb = 0.75#35*wb#0.65*wb#0.75*wb
 
 pes = Tanimura_SB(D,alpha,m,mb,wb,VLL,VSL,cb)
 			
@@ -43,7 +43,7 @@ Tkey = 'T_{}'.format(T)
 
 N = 1000
 dt_therm = 0.05#10.0
-dt = 0.002#2.0
+dt = 0.01#2.0
 time_therm = 50.0#60000.0
 time_total = 20.0#20000.0
 
@@ -59,8 +59,8 @@ enskey = 'thermal'
 
 ### -----------------------------------------------------------------------------
 E = T
-xg = np.linspace(-3,3,int(1e2)+1)
-yg = np.linspace(-3,3,int(1e2)+1)
+xg = np.linspace(-1,1,int(1e2)+1)
+yg = np.linspace(-1,1,int(1e2)+1)
 xgrid,ygrid = np.meshgrid(xg,yg)
 potgrid = pes.potential_xy(xgrid,ygrid)
 
@@ -69,7 +69,7 @@ ind = np.where(potgrid<E)
 xind,yind = ind
 
 #fig,ax = plt.subplots(1)
-#ax.contour(xgrid,ygrid,potgrid,levels=np.arange(0,1.01*D,D/30))
+#ax.contour(xgrid,ygrid,potgrid,levels=np.arange(0,0.5,0.05))#1.01*D,D/30))
 
 qlist= []
 for x,y in zip(xind,yind):
@@ -82,8 +82,9 @@ qlist = np.array(qlist)
 	
 ### ------------------------------------------------------------------------------
 path = '/scratch/vgs23/PISC/examples/2D/rpmd'
+ext_kwlist = ['E_filtered']
 
-Sim_class = SimUniverse(method,path,sysname,potkey,corrkey,enskey,Tkey)#,ext_kwlist)
+Sim_class = SimUniverse(method,path,sysname,potkey,corrkey,enskey,Tkey,ext_kwlist)
 Sim_class.set_sysparams(pes,T,m,dim)
 Sim_class.set_simparams(N,dt_therm,dt,op_list)
 Sim_class.set_methodparams(nbeads=nbeads)

@@ -109,7 +109,7 @@ class SimUniverse(object):
 		""" Run simulation to compute second order (sym and asym) response functions """
 		# IMPORTANT: Be careful when you use it for 2D! There are parts used in this code,
 		# which are 1D-specific.
-	
+		
 		tarr, qarr, parr, Marr = [], [], [], []
 		dt = self.dt
 		nsteps = int(self.time_run/dt) + 1
@@ -238,6 +238,17 @@ class SimUniverse(object):
 		rng = np.random.default_rng(rngSeed)
 		ens = Ensemble(beta=1/self.T,ndim=self.dim)
 		qcart,pcart = self.gen_ensemble(ens,rng,rngSeed)
+		
+		#-------------------------------------------------------
+		if(0):
+			potsys = np.sum(self.pes.potential(qcart),axis=1)
+			#print('pot',potsys)
+			Eind, = np.where(potsys>0.375)
+			#pind, = np.where(pcart[:,0,0]<-0.1)
+			qcart = qcart[Eind]
+			pcart = pcart[Eind]		
+			print('ind', len(Eind))
+		#------------------------------------------------------
 
 		if(self.method=='Classical' or self.method=='RPMD'):
 			rp = RingPolymer(qcart=qcart,pcart=pcart,m=self.m,mode='rp')

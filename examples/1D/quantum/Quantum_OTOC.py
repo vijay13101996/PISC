@@ -42,7 +42,7 @@ if(0): # Morse potential
 	potkey = 'morse'
 	Tkey = 'T_{}'.format(T_au)
 	
-if(0): #Double well potential
+if(1): #Double well potential
 	L = 10.0#6.0
 	lb = -L
 	ub = L
@@ -52,11 +52,11 @@ if(0): #Double well potential
 	#2.0: 0.08,0.172,0.31
 
 	lamda = 2.0
-	g = 0.02#8
+	g = 0.08
 	pes = double_well(lamda,g)
 	
 	Tc = lamda*(0.5/np.pi)    
-	times = 20.0#0.8
+	times = 0.95
 	T_au = times*Tc
 
 	potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
@@ -64,7 +64,7 @@ if(0): #Double well potential
 
 	print('g, Vb,D', g, lamda**4/(64*g), 3*lamda**4/(64*g))
 
-if(1): #Asymmetric double well
+if(0): #Asymmetric double well
 	L = 6.0#6.0
 	lb = -L
 	ub = L
@@ -88,7 +88,7 @@ if(1): #Asymmetric double well
 	print('g, Vb,D', g, lamda**4/(64*g), 3*lamda**4/(64*g))
 	
 
-if(1): # Quartic potential
+if(0): # Quartic potential
 	L = 8
 	lb = -L
 	ub = L
@@ -144,12 +144,12 @@ n_eigen = 30
 k_arr = np.arange(basis_N) +1
 m_arr = np.arange(basis_N) +1
 
-t_arr = np.linspace(0,30.0,2000)
+t_arr = np.linspace(0,100.0,2000)
 C_arr = np.zeros_like(t_arr) +0j
 
 path = os.path.dirname(os.path.abspath(__file__))
 
-corrkey = 'qq_TCF'#'OTOC'#'qp_TCF'
+corrkey = 'OTOC'#'qp_TCF'
 enskey = 'Kubo'#'mc'#'Kubo'
 
 corrcode = {'OTOC':'xxC','qq_TCF':'qq1','qp_TCF':'qp1'}
@@ -173,7 +173,7 @@ path = os.path.dirname(os.path.abspath(__file__))
 store_1D_plotdata(t_arr,C_arr,fname,'{}/Datafiles'.format(path))
 
 fig,ax = plt.subplots()
-plt.plot(t_arr,((C_arr)))
+plt.plot(t_arr,np.log((C_arr)))
 fig.savefig('/home/vgs23/Images/OTOC_temp.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)
 	
 

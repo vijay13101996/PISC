@@ -9,13 +9,13 @@ from PISC.utils.nmtrans import FFT
 
 dim = 1
 
-if(0): #Double well potential
+if(1): #Double well potential
 	lamda = 2.0
 	g = 0.08
 	Vb = lamda**4/(64*g)
 
 	Tc = lamda*(0.5/np.pi)
-	times = 0.95
+	times = 3.0
 	T = times*Tc
 	beta=1/T
 	print('T',T)
@@ -30,6 +30,7 @@ if(0): #Double well potential
 	pes = double_well(lamda,g)
 
 	Tkey = 'T_{}Tc'.format(times)
+
 
 if(0): #Quartic
 	a = 1.0
@@ -71,7 +72,7 @@ if(0): #Mildly anharmonic
 	Tkey = 'T_{}'.format(np.around(T,3))
 	
 
-if(1): #Morse_SB	
+if(0): #Morse_SB	
 	m=1.0
 	delta_anh = 0.05#1
 	w_10 = 1.0
@@ -117,7 +118,7 @@ OTOCarr = np.zeros_like(tarr) +0j
 
 #Path extensions
 path = '/scratch/vgs23/PISC/examples/1D'#
-#path = os.path.dirname(os.path.abspath(__file__))	
+path = os.path.dirname(os.path.abspath(__file__))	
 qext = '{}/quantum/Datafiles/'.format(path)
 cext = '{}/cmd/Datafiles/'.format(path)
 Cext = '{}/classical/Datafiles/'.format(path)
@@ -128,7 +129,7 @@ corrkey = 'qq_TCF'#'singcomm' #
 syskey = 'Selene'
 
 if(1):#RPMD
-	nbeads = 1
+	nbeads = 8
 	beadkey = 'nbeads_{}_'.format(nbeads)
 	if(0): ##Collect files of thermal ensembles
 		methodkey = 'RPMD'
@@ -162,7 +163,7 @@ if(1):#RPMD
 		plt.show()
 		store_1D_plotdata(tarr,OTOCarr,'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}_{}'.format(enskey,corrkey,potkey,Tkey,nbeads,dt,Ekey),rpext)
 
-	if(0): ##Histograms of thermal ensembles
+	if(1): ##Histograms of thermal ensembles
 		kwqlist = ['Thermalized_rp_qcart','nbeads_{}'.format(nbeads), 'beta_{}'.format(beta), potkey]
 		kwplist = ['Thermalized_rp_pcart','nbeads_{}'.format(nbeads), 'beta_{}'.format(beta), potkey]
 		
@@ -208,7 +209,7 @@ if(1):#RPMD
 		plt.hist(Q,bins=100)
 		plt.show()
 		
-		bins = np.linspace(0.0,0.25,200)
+		bins = np.linspace(0.0,2.0,100)
 		dE = bins[1]-bins[0]
 		#countsV, bin_edgeV = np.histogram(V,bins=200)
 		#countsK, bin_edgeK = np.histogram(K,bins=200)
@@ -278,7 +279,7 @@ if(1):#RPMD
 		plt.plot(countarr,data_arr)
 		plt.show()
 
-	if(1):
+	if(0):
 		methodkey = 'RPMD'
 		enskey = 'thermal'
 		corrkey = 'R2'

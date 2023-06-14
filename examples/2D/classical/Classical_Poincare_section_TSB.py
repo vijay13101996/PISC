@@ -11,7 +11,7 @@ import matplotlib
 
 matplotlib.rcParams['axes.unicode_minus'] = False
 ### Potential parameters
-N=30
+N=60#30
 dt=0.005
 
 m=1.0
@@ -25,7 +25,7 @@ D = m*wc**2/(2*alpha**2)
 
 VLL = -0.75*wb
 VSL = 0.75*wb
-cb = 0.75#0.45*wb
+cb = 0.65#0.45*wb
 
 pes = Tanimura_SB(D,alpha,m,mb,wb,VLL,VSL,cb)
 		
@@ -38,7 +38,7 @@ Tkey = 'T_{}'.format(T)
 
 pathname = os.path.dirname(os.path.abspath(__file__))
 
-E = 1.0
+E = 0.25
 
 xg = np.linspace(-5,10,int(1e2)+1)
 yg = np.linspace(-5,10,int(1e2)+1)
@@ -52,7 +52,7 @@ qlist = []
 nbeads = 1#8
 PSOS = Poincare_SOS('Classical',pathname,potkey,Tkey)
 PSOS.set_sysparams(pes,T,m,2)
-PSOS.set_simparams(N,dt,dt,nbeads=nbeads,rngSeed=1)	
+PSOS.set_simparams(N,dt,dt,nbeads=nbeads,rngSeed=2)	
 PSOS.set_runtime(50.0,500.0)
 if(1):
 	#xg = np.linspace(xmin-0.1,xmin+0.1,int(1e2)+1)
@@ -68,14 +68,15 @@ if(1):
 	potgrid = pes.potential_xy(xgrid,ygrid)
 
 	qlist = PSOS.find_initcondn(xgrid,ygrid,potgrid,E)
-	PSOS.bind(qcartg=qlist,E=E,sym_init=False)#pcartg=plist)#E=E)
+	PSOS.bind(qcartg=qlist,E=E,sym_init=False)#,specific_traj=[7])#pcartg=plist)#E=E)
 
 	if(0): ## Plot the trajectories that make up the Poincare section
-		xg = np.linspace(-8,8,int(1e2)+1)
-		yg = np.linspace(-5,10,int(1e2)+1)
+		xg = np.linspace(-3,4,int(1e2)+1)
+		yg = np.linspace(-3,4,int(1e2)+1)
 		xgrid,ygrid = np.meshgrid(xg,yg)
 		potgrid = pes.potential_xy(xgrid,ygrid)
 
+		fig,ax=plt.subplots()
 		ax.contour(xgrid,ygrid,potgrid,levels=np.arange(0,1.01*D,D/5))
 		PSOS.run_traj(0,ax) #(1,2,3,4,8,13 for z=1.25), (2,3) 
 		plt.show()
@@ -84,9 +85,9 @@ if(1):
 		X,PX,Y = PSOS.PSOS_X(y0=0.0)#ymin)
 		plt.scatter(X,PX,s=1)
 		
-	plt.title(r'$c={}$, E={}'.format(cb,E))#E=$V_b$+$3\omega_m/2$'.format(alpha) )#$N_b={}$'.format(nbeads))
-	plt.xlabel(r'x')
-	plt.ylabel(r'$p_x$')
+		plt.title(r'$c={}$, E={}'.format(cb,E))#E=$V_b$+$3\omega_m/2$'.format(alpha) )#$N_b={}$'.format(nbeads))
+		plt.xlabel(r'x')
+		plt.ylabel(r'$p_x$')
 	
 	plt.show()
 	#fname = 'Classical_Poincare_Section_x_px_{}_E_{}'.format(potkey,E)

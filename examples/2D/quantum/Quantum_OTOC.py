@@ -24,7 +24,7 @@ if(1): #Tanimura_SB
 	lbx = -3.0#
 	ubx = 7.0#
 	lby = -4.0#
-	uby = 8.0
+	uby = 4.0
 	ngrid = 100
 	ngridx = ngrid
 	ngridy = ngrid
@@ -41,7 +41,7 @@ if(1): #Tanimura_SB
 
 	VLL = -0.75*wb
 	VSL = 0.75*wb
-	cb = 0.75*wb
+	cb = 0.35*wb
 
 	pes = Tanimura_SB(D,alpha,m,mb,wb,VLL,VSL,cb)
 			

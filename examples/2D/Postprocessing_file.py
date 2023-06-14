@@ -108,7 +108,7 @@ OTOCarr = np.zeros_like(tarr) +0j
 
 #Path extensions
 path = os.path.dirname(os.path.abspath(__file__))	
-#path = '/scratch/vgs23/PISC/examples/2D/'
+path = '/scratch/vgs23/PISC/examples/2D/'
 qext = '{}/quantum/Datafiles/'.format(path)
 cext = '{}/cmd/Datafiles/'.format(path)
 Cext = '{}/classical/Datafiles/'.format(path)
@@ -122,7 +122,7 @@ if(1):#RPMD
 	nbeads=1
 	beadkey = 'nbeads_{}_'.format(nbeads)
 	potkey_ = potkey+'_'
-	if(1):
+	if(0):
 		methodkey = 'RPMD'
 		enskey='thermal'
 
@@ -140,7 +140,7 @@ if(1):#RPMD
 		#plt.errorbar(tarr,np.log(abs(OTOCarr)),yerr=stdarr/2,ecolor='m',errorevery=100,capsize=2.0)
 		plt.show()
 	
-		if(1):
+		if(0):
 			print('tarr', np.real(tarr) ,dt)
 			tau = 20#13
 			n_order = 2
@@ -171,12 +171,14 @@ if(1):#RPMD
 		store_1D_plotdata(tarr,OTOCarr,'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,nbeads,dt),rpext,ebar=stdarr)
 
 	if(0): # Energy_histogram
-		kwqlist = ['Thermalized_rp_qcart','nbeads_{}'.format(nbeads), 'beta_{}'.format(beta), potkey]
-		kwplist = ['Thermalized_rp_pcart','nbeads_{}'.format(nbeads), 'beta_{}'.format(beta), potkey]
-		
+		kwqlist = ['Thermalized_rp_qcart','nbeads_{}_'.format(nbeads), 'beta_{}'.format(beta), potkey+'_']
+		kwplist = ['Thermalized_rp_pcart','nbeads_{}_'.format(nbeads), 'beta_{}'.format(beta), potkey+'_']
+	
+		print('rpext',rpext)	
 		fqlist = seed_finder(kwqlist,rpext,dropext=True)
 		fplist = seed_finder(kwplist,rpext,dropext=True)
-	
+
+		#print(fqlist)	
 		E=[]
 		V=[]
 		K=[]
@@ -194,8 +196,8 @@ if(1):#RPMD
 
 			x = q[:,0,0]
 			y = q[:,1,0]
-			xarr.append(x)
-			yarr.append(y)		
+			xarr.extend(x)
+			yarr.extend(y)		
 			#print('qfile,pfile', qfile,pfile)
 			omegan = nbeads/beta
 			potsys = np.sum(pes.potential(qcart),axis=1)
@@ -217,17 +219,19 @@ if(1):#RPMD
 		E/=nbeads
 		V/=nbeads
 		K/=nbeads
+		xarr=np.array(xarr)
+		yarr=np.array(yarr)
 
-		
+		#ind, = np.where(V<2.5)
 		plt.scatter(xarr,yarr)
 		plt.show()	
 	
-		bins = np.linspace(0.0,10.0,200)
+		bins = np.linspace(0.0,10/beta,200)
 		dE = bins[1]-bins[0]
 		
 		#Ehist = plt.hist(x=E, bins=bins,density=True,color='r')
 		Vhist = plt.hist(x=V, bins=bins,density=True,color='g',alpha=0.5)
-		Khist = plt.hist(x=K, bins=bins,density=True,color='b',alpha=0.5)
+		#Khist = plt.hist(x=K, bins=bins,density=True,color='b',alpha=0.5)
 		
 		plt.axvline(x=nbeads*T,ymin=0.0, ymax = 1.0,linestyle='--',color='k',linewidth=4)	
 		plt.axvline(x=2*nbeads*T,ymin=0.0, ymax = 1.0,linestyle='--',color='k',linewidth=4)		
@@ -259,12 +263,12 @@ if(1):#RPMD
 		RGhist = plt.hist(x=RG, bins=bins,density=True)
 		plt.show()
 
-	if(0):
+	if(1):
 		methodkey = 'RPMD'
 		enskey = 'thermal'
 		corrkey = 'R2'
 		suffix = '_sym'
-		kwlist = [methodkey,corrkey,syskey,potkey,Tkey+'_',beadkey,'dt_{}'.format(dt),suffix]#,'qqq']
+		kwlist = [methodkey,corrkey,syskey,potkey,Tkey+'_',beadkey,'dt_{}'.format(dt),suffix,'E_filtered']
 		
 		X,Y,F = seed_collector_imagedata(kwlist,rpext)#,allseeds=False,seedcount=20)
 		X[:,len(X)//2+1:] = X[:,:-len(X)//2:-1]
@@ -295,7 +299,7 @@ if(1):#RPMD
 		plt.show()
 		#potkey = 'mildly_anharmonic_a_{}_b_{}'.format(a,np.around(b,2))
 	
-		store_2D_imagedata_column(X,Y,F,'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}{}'.format(enskey,corrkey,potkey,Tkey,nbeads,dt,suffix),rpext,extcol=np.zeros_like(X))
+		store_2D_imagedata_column(X,Y,F,'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}{}_E_filtered'.format(enskey,corrkey,potkey,Tkey,nbeads,dt,suffix),rpext,extcol=np.zeros_like(X))
 
 if(0):#RPMD/mc
 	methodkey = 'RPMD'

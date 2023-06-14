@@ -37,7 +37,15 @@ def hess_mul(ddpot,arr_i,arr_o,rp,dt):
 
 def linear(x,m,c):
 	return m*x + c
-	
+
+def find_minima(a):
+	temp= np.r_[True, a[1:] < a[:-1]] & np.r_[a[:-1] < a[1:], True]
+	return temp,a[temp]
+
+def find_maxima(a):
+	temp= np.r_[True, a[1:] > a[:-1]] & np.r_[a[:-1] > a[1:], True]
+	return temp,a[temp]
+
 def find_OTOC_slope(fname,tst,tend,witherror=False,return_cov=False):
 	data = read_1D_plotdata('{}.txt'.format(fname))
 	t_arr = np.real(data[:,0])
@@ -131,10 +139,10 @@ def seed_collector(kwlist,datapath,tarr,Carr,allseeds=True,seedcount=None,logerr
 
 def seed_collector_imagedata(kwlist,datapath,allseeds=True,seedcount=None):
 	flist = []
-	print('kwlist',kwlist)
+	print('kwlist',kwlist, datapath)
 	for fname in os.listdir(datapath):
 		if all(kw in fname for kw in kwlist):
-			#print('f',fname)
+			print('f',fname)
 			flist.append(fname)
 
 	count=0
@@ -162,7 +170,7 @@ def seed_collector_imagedata(kwlist,datapath,allseeds=True,seedcount=None):
 
 def seed_finder(kwlist,datapath,allseeds=True,sort=True,dropext=False):
 	flist = []
-	print('kwlist',kwlist)
+	print('kwlist',kwlist,datapath)
 	count=0
 	for fname in os.listdir(datapath):
 		if all(kw in fname for kw in kwlist):

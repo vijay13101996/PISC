@@ -91,7 +91,7 @@ class Poincare_SOS(object):
 			px = self.rp.pcart[ind,0,:]
 			y = self.rp.qcart[ind,1,:]
 			py = self.rp.pcart[ind,1,:]
-			if(i%1e1==0):
+			if(i%1e2==0):
 				#ax.scatter(self.sim.t,y)
 				ax.scatter(x,y,s=7,color='r')
 				plt.pause(0.05)	

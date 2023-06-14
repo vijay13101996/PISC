@@ -21,17 +21,37 @@ module otoc_tools
 	public :: R2_corr_arr_t
 
 	contains
+		
+		!subroutine pos_matrix_elts(vecs,len1vecs,len2vecs,x_arr,lenx,dx,dy,n,k,pos_mat_elt)
+		!	integer, intent(in) :: n,k , len1vecs,len2vecs,lenx
+		!	real(kind=8), dimension(len1vecs,len2vecs), intent(in) :: vecs
+		!	real(kind=8), dimension(lenx), intent(in) :: x_arr
+		!	real(kind=8), intent(in) ::  dx,dy
+		!	!f2py real(kind=8), intent(in,out,copy) :: pos_mat_elt
+		!	integer :: i,j
+		!	real(kind=8), intent(inout) :: pos_mat_elt
+		!	pos_mat_elt = 0.0d0
+		!	do i = 1,len1vecs
+		!			pos_mat_elt = pos_mat_elt + vecs(i,n)*vecs(i,k)*x_arr(i)*dx*dy !! Change here for 1D 
+		!	end do
+			!if (pos_mat_elt > 1E-2) then
+			!	print*, 'pos', n,k, pos_mat_elt
+			!end if
+		!end subroutine pos_matrix_elts
+		
+
 		subroutine pos_matrix_elts(vecs,len1vecs,len2vecs,x_arr,lenx,dx,dy,n,k,pos_mat_elt)
 			integer, intent(in) :: n,k , len1vecs,len2vecs,lenx
 			real(kind=8), dimension(len1vecs,len2vecs), intent(in) :: vecs
-			real(kind=8), dimension(lenx), intent(in) :: x_arr
 			real(kind=8), intent(in) ::  dx,dy
+			real(kind=8), dimension(lenx), intent(in) :: x_arr
 			!f2py real(kind=8), intent(in,out,copy) :: pos_mat_elt
-			integer :: i,j
+			integer :: l,PN
 			real(kind=8), intent(inout) :: pos_mat_elt
 			pos_mat_elt = 0.0d0
-			do i = 1,len1vecs
-					pos_mat_elt = pos_mat_elt + vecs(i,n)*vecs(i,k)*x_arr(i)*dx*dy !! Change here for 1D 
+			PN = len1vecs
+			do l = 1,PN+1
+					pos_mat_elt = pos_mat_elt + (2*(l-1)-PN)*vecs(l,n)*vecs(l,k)
 			end do
 			!if (pos_mat_elt > 1E-2) then
 			!	print*, 'pos', n,k, pos_mat_elt
@@ -116,7 +136,8 @@ module otoc_tools
 					else if(key=='pp') then
 						quadop_mat_elt = quadop_mat_elt + mass*mass*exp(cmplx(0.0,1.0)*E_nk*(t1-t2))*x_nk(i)*x_nk(i)*E_nk*E_nk
 					else if(key=='cm') then
-						quadop_mat_elt = quadop_mat_elt - 2*mass*(x_nk(i)*x_nk(i)*E_nk*cos(E_nk*(t1-t2)))
+						!quadop_mat_elt = quadop_mat_elt - 2*mass*(x_nk(i)*x_nk(i)*E_nk*cos(E_nk*(t1-t2)))
+						quadop_mat_elt = quadop_mat_elt + 2*cmplx(0.0,1.0)*mass*(x_nk(i)*x_nk(i)*sin(E_nk*(t1-t2)))
 					end if
 				end do
 
@@ -138,9 +159,13 @@ module otoc_tools
 						quadop_mat_elt = quadop_mat_elt - mass*mass*exp(cmplx(0.0,1.0)*E_nk*t1)*x_nk(i)&
 											*x_km(i)*E_nk*E_km*exp(cmplx(0.0,1.0)*E_km*t2)
 					else if(key=='cm') then
+						!quadop_mat_elt = quadop_mat_elt + mass*(x_nk(i)*x_km(i)*&
+						!			(E_km*exp(cmplx(0.0,1.0)*E_nk*t1)*exp(cmplx(0.0,1.0)*E_km*t2) -&
+						!			 E_nk*exp(cmplx(0.0,1.0)*E_nk*t2)*exp(cmplx(0.0,1.0)*E_km*t1) ))
+						! UNCOMMENT ABOVE LINES FOR q,p OTOC	
 						quadop_mat_elt = quadop_mat_elt + mass*(x_nk(i)*x_km(i)*&
-									(E_km*exp(cmplx(0.0,1.0)*E_nk*t1)*exp(cmplx(0.0,1.0)*E_km*t2) -&
-									 E_nk*exp(cmplx(0.0,1.0)*E_nk*t2)*exp(cmplx(0.0,1.0)*E_km*t1) ))
+									(exp(cmplx(0.0,1.0)*E_nk*t1)*exp(cmplx(0.0,1.0)*E_km*t2) -&
+									 exp(cmplx(0.0,1.0)*E_nk*t2)*exp(cmplx(0.0,1.0)*E_km*t1) ))
 					end if
 				end do
 			end if
@@ -417,8 +442,12 @@ module otoc_tools
 							lenx,dx,dy,k_arr,lenk,vals_arr,lenv,m_arr(m),n,0.0d0,0.0d0,key(2:2)//key(2:2),O_mn)
 					end if
 					if(n .NE. m) then
-						corr_elt = corr_elt + (1/(Z*beta))*((exp(-beta*vals_arr(n)) - exp(-beta*vals_arr(m)))&
+						if (abs(vals_arr(m)-vals_arr(n)) .le. 1E-4) then
+							corr_elt = corr_elt + (1/Z)*exp(-beta*vals_arr(m))*O_nm*O_mn
+						else
+							corr_elt = corr_elt + (1/(Z*beta))*((exp(-beta*vals_arr(n)) - exp(-beta*vals_arr(m)))&
 								/(vals_arr(m)-vals_arr(n)))*O_nm*O_mn
+						end if
 					else
 						corr_elt = corr_elt + (1/Z)*exp(-beta*vals_arr(m))*O_nm*O_mn
 					end if

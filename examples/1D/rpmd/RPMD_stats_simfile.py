@@ -24,15 +24,15 @@ potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
 #potkey='harmonic'
 
 Tc = 0.5*lamda/np.pi
-times = 1.0
+times = 1.8
 T = times*Tc
 Tkey = 'T_{}Tc'.format(times)
 
 #------------------------------------------------------
 N = 1000
 dt_therm = 0.05
-time_therm = 100.0
-nbeads = 8
+time_therm = 50.0
+nbeads = 16
 method = 'RPMD'
 
 #------------------------------------------------------
@@ -61,8 +61,8 @@ Sim_class.set_runtime(time_therm)
 
 start_time=time.time()
 func = partial(Sim_class.run_seed)
-seeds = range(1000)
-seed_split = chunks(seeds,6)
+seeds = range(200)
+seed_split = chunks(seeds,10)
 
 param_dict = {'Temperature':Tkey,'CType':corrkey,'m':m,\
 	'therm_time':time_therm,'dt_therm':dt_therm}
