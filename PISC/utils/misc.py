@@ -11,6 +11,11 @@ def pairwise_swap(a,l):
 	temp[...,2:l:2] = tempodd
 	return temp[...,:l]
 
+def find_maxima(a):
+	ind = np.where(np.r_[True, a[1:] > a[:-1]] & np.r_[a[:-1] > a[1:], True])
+	return ind
+
+
 def find_OTOC_slope(fname,tst,tend):
 	data = read_1D_plotdata('{}.txt'.format(fname))
 	t_arr = data[:,0]

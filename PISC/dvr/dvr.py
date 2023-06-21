@@ -9,7 +9,7 @@ import time
 
 class DVR1D(object):
 	def __init__(self,ngrid,lb,ub,m,potential,hbar=1.0):
-		self.grid = np.linspace(lb,ub,ngrid+1)
+		self.grid = np.linspace(lb,ub,ngrid)
 		self.dx = self.grid[1]-self.grid[0]
 		self.ngrid = ngrid
 		self.lb = lb
@@ -18,8 +18,8 @@ class DVR1D(object):
 		self.hbar = hbar
 		self.potential = potential
 
-		self.vals = np.zeros(ngrid-1)
-		self.vecs = np.zeros((ngrid-1,ngrid-1))
+		self.vals = np.zeros(ngrid)
+		self.vecs = np.zeros((ngrid,ngrid))
 
 	def Kin_matrix_elt(self,i,j,lb=None,ub=None,ngrid=None):
 		if lb is None:	
@@ -43,16 +43,16 @@ class DVR1D(object):
 				return 0.0
 
 	def Kin_matrix(self):
-		Kin_mat = np.zeros((self.ngrid-1,self.ngrid-1))
-		for i in range(0,self.ngrid-1):
-			for j in range(0,self.ngrid-1):
+		Kin_mat = np.zeros((self.ngrid,self.ngrid))
+		for i in range(0,self.ngrid):
+			for j in range(0,self.ngrid):
 					Kin_mat[i][j] = self.Kin_matrix_elt(i+1,j+1)	
 		return Kin_mat
 
 	def Pot_matrix(self):
-		Pot_mat = np.zeros((self.ngrid-1,self.ngrid-1))
-		for i in range(0,self.ngrid-1):
-			for j in range(0,self.ngrid-1):
+		Pot_mat = np.zeros((self.ngrid,self.ngrid))
+		for i in range(0,self.ngrid):
+			for j in range(0,self.ngrid):
 				if(i==j):
 					Pot_mat[i][j] = self.potential(self.grid[i])
 		return Pot_mat  

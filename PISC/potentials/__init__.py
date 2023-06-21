@@ -14,3 +14,5 @@ from PISC.potentials.Morse_1D import  morse
 from PISC.potentials.Quartic_bistable import  quartic_bistable
 from PISC.potentials.Quartic import quartic
 from PISC.potentials.trunc_harmonic import  trunc_harmonic
+from PISC.potentials.mildly_anharmonic import mildly_anharmonic
+from PISC.potentials.Veff_classical import Veff_classical_1D_LH, Veff_classical_1D_GH, Veff_classical_1D_FH, Veff_classical_1D_FK
