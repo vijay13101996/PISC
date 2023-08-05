@@ -129,13 +129,10 @@ if(0):
 	plt.scatter(qgrid[FKind], s*Peff_FK[FKind],color='b')
 	plt.scatter(qgrid[Cind], s*Pcl[Cind],color='g')
 	
-
-
 	plt.suptitle(r'Double Well Potential, $\lambda=2.0, g={}$'.format(g))
 	plt.title(r'$T={}, \beta V_b = {}$'.format(T_au, np.around(Vb/T_au,2)))
 	plt.legend()
 	plt.show()
-
 
 if(1):
 	potgrid = pes.potential(qgrid)
@@ -164,8 +161,6 @@ if(1):
 	#plt.scatter(qgrid[FKind], s*Peff_FK[FKind],color='b')
 	#plt.scatter(qgrid[Cind], s*Pcl[Cind],color='g')
 	
-
-
 	plt.suptitle(r'Harmonic Oscillator Potential, $\omega=1.0, m=1.0$')
 	plt.title(r'$T={}, \beta E_0={} $'.format(T_au,np.around(0.5*beta,2)))
 	plt.legend()
