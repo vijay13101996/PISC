@@ -35,9 +35,9 @@ nbeads=32
 
 
 ms = 19 #14
-xl_fs = 13#14
-yl_fs = 13
-tp_fs = 11 #12
+xl_fs = 10#14
+yl_fs = 10
+tp_fs = 9 #12
 
 rpc = 'olivedrab'
 qc = 'darkorange'#'orangered'
@@ -68,7 +68,7 @@ if(1):
 		T_arr.append(times)
 		error = np.around(V[0,0]**0.5,2)
 		ebar_arr.append(error)
-		ax.errorbar(times,rpslope,yerr=error,fmt='o',ms=4.5,color=rpc,capsize=2.0,label='$RPMD$')
+		ax.errorbar(times,rpslope,yerr=error,fmt='o',ms=4.5,color=rpc,capsize=2.0,label='$RPMD$',zorder=4)
 		#ms 4 for thesis
 		print(Tkey,rpslope,error )	
 	#plt.show()	
@@ -101,7 +101,7 @@ if(1):
 	ax.axvline(x=1.0,ymin=0.0, ymax = 1.0,linestyle='-',color='gray')
 
 	#ax.annotate('Classical', xy=(0.5,0.5), xycoords='axes fraction', xytext=(0.5,0.67) , textcoords ='axes fraction',fontsize=10)#15)
-	ax.annotate('$\lambda_{O}=2\pi \: k_B T/\hbar$',xy=(0.27,0.75), xycoords='axes fraction', xytext=(0.31,0.82), color='r', textcoords= 'axes fraction', fontsize=xl_fs)
+	ax.annotate('$\lambda(T)=2\pi \: k_B T/\hbar$',xy=(0.27,0.75), xycoords='axes fraction', xytext=(0.31,0.82), color='r', textcoords= 'axes fraction', fontsize=xl_fs)
 		
 	T_ext = np.arange(1.05,3.06,0.2)
 	T_ext1 = np.array([1.8,2.2,2.6,3.0])
@@ -120,15 +120,15 @@ if(1):
 	ax.plot(T_arr, 2*np.pi*T_arr*Tc,color='r')#'k',ls=':')
 
 	ax.set_xlabel(r'$T/T_c$',fontsize=xl_fs)
-	ax.set_ylabel(r'$\lambda_O$',fontsize=xl_fs)
+	ax.set_ylabel(r'$\lambda(T)$',fontsize=xl_fs)
 
 	xticks = np.arange(1.0,3.01,0.5) #
 	yticks = np.arange(1.0,3.01)
 	ax.set_xticks(xticks)
 	ax.set_yticks(yticks)
 	
-	for label in ax.xaxis.get_ticklabels()[1::2]:
-		label.set_visible(False)	
+	#for label in ax.xaxis.get_ticklabels()[1::2]:
+	#	label.set_visible(False)	
 	
 	ax.tick_params(axis='both', which='major', labelsize=tp_fs)
 	#plt.title('Ring-polymer Lyapunov exponent as a function of temperature')
@@ -138,12 +138,14 @@ if(1):
 	#fig.set_size_inches(2.5, 2)
 	#fig.savefig('/home/vgs23/Images/RP_lambda_D2.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)
 	
-	handles, labels = ax.get_legend_handles_labels()
-	handles = [h[0] if isinstance(h, container.ErrorbarContainer) else h for h in handles]
-	ax.legend(handles, labels,loc='lower right',fontsize=tp_fs-1.5)
+	#handles, labels = ax.get_legend_handles_labels()
+	#handles = [h[0] if isinstance(h, container.ErrorbarContainer) else h for h in handles]
+	#ax.legend(handles, labels,loc='lower right',fontsize=tp_fs-1.5)
 	
-	fig.set_size_inches(4, 2.5)
-	fig.savefig('/home/vgs23/Images/RP_lambda_Leverhulme.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)	
+	fig.set_size_inches(2.2,2)#4, 2.5)
+	#fig.savefig('/home/vgs23/Images/RP_lambda_Leverhulme.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)	
+	fig.savefig('/home/vgs23/Images/RP_lambda_D3.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)	
 	
-	plt.show()
+
+	#plt.show()
 

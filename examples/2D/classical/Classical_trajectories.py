@@ -17,7 +17,10 @@ from scipy.ndimage import gaussian_filter
 from scipy.interpolate import interp1d
 import matplotlib.animation as animation
 import matplotlib.patheffects as path_effects
-import matplotlib
+#import matplotlib as plt
+
+plt.rcParams.update({'font.size': 10, 'font.family': 'serif','font.style':'italic','font.serif':'Garamond'})
+
 
 ### Potential parameters
 m=0.5#0.5
@@ -143,13 +146,13 @@ yarr.append(y)
 ax.set_xlabel(r'$x$',fontsize=xl_fs)
 ax.set_ylabel(r'$y$',fontsize=yl_fs)
 
-plt.rcParams.update({'font.size': 10, 'font.family': 'serif','font.serif':'Times New Roman'})
-matplotlib.rcParams['axes.unicode_minus'] = False
+#plt.rcParams.update({'font.size': 10, 'font.family': 'serif','font.serif':'Times New Roman'})
+#matplotlib.rcParams['axes.unicode_minus'] = False
 
 line, = plt.plot(xarr,yarr,color='g',lw=1.5)
 scatter1 = plt.scatter(x,y,s=mss,facecolor='k', edgecolor='k') 
 scatter2 = plt.scatter(xb,yb,s=msl,facecolor='navy',edgecolor='navy',alpha=0.75,zorder=3)
-timeax = plt.annotate('t=0.0', xy=(3.75, 3.1), xytext=(0.41, 0.8),xycoords = 'axes fraction',fontsize=ti_fs)
+timeax = plt.annotate('$t=0.0$', xy=(3.75, 3.1), xytext=(0.35, 0.8),xycoords = 'axes fraction',fontsize=ti_fs)
 
 ax.set_xticks([])
 ax.set_yticks([])
@@ -157,7 +160,7 @@ ax.set_ylim([-1.8,2.0])
 ax.set_xlim([-4,4])
 ax.tick_params(axis='both', which='major', labelsize=tp_fs)
 
-fig.set_size_inches(3,2)#2.4, 1.6)	
+fig.set_size_inches(2.4,1.6)#3,2)
 		
 def animate(i):
 	xb = rp.qcart[0,0,:]
@@ -191,15 +194,12 @@ def animate(i):
 for i in range(159):
 	animate(i)
 
-#fig.savefig('/home/vgs23/Images/Animation_snapshot_3_thesis.pdf', dpi=200,bbox_inches='tight',pad_inches=0.0)
+fig.savefig('/home/vgs23/Images/Animation_snapshot_3_D3.pdf', dpi=200,bbox_inches='tight',pad_inches=0.0)
 
 
 #anim = animation.FuncAnimation(fig, animate, frames=range(nframes),repeat=False)
-
-
-
 #anim.save('Chaotic_Instanton.mp4'.format(path),dpi=400,fps=15,bitrate=-1, codec="libx264")
-plt.show()
+#plt.show()
 
 if(0):
 	for i in range(nsteps):

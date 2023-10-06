@@ -127,17 +127,17 @@ if(1):
 	ax.set_xlim([0.65,3.07])
 	#plt.title('Ring-polymer Lyapunov exponent as a function of temperature')
 
-	#plt.legend()
-	#plt.gca().xaxis.set_major_formatter(FormatStrFormatter('%g'))
-	#fig.set_size_inches(2.5, 2)
-	#fig.savefig('/home/vgs23/Images/RP_lambda_D2.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)
+	plt.legend()
+	plt.gca().xaxis.set_major_formatter(FormatStrFormatter('%g'))
+	fig.set_size_inches(2.5, 2)
+	fig.savefig('/home/vgs23/Images/RP_lambda_D2.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)
 	
-	handles, labels = ax.get_legend_handles_labels()
-	handles = [h[0] if isinstance(h, container.ErrorbarContainer) else h for h in handles]
-	ax.legend(handles, labels)
+	#handles, labels = ax.get_legend_handles_labels()
+	#handles = [h[0] if isinstance(h, container.ErrorbarContainer) else h for h in handles]
+	#ax.legend(handles, labels)
 	
-	fig.set_size_inches(5, 3)
-	fig.savefig('/home/vgs23/Images/RP_lambda_thesis.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)	
+	#fig.set_size_inches(5, 3)
+	#fig.savefig('/home/vgs23/Images/RP_lambda_thesis.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)	
 	
-	plt.show()
+	#plt.show()
 

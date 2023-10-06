@@ -6,8 +6,10 @@ import matplotlib
 from PISC.utils.plottools import plot_1D
 from PISC.utils.misc import find_OTOC_slope
 
-plt.rcParams.update({'font.size': 10, 'font.family': 'serif','font.serif':'Times New Roman' })
+#plt.rcParams.update({'font.size': 10, 'font.family': 'serif','font.serif':'Times New Roman' })
+plt.rcParams.update({'font.size': 10, 'font.family': 'serif','font.style':'italic','font.serif':'Garamond'})
 matplotlib.rcParams['axes.unicode_minus'] = False
+
 path = os.path.dirname(os.path.abspath(__file__))
 Cext = '/home/vgs23/PISC/examples/2D/classical/Datafiles/'
 qext = '/home/vgs23/PISC/examples/2D/quantum/Datafiles/'
@@ -32,12 +34,12 @@ potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,
 fig,ax = plt.subplots(1,3)
 
 rpc = 'olivedrab'
-qc = 'orangered'
+qc = 'darkorange'#'orangered'
 Cc = 'slateblue'
 
-xl_fs = 10
-yl_fs = 10
-tp_fs = 9.5
+xl_fs = 10.0
+yl_fs = 10.0
+tp_fs = 9
 le_fs = 10
 ti_fs = 8
 
@@ -189,12 +191,12 @@ plt.subplots_adjust(wspace=0.195)
 for i in range(3):
 	ax[i].tick_params(axis='both', which='major', labelsize=tp_fs)
 
-fig.set_size_inches(5, 2)
+fig.set_size_inches(5.3, 2)
 #handles, labels = ax.get_legend_handles_labels()
 fig.legend(loc = (0.35, 0.9),ncol=3, fontsize=le_fs)
 
-fig.savefig('/home/vgs23/Images/Thermal_OTOCs_D2.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)
-plt.show()
+fig.savefig('/home/vgs23/Images/Thermal_OTOCs_D3.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)
+#plt.show()
 
 
 #fig.set_size_inches(8, 2.5)

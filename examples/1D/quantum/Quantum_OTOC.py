@@ -1,10 +1,10 @@
 import numpy as np
 from PISC.dvr.dvr import DVR1D
-from PISC.husimi.Husimi import Husimi_1D
-from PISC.potentials import double_well, morse, quartic
+#from PISC.husimi.Husimi import Husimi_1D
+from PISC.potentials import double_well, morse, quartic, asym_double_well
 from PISC.potentials.triple_well_potential import triple_well
 from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr, read_arr
-from PISC.engine import OTOC_f_1D_omp, OTOC_f_1D_omp_updated
+from PISC.engine import OTOC_f_1D_omp_updated
 from matplotlib import pyplot as plt
 import os 
 from PISC.utils.plottools import plot_1D
@@ -42,7 +42,7 @@ if(0): # Morse potential
 	potkey = 'morse'
 	Tkey = 'T_{}'.format(T_au)
 	
-if(1): #Double well potential
+if(0): #Double well potential
 	L = 10.0#6.0
 	lb = -L
 	ub = L
@@ -60,6 +60,29 @@ if(1): #Double well potential
 	T_au = times*Tc
 
 	potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
+	Tkey = 'T_{}Tc'.format(times)	
+
+	print('g, Vb,D', g, lamda**4/(64*g), 3*lamda**4/(64*g))
+
+if(1): #Asymmetric double well
+	L = 6.0#6.0
+	lb = -L
+	ub = L
+	m = 0.5
+
+	#1.5: 0.035,0.075,0.13
+	#2.0: 0.08,0.172,0.31
+
+	lamda = 2.0
+	g = 0.08
+	k = 0.04
+	pes = asym_double_well(lamda,g,k)
+	
+	Tc = lamda*(0.5/np.pi)    
+	times = 10.0#0.8
+	T_au = times*Tc
+
+	potkey = 'asym_double_well_lambda_{}_g_{}_k_{}'.format(lamda,g,k)
 	Tkey = 'T_{}Tc'.format(times)	
 
 	print('g, Vb,D', g, lamda**4/(64*g), 3*lamda**4/(64*g))
@@ -86,7 +109,7 @@ vals,vecs = DVR.Diagonalize(neig_total=ngrid-10)
 
 print('vals',vals[:5],vecs.shape)
 print('delta omega', vals[1]-vals[0])
-if(0): # Plots of PES and WF
+if(1): # Plots of PES and WF
 	qgrid = np.linspace(lb,ub,ngrid-1)
 	potgrid = pes.potential(qgrid)
 	hessgrid = pes.ddpotential(qgrid)
@@ -111,11 +134,12 @@ if(0): # Plots of PES and WF
 	for i in range(20):
 			plt.axhline(y=vals[i])
 	#plt.suptitle(r'Energy levels for Double well, $\lambda = {}, g={}$'.format(lamda,g)) 
-	plt.show()
+	fig.savefig('/home/vgs23/Images/PES_temp.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)
+	#plt.show()
 
 x_arr = DVR.grid[1:DVR.ngrid]
-basis_N = 140
-n_eigen = 90
+basis_N = 50
+n_eigen = 30
 
 k_arr = np.arange(basis_N) +1
 m_arr = np.arange(basis_N) +1
@@ -148,8 +172,12 @@ if(0): #Microcanonical correlators
 path = os.path.dirname(os.path.abspath(__file__))	
 store_1D_plotdata(t_arr,C_arr,fname,'{}/Datafiles'.format(path))
 
-plt.plot(t_arr,C_arr)
-plt.show()
+fig,ax = plt.subplots()
+plt.plot(t_arr,np.log(abs(C_arr)))
+fig.savefig('/home/vgs23/Images/OTOC_temp.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)
+	
+
+#plt.show()
 
 if(0): #Stray code
 	bnm_arr=np.zeros_like(OTOC_arr)

@@ -5,14 +5,14 @@ import pickle
 import multiprocessing as mp
 from functools import partial
 from PISC.utils.mptools import chunks, batching
-from PISC.potentials import double_well,quartic,morse
+from PISC.potentials import double_well,quartic,morse, asym_double_well
 from PISC.engine.PI_sim_core import SimUniverse
 import time
 import os 
 
 dim=1
 
-if(1): #Double well potential
+if(0): #Double well potential
 	lamda = 2.0
 	g = 0.08
 
@@ -35,7 +35,31 @@ if(1): #Double well potential
 
 	potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
 	Tkey = 'T_{}Tc'.format(times)
+
+if(1): #Asymmetric double well potential
+	lamda = 2.0
+	g = 0.08
+	k = 0.04
+	pes = asym_double_well(lamda,g,k)
 	
+	Tc = lamda*(0.5/np.pi)    
+	times = 1.0#0.8
+	T = times*Tc
+
+	m = 0.5
+	N = 1000
+	dt_therm = 0.05
+	dt = 0.002
+	time_therm = 50.0
+	time_total = 5.0
+
+	nbeads = 1
+
+	potkey = 'asym_double_well_lambda_{}_g_{}_k_{}'.format(lamda,g,k)
+	Tkey = 'T_{}Tc'.format(times)	
+
+	
+
 if(0): #Quartic potential from Mano's paper
 	a = 1.0
 
@@ -84,7 +108,7 @@ if(0): #Morse
 
 method = 'RPMD'
 sysname = 'Selene'		
-corrkey = 'qp_TCF'#'OTOC'
+corrkey = 'OTOC'
 enskey = 'thermal'
 
 path = os.path.dirname(os.path.abspath(__file__))
