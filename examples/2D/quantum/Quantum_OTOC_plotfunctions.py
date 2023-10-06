@@ -1,11 +1,11 @@
 import numpy as np
 from PISC.dvr.dvr import DVR2D
-from PISC.husimi.Husimi import Husimi_2D,Husimi_1D
+#from PISC.husimi.Husimi import Husimi_2D,Husimi_1D
 from PISC.potentials.Coupled_harmonic import coupled_harmonic
 from PISC.potentials.Quartic_bistable import quartic_bistable
 from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr, read_arr
 from PISC.utils.plottools import plot_1D
-from PISC.engine import OTOC_f_1D
+#from PISC.engine import OTOC_f_1D
 from PISC.engine import OTOC_f_2D_omp_updated
 from matplotlib import pyplot as plt
 import os 
@@ -82,6 +82,7 @@ def plot_Cn(path,alpha,D,lamda,g,z,n,ax,lbltxt,basis_N=100):
 	ax.plot(t_arr, np.log(abs(C)), label=lbltxt)
 
 def plot_thermal_OTOC(path,alpha,D,lamda,g,z,beta,ax,lbltxt,basis_N=50,n_eigen=20,k=1.0,reg='Kubo',t_arr=None):
+	print('T',1/beta)
 	vals,vecs,DVR = load_data(path,alpha,D,lamda,g,z,k)
 	x_arr = DVR.pos_mat(0)
 	k_arr = np.arange(basis_N) +1

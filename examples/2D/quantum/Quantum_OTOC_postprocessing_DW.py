@@ -21,7 +21,6 @@ Vb =lamda**4/(64*g)
 D = 3*Vb
 alpha = 0.382
 
-print('Vb', Vb)
 z = 1.0#2.3	
 
 Tc = lamda*0.5/np.pi
@@ -29,22 +28,25 @@ times = 0.85#1.0
 T_au = times*Tc 
 beta = 1.0/T_au 
 	
-
 path = os.path.dirname(os.path.abspath(__file__))	
 	
 fig,ax = plt.subplots()
 
+print('ehere')
 alpha_list1 = [0.382]#[0.24,0.39,0.55,1.147]#,0.382,0.52,1.147]#,0.55]
 alpha_list2 = [0.382]#,0.45,0.52]#,0.53,0.54,0.55]#,0.6]
 alpha_list3 = [0.52]
 alpha_list4 = [1.147]
 
-if(0): # b_nm,C_n for different alpha
+if(1): # b_nm,C_n for different alpha
+	print('heree')
 	#for z in [1.0]:#0.0,0.5,1.0]:
 		#print('z',z) 
 		#plot_thermal_OTOC(path,alpha,D,lamda,g,z,beta,ax,lbltxt=r'$\z={}$'.format(z),basis_N=50,n_eigen=20,reg='Kubo')
 
-	for times in [1.6,1.8,2.0,2.2,2.4,2.6,2.8]:#[3.0,0.95,0.6]:#np.arange(0.7,1.5,0.1):#[3.0]:#0.6,0.95,10.0]:#[1.0,1.1,1.2,1.3,1.4,1.5]:
+	T_arr = np.arange(0.2,3.0,0.2)
+	T_arr = [0.1]#np.concatenate([[0.05],T_arr])
+	for times in T_arr:#[1.6,1.8,2.0,2.2,2.4,2.6,2.8]:#[3.0,0.95,0.6]:#np.arange(0.7,1.5,0.1):#[3.0]:#0.6,0.95,10.0]:#[1.0,1.1,1.2,1.3,1.4,1.5]:
 		T = times*Tc
 		beta = 1/T
 		print('T', times,beta)	
@@ -104,7 +106,7 @@ if(0): # b_nm for different n,m's
 			#plot_wf(path,alpha,D,lamda,g,z,n)	
 			plot_bnm(path,alpha,D,lamda,g,z,n,M,ax,lbltxt=r'$n,m={},{}$'.format(n,M))
 
-if(1):
+if(0):
 	def get_cmap(n, name='hsv'):
 		'''Returns a function that maps each index in 0, 1, ..., n-1 to a distinct 
 		RGB color; the keyword argument name must be a standard mpl colormap name.'''
