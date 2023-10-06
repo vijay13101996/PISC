@@ -33,6 +33,7 @@ class Integrator(object):
 	
 class Symplectic_order_II(Integrator):	
 	def O(self,pc):
+		""" Propagation of momenta due to the thermostat """
 		self.therm.thalfstep(pc)
 
 	def b_cent(self):
@@ -46,6 +47,7 @@ class Symplectic_order_II(Integrator):
 		self.rp.dq+=self.rp.dp*self.motion.qdt/self.rp.dynm3
 	
 	def B(self,centmove=True):
+		""" Propagation of momenta """
 		if(centmove):
 			self.rp.p-=self.pes.dpot*self.motion.pdt	
 		else:
@@ -81,25 +83,31 @@ class Symplectic_order_II(Integrator):
 			self.rp.p[...,self.rp.nmats:]-=dpc[...,self.rp.nmats:]*self.motion.pdt
 
 	def M1(self):
+		""" Evolution of Mpp corresponding to the physical potential"""
 		#self.rp.Mpp-=(self.pes.ddpot)*self.motion.pdt*self.rp.Mqp
 		hess_mul(self.pes.ddpot,self.rp.Mqp,self.rp.Mpp,self.rp,self.motion.pdt)		
 	
 	def m1(self):
+		""" Evolution of Mpp corresponding to the spring potential"""
 		#self.rp.Mpp-=(self.rp.ddpot)*self.motion.pdt*self.rp.Mqp	
 		hess_mul(self.rp.ddpot,self.rp.Mqp,self.rp.Mpp,self.rp,self.motion.pdt)		
 
 	def M2(self):
+		""" Evolution of Mpq corresponding to the physical potential"""
 		#self.rp.Mpq-=(self.pes.ddpot)*self.motion.pdt*self.rp.Mqq
 		hess_mul(self.pes.ddpot,self.rp.Mqq,self.rp.Mpq,self.rp,self.motion.pdt)		
 
 	def m2(self):
+		""" Evolution of Mpq corresponding to the spring potential"""
 		#self.rp.Mpq-=(self.rp.ddpot)*self.motion.pdt*self.rp.Mqq
 		hess_mul(self.rp.ddpot,self.rp.Mqq,self.rp.Mpq,self.rp,self.motion.pdt)		
 
 	def M3(self):
+		""" Evolution of Mqp corresponding to the physical potential"""
 		self.rp.Mqp+=self.motion.qdt*self.rp.Mpp/self.rp.dynm3[:,:,None,:,None]
 	
 	def M4(self):
+		""" Evolution of Mqq corresponding to the physical potential"""
 		self.rp.Mqq+=self.motion.qdt*self.rp.Mpq/self.rp.dynm3[:,:,None,:,None]
 		
 	def pq_step(self,centmove=True):
@@ -174,19 +182,23 @@ class Symplectic_order_IV(Integrator):
 	"""
 
 	def O(self,pmats):
+		""" Propagation of momenta due to the thermostat """
 		self.therm.thalfstep(pmats)
 
 	def A(self,k):
+		""" Propagation of coordinate """
 		self.rp.q+=self.motion.qdt[k]*self.rp.p/self.rp.dynm3
 		self.force_update()
 	
 	def B(self,k,centmove=True):
+		""" Propagation of momenta """
 		if centmove:
 			self.rp.p-=self.pes.dpot*self.motion.pdt[k]
 		else:
 			self.rp.p[...,1:]-=self.pes.dpot[...,1:]*self.motion.pdt[k]
 
 	def b(self,k):	
+		""" Propagation of momenta due to spring potential """
 		if self.rp.nmats is None:
 			self.rp.p-=self.rp.dpot*self.motion.pdt[k]
 		else:
@@ -330,7 +342,7 @@ class Runge_Kutta_order_VIII(Integrator):
 		self.rp.q = y[:N].reshape(self.rp.nsys,self.rp.ndim,self.rp.nbeads)
 		self.rp.p = y[N:2*N].reshape(self.rp.nsys,self.rp.ndim,self.rp.nbeads)
 		self.force_update()
-	
+       
 		n_mmat = self.rp.nsys*self.rp.ndim*self.rp.ndim*self.rp.nbeads*self.rp.nbeads
 		self.rp.Mpp = y[2*N:2*N+n_mmat].reshape(self.rp.nsys,self.rp.ndim,self.rp.ndim,self.rp.nbeads,self.rp.nbeads)
 		self.rp.Mpq = y[2*N+n_mmat:2*N+2*n_mmat].reshape(self.rp.nsys,self.rp.ndim,self.rp.ndim,self.rp.nbeads,self.rp.nbeads)
@@ -340,10 +352,10 @@ class Runge_Kutta_order_VIII(Integrator):
 		d_mpq = -(self.pes.ddpot+self.rp.ddpot)*self.rp.Mqq
 		d_mqp = self.rp.Mpp/self.rp.dynm3[:,:,None,:,None]
 		d_mqq = self.rp.Mpq/self.rp.dynm3[:,:,None,:,None]
-		
+       	
 		dydt = np.concatenate(((self.rp.p/self.rp.dynm3).flatten(),-(self.pes.dpot+self.rp.dpot).flatten(),d_mpp.flatten(),d_mpq.flatten(),d_mqp.flatten(), d_mqq.flatten()  ))
 		return dydt
-    
+   
 	def integrate(self,tarr,mxstep=1000000):
 		y0=np.concatenate((self.rp.q.flatten(), self.rp.p.flatten(),self.rp.Mpp.flatten(),self.rp.Mpq.flatten(),self.rp.Mqp.flatten(),self.rp.Mqq.flatten()))
 		sol = scipy.integrate.odeint(self.int_func,y0,tarr,mxstep=mxstep)
