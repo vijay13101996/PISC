@@ -2,6 +2,7 @@
 # import multiprocessing as mp
 import argparse
 import numpy as np
+import pathlib as Path
 import time
 import os
 
@@ -12,13 +13,12 @@ from PISC.engine.PI_sim_core import SimUniverse
 
 test=True
 def main(system_param, pes_param, ensemble_param, simulation_param):
-    path = os.path.dirname(os.path.abspath(__file__))
+    path = Path.Path(__file__).parent.resolve()
+    # pes  = check_pes_param(pes_param) #ALBERTO
+    # check_ensemble_param(ensemble_param) #ALBERTO
+    # check_simulation_param(simulation_param) #ALBERTO
 
-    # pes  = check_pes_param(pes_param)
-    # check_ensemble_param(ensemble_param)
-    # check_simulation_param(simulation_param)
-
-    if test:
+    if test: #ALBERTO
         times = 20
         lamda = 2.0
         g = 0.02  # 8
@@ -32,12 +32,13 @@ def main(system_param, pes_param, ensemble_param, simulation_param):
 
     Sim_class = SimUniverse(
         simulation_param["method"],
-        path,
+        str(path),
         system_param["sys_name"],
         potkey,
         simulation_param["CFtype"],
         ensemble_param["ensemble"],
         Tkey,
+        folder_name=simulation_param["folder_name"],
     )
     Sim_class.set_sysparams(
         pes, ensemble_param["temperature"], system_param["mass"], system_param["dimension"]
@@ -55,10 +56,12 @@ def main(system_param, pes_param, ensemble_param, simulation_param):
 
     start_time = time.time()
     func = partial(Sim_class.run_seed)
-    seeds = range(100)
-    seed_split = chunks(seeds, 10)
+    seeds = range(simulation_param['nseeds'])
+    seed_split = chunks(seeds, simulation_param['chunk_size'])
 
-    with open("{}/Datafiles/input_log_{}.txt".format(path, potkey), "a") as f:
+    output_folder = path/simulation_param["folder_name"]
+    Path.Path(output_folder).mkdir(parents=True, exist_ok=True)
+    with open(output_folder/"input_log_{}.txt".format(potkey), "w") as f:
         f.write("\n" + str(system_param))
         f.write("\n" + str(pes_param))
         f.write("\n" + str(ensemble_param))
@@ -89,7 +92,7 @@ parser.add_argument(
     help="Potential energy surface",
 )
 parser.add_argument(
-    "-m", "--mass", type=float, required=True, help="mass in atomic units (ALBERTO)"
+    "-m", "--mass", type=float, required=True, help="mass in atomic units"
 )
 parser.add_argument("-sys_name", "--sys_name", type=str, required=True, help="ALBERTO")
 
@@ -110,6 +113,13 @@ parser.add_argument(
     default=1,
     help="Number of beads",
 )
+parser.add_argument(
+    "-cmd_gamma",
+    "--cmd_gamma",
+    type=float,
+    required=False,
+    help="Parameter that determines the adiabatic separation for cmd calculations",
+)
 
 # ------- Ensemble --------------------------------------------#
 parser.add_argument(
@@ -125,40 +135,40 @@ parser.add_argument(
     "--temp",
     type=float,
     required=True,
-    help="Temperature in atomic units (ALBERTO)",
+    help="Temperature in atomic units ",
 )
 parser.add_argument(
     "-temp_tau",
     "--temp_tau",
     type=float,
     required=True,
-    help="Time constant of the langeving thermostat in atomic units (ALBERTO)",
+    help="Time constant of the Langevin thermostat in atomic units",
 )
 
 # ------------ Simulation parameters --------------------#
 parser.add_argument(
-    "-dt", "--dt", type=float, required=True, help="Time step in atomic units (ALBERTO)"
+    "-dt", "--dt", type=float, required=True, help="Time step in atomic units "
 )
 parser.add_argument(
     "-dt_therma",
     "--dt_therma",
     type=float,
     required=True,
-    help="Time step for thermalization in atomic units (ALBERTO)",
+    help="Time step for thermalization in atomic units ",
 )
 parser.add_argument(
     "-time_therma",
     "--time_therma",
     type=float,
     default=-1.0,
-    help="Thermalization simulation time in atomic units (ALBERTO)",
+    help="Thermalization simulation time in atomic units",
 )
 parser.add_argument(
     "-time_total",
     "--time_total",
     type=float,
     required=True,
-    help="Production simulation time in atomic units (ALBERTO)",
+    help="Production simulation time in atomic units",
 )
 parser.add_argument(
     "-n_traj",
@@ -167,14 +177,51 @@ parser.add_argument(
     required=True,
     help="Number of parallel trajectories",
 )
+parser.add_argument(
+    "-nseeds",
+    "--nseeds",
+    type=int,
+    required=True,
+    help="Number of seeds",
+)
+parser.add_argument(
+    "-chunk",
+    "--chunk_size",
+    type=int,
+    required=True,
+    help="Number of seeds simulated at the same time",
+)
+parser.add_argument(
+    "-folder",
+    "--folder_name",
+    type=str,
+    required=True,
+    default="DataFile",
+    help="Name of the folder to write the simulation output",
+)
+parser.add_argument(
+    "-label",
+    "--sim_label",
+    type=str,
+    required=True,
+    help="Simulation label",
+)
 
-# Target quantity
+parser.add_argument(
+    "-pes_param",
+    "--pes_parameters",
+    nargs="+",
+    default=None,
+    help="Parameters needed for the evalution of the PES",
+)
+
+# ----------- Target quantity --------------------
 parser.add_argument(
     "-corr_func",
     "--corr_func",
     type=str,
     required=True,
-    choices=["OTOC"],
+    choices=["qq_TCF","pp_TCF","qq2_TCF","pp2_TCF","qp_TCF","pq_TCF","OTOC","R2"],
     help="Correlation function to be computed",
 )
 
@@ -185,8 +232,8 @@ system_param = {
     "dimension": args.dimension,
     "mass": args.mass,
 }
-
-pes_param = {"dimension": args.dimension, "pes_name": args.pes}
+aux = list(map(float, args.pes_parameters))
+pes_param = {"dimension": args.dimension, "pes_name": args.pes, "pes_param":aux}
 
 ensemble_param = {
     "ensemble": args.ensemble,
@@ -197,17 +244,17 @@ ensemble_param = {
 simulation_param = {
     "method": args.method,
     "nbeads": args.nbeads,
+    "cmd_gamma": args.cmd_gamma,
     "n_traj": args.n_traj,
     "time_therma": args.time_therma,
     "time_total": args.time_total,
     "dt": args.dt,
     "dt_therma": args.dt_therma,
     "CFtype": args.corr_func,
+    "nseeds": args.nseeds,
+    "chunk_size": args.chunk_size,
+    "folder_name": args.folder_name,
+    "simulation_label": args.sim_label,
 }
-
-# ALBERTO ADD gamma, seeds, chunks
-# ALBERTO ADD pess parameters, 
-# ALBERTO: create Datafile if doesn't exist
-# ALBERTO: add R2, qq_tcf in choices   
 
 main(system_param, pes_param, ensemble_param, simulation_param)

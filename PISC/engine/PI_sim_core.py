@@ -12,7 +12,7 @@ from PISC.engine.thermalize_PILE_L import thermalize_rp
 from PISC.engine.gen_mc_ensemble import generate_rp
 
 class SimUniverse(object):
-	def __init__(self,method,pathname,sysname,potkey,corrkey,enskey,Tkey,ext_kwlist=None):
+	def __init__(self,method,pathname,sysname,potkey,corrkey,enskey,Tkey,ext_kwlist=None,folder_name='Datafiles'):
 		self.method = method
 		self.pathname = pathname
 		self.sysname = sysname
@@ -21,6 +21,7 @@ class SimUniverse(object):
 		self.enskey = enskey
 		self.Tkey = Tkey
 		self.ext_kwlist = ext_kwlist
+		self.folder_name = folder_name
 	
 	def set_sysparams(self,pes,T,mass,dim):
 		''' Set system paramenters 
@@ -64,14 +65,14 @@ class SimUniverse(object):
 	
 	def gen_ensemble(self,ens,rng,rngSeed):
 		if(self.enskey== 'thermal'):
-			thermalize_rp(self.pathname,self.m,self.dim,self.N,self.nbeads,ens,self.pes,rng,self.time_ens,self.dt_ens,self.potkey,rngSeed,self.qlist,self.tau0,self.pile_lambda)	
-			qcart = read_arr('Thermalized_rp_qcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(self.N,self.nbeads,ens.beta,self.potkey,rngSeed),"{}/Datafiles".format(self.pathname))
-			pcart = read_arr('Thermalized_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(self.N,self.nbeads,ens.beta,self.potkey,rngSeed),"{}/Datafiles".format(self.pathname))
+			thermalize_rp(self.pathname,self.m,self.dim,self.N,self.nbeads,ens,self.pes,rng,self.time_ens,self.dt_ens,self.potkey,rngSeed,self.qlist,self.tau0,self.pile_lambda,folder_name=self.folder_name)	
+			qcart = read_arr('Thermalized_rp_qcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(self.N,self.nbeads,ens.beta,self.potkey,rngSeed),"{}/{}".format(self.pathname,self.folder_name))
+			pcart = read_arr('Thermalized_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(self.N,self.nbeads,ens.beta,self.potkey,rngSeed),"{}/{}".format(self.pathname,self.folder_name))
 			return qcart,pcart	
 		elif(self.enskey=='mc'):
-			generate_rp(self.pathname,self.m,self.dim,self.N,self.nbeads,ens,self.pes,rng,self.time_ens,self.dt_ens,self.potkey,rngSeed,self.E,self.qlist,self.plist,self.filt_func)
-			qcart = read_arr('Microcanonical_rp_qcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(self.N,self.nbeads,ens.beta,self.potkey,rngSeed),"{}/Datafiles".format(self.pathname))
-			pcart = read_arr('Microcanonical_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(self.N,self.nbeads,ens.beta,self.potkey,rngSeed),"{}/Datafiles".format(self.pathname)) 
+			generate_rp(self.pathname,self.m,self.dim,self.N,self.nbeads,ens,self.pes,rng,self.time_ens,self.dt_ens,self.potkey,rngSeed,self.E,self.qlist,self.plist,self.filt_func,folder_name=self.folder_name)
+			qcart = read_arr('Microcanonical_rp_qcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(self.N,self.nbeads,ens.beta,self.potkey,rngSeed),"{}/{}".format(self.pathname,self.folder_name))
+			pcart = read_arr('Microcanonical_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(self.N,self.nbeads,ens.beta,self.potkey,rngSeed),"{}/{}".format(self.pathname,self.folder_name)) 
 			return qcart,pcart	
 
 	def run_OTOC(self,sim,single=False):
@@ -305,16 +306,16 @@ class SimUniverse(object):
 
 	def store_time_series(self,tarr,Carr,rngSeed): 
 		fname = self.assign_fname(rngSeed)	
-		store_1D_plotdata(tarr,Carr,fname,'{}/Datafiles'.format(self.pathname))	
+		store_1D_plotdata(tarr,Carr,fname,'{}/{}'.format(self.pathname,self.folder_name))	
                 #ALBERTO
 
 	def store_time_series_2D(self,tarr,Carr,rngSeed,suffix=None): 
 		fname = self.assign_fname(rngSeed,suffix)	
-		store_2D_imagedata(tarr,tarr,Carr,fname,'{}/Datafiles'.format(self.pathname))
+		store_2D_imagedata(tarr,tarr,Carr,fname,'{}/{}'.format(self.pathname,self.folder_name))
 
 	def store_scalar(self,scalar,rngSeed):
 		# Scalar values are stored in the same filename
 		fname = self.assign_fname(rngSeed)
-		f = open('{}/Datafiles/{}.txt'.format(self.pathname,fname),'a')
+		f = open('{}/{}/{}.txt'.format(self.pathname,self.folder_name,fname),'a')
 		f.write(str(rngSeed) + "  " + str(scalar) + '\n')
 		f.close()	

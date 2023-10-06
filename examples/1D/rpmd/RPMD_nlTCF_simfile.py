@@ -89,11 +89,11 @@ time_total = 20.0
 
 nbeads = 1
 
-op_list = ['p','p','q']
 
 method = 'RPMD'
 
 sysname = 'Selene'		
+op_list = ['p','p','q'] #t2,t1,t0
 corrkey = 'R2'
 enskey = 'thermal'
 #ext_kwlist = ['qqq']
