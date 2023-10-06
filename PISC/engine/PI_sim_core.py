@@ -310,7 +310,7 @@ class SimUniverse(object):
 
 	def store_time_series_2D(self,tarr,Carr,rngSeed,suffix=None): 
 		fname = self.assign_fname(rngSeed,suffix)	
-		store_2D_imagedata(tarr,tarr,Carr,fname,'{}/Datafiles'.format(self.pathname))	
+		store_2D_imagedata(tarr,tarr,Carr,fname,'{}/Datafiles'.format(self.pathname))
 
 	def store_scalar(self,scalar,rngSeed):
 		# Scalar values are stored in the same filename
