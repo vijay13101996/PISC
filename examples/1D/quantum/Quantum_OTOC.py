@@ -88,7 +88,7 @@ if(1): #Asymmetric double well
 	print('g, Vb,D', g, lamda**4/(64*g), 3*lamda**4/(64*g))
 	
 
-if(0): # Quartic potential
+if(1): # Quartic potential
 	L = 8
 	lb = -L
 	ub = L
@@ -97,8 +97,8 @@ if(0): # Quartic potential
 	a = 1.0
 	pes = quartic(a)
 
-	T_au = 1.0/8	
-	potkey = 'TESTquart'.format(a)
+	T_au = 1.0	
+	potkey = 'quartic_a_{}'.format(a)
 	Tkey = 'T_{}'.format(T_au)	
 
 beta = 1.0/T_au 
@@ -109,7 +109,7 @@ vals,vecs = DVR.Diagonalize(neig_total=ngrid-10)
 
 print('vals',vals[:5],vecs.shape)
 print('delta omega', vals[1]-vals[0])
-if(1): # Plots of PES and WF
+if(0): # Plots of PES and WF
 	qgrid = np.linspace(lb,ub,ngrid-1)
 	potgrid = pes.potential(qgrid)
 	hessgrid = pes.ddpotential(qgrid)
@@ -144,12 +144,12 @@ n_eigen = 30
 k_arr = np.arange(basis_N) +1
 m_arr = np.arange(basis_N) +1
 
-t_arr = np.linspace(0,5.0,2000)
+t_arr = np.linspace(0,30.0,2000)
 C_arr = np.zeros_like(t_arr) +0j
 
 path = os.path.dirname(os.path.abspath(__file__))
 
-corrkey = 'OTOC'#'qq_TCF'#'OTOC'#'qp_TCF'
+corrkey = 'qq_TCF'#'OTOC'#'qp_TCF'
 enskey = 'Kubo'#'mc'#'Kubo'
 
 corrcode = {'OTOC':'xxC','qq_TCF':'qq1','qp_TCF':'qp1'}
@@ -173,11 +173,11 @@ path = os.path.dirname(os.path.abspath(__file__))
 store_1D_plotdata(t_arr,C_arr,fname,'{}/Datafiles'.format(path))
 
 fig,ax = plt.subplots()
-plt.plot(t_arr,np.log(abs(C_arr)))
+plt.plot(t_arr,((C_arr)))
 fig.savefig('/home/vgs23/Images/OTOC_temp.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)
 	
 
-#plt.show()
+plt.show()
 
 if(0): #Stray code
 	bnm_arr=np.zeros_like(OTOC_arr)

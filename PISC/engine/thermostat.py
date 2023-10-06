@@ -14,7 +14,7 @@ class Thermostat(object):
         self.motion = motion
         self.rng = rng
         self.ens = ens
-        self.dt = self.motion.dt
+        self.dt = abs(self.motion.dt)
         
 class PILE_L(Thermostat):
     def __init__(self,tau0=1.0, pile_lambda=100.0):

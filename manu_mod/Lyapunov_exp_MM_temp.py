@@ -11,6 +11,8 @@ from matplotlib import container
 from matplotlib.ticker import FormatStrFormatter
 #plt.rcParams.update({'font.size': 10, 'font.family': 'serif','font.serif':'Times New Roman'})
 plt.rcParams.update({'font.size': 10, 'font.family': 'serif','font.style':'italic','font.serif':'Garamond'})
+matplotlib.rcParams['axes.unicode_minus'] = False
+
 
 path = os.path.dirname(os.path.abspath(__file__))
 rpext = '/home/vgs23/PISC/examples/2D/rpmd/Datafiles/'
@@ -34,14 +36,15 @@ potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,
 nbeads=32
 
 
-ms = 19 #14
-xl_fs = 10#14
-yl_fs = 10
-tp_fs = 9 #12
+ms = 25#19 #14
+xl_fs = 13# 10#14
+yl_fs = 13 #10
+tp_fs = 13 #9 #12
+lwd = 2
 
-rpc = 'olivedrab'
-qc = 'darkorange'#'orangered'
-Cc = 'slateblue'
+rpc ='limegreen' #'olivedrab'
+qc = 'orange'#'orange'
+Cc = 'darkslateblue'
 
 fig,ax = plt.subplots()
 
@@ -68,12 +71,13 @@ if(1):
 		T_arr.append(times)
 		error = np.around(V[0,0]**0.5,2)
 		ebar_arr.append(error)
-		ax.errorbar(times,rpslope,yerr=error,fmt='o',ms=4.5,color=rpc,capsize=2.0,label='$RPMD$',zorder=4)
+		ax.errorbar(times,rpslope,yerr=error,fmt='o',ms=4.5,color=rpc,capsize=2.0,zorder=4)
 		#ms 4 for thesis
 		print(Tkey,rpslope,error )	
 	#plt.show()	
-	
-	ax.plot(T_arr,slope_arr,linestyle='-',color=rpc)	
+	ax.errorbar(times,rpslope,yerr=error,fmt='o',ms=4.5,color=rpc,capsize=2.0,label='$RPMD$',zorder=4)
+		
+	ax.plot(T_arr,slope_arr,linestyle='-',color=rpc,lw=lwd)	
 	#plt.show()	
 	
 if(1):
@@ -89,14 +93,14 @@ if(1):
 	Tq_arr = data[:,0]
 	lamdaq_arr = data[:,1]
 
-	#ax.scatter(T_arr,lamda_arr,marker='x',s=ms,color='sienna',zorder=4)
+	ax.scatter(T_arr,lamda_arr,marker='x',s=ms,color='sienna',zorder=4)
 	#ax.plot(T_arr,lamda_arr,color='sienna',zorder=4)
 
 	#ax.plot([0.95,1.0],[lamda_arr[-1],2.0],color='sienna', ls='--')
 	#ax.plot([1.0,1.05],[2.0,2.0],color='sienna',ls='--')
 		
 	ax.scatter(Tq_arr, lamdaq_arr,marker='o',s=ms,color=qc,label='$Quantum$',zorder=4)
-	ax.plot(Tq_arr,lamdaq_arr,linestyle='-',color=qc)	
+	ax.plot(Tq_arr,lamdaq_arr,linestyle='-',color=qc,lw=lwd)	
 	ax.axhline(y=2.0,xmin=0.0, xmax = 1.0,linestyle='--',color=Cc)
 	ax.axvline(x=1.0,ymin=0.0, ymax = 1.0,linestyle='-',color='gray')
 
@@ -105,10 +109,10 @@ if(1):
 		
 	T_ext = np.arange(1.05,3.06,0.2)
 	T_ext1 = np.array([1.8,2.2,2.6,3.0])
-	#ax.scatter(T_ext, 2.0*np.ones_like(T_ext), marker='x',s=ms,color='sienna',zorder=5)
+	ax.scatter(T_ext, 2.0*np.ones_like(T_ext), marker='x',s=ms,color='sienna',zorder=5)
 	
 	ax.scatter(T_ext1, 2.0*np.ones_like(T_ext1), label='$Classical$', marker='o',s=ms,color=Cc,zorder=5)
-	ax.plot(T_ext1, 2.0*np.ones_like(T_ext1),color=Cc,zorder=4)
+	ax.plot(T_ext1, 2.0*np.ones_like(T_ext1),color=Cc,zorder=4,lw=lwd)
 	
 	ax.scatter(1.0, 2.0, facecolors='none', edgecolors='sienna',s=ms,zorder=3)
 
@@ -117,7 +121,7 @@ if(1):
 	ax.set_xlim([0.73,3.05])
 	ax.set_ylim([0.48,3.1])	
 	T_arr = np.linspace(0.7,1.71,1000) #
-	ax.plot(T_arr, 2*np.pi*T_arr*Tc,color='r')#'k',ls=':')
+	ax.plot(T_arr, 2*np.pi*T_arr*Tc,color='r',lw=lwd)#'k',ls=':')
 
 	ax.set_xlabel(r'$T/T_c$',fontsize=xl_fs)
 	ax.set_ylabel(r'$\lambda(T)$',fontsize=xl_fs)
@@ -138,14 +142,14 @@ if(1):
 	#fig.set_size_inches(2.5, 2)
 	#fig.savefig('/home/vgs23/Images/RP_lambda_D2.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)
 	
-	#handles, labels = ax.get_legend_handles_labels()
-	#handles = [h[0] if isinstance(h, container.ErrorbarContainer) else h for h in handles]
-	#ax.legend(handles, labels,loc='lower right',fontsize=tp_fs-1.5)
+	handles, labels = ax.get_legend_handles_labels()
+	handles = [h[0] if isinstance(h, container.ErrorbarContainer) else h for h in handles]
+	ax.legend(handles, labels,loc='upper right',fontsize=tp_fs-1.5)
 	
-	fig.set_size_inches(2.2,2)#4, 2.5)
+	fig.set_size_inches(6,4)#4, 2.5)
 	#fig.savefig('/home/vgs23/Images/RP_lambda_Leverhulme.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)	
-	fig.savefig('/home/vgs23/Images/RP_lambda_D3.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)	
+	fig.savefig('/home/vgs23/Images/RP_lambda_thesis.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)	
 	
 
-	#plt.show()
+	plt.show()
 

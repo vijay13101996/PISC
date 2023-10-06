@@ -1,16 +1,16 @@
 import numpy as np
 from PISC.dvr.dvr import DVR2D
-from PISC.husimi.Husimi import Husimi_2D,Husimi_1D
-from PISC.potentials import coupled_harmonic, quartic_bistable, Harmonic_oblique
+#from PISC.husimi.Husimi import Husimi_2D,Husimi_1D
+from PISC.potentials import coupled_harmonic, quartic_bistable, Harmonic_oblique, Tanimura_SB
 from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr, read_arr
 from PISC.utils.plottools import plot_1D
-from PISC.engine import OTOC_f_1D
-from PISC.engine import OTOC_f_2D
+#from PISC.engine import OTOC_f_1D
+#from PISC.engine import OTOC_f_2D
 from matplotlib import pyplot as plt
 import os 
 import time 
 
-if(1): # Coupled harmonic
+if(0): # Coupled harmonic
 	L = 10.0
 	lbx = -L
 	ubx = L
@@ -53,7 +53,7 @@ if(1): # Coupled harmonic
 		plt.show()
 
 
-if(1): # Oblique harmonic
+if(0): # Oblique harmonic
 	L = 10.0#
 	lbx = -10.0#
 	ubx = 10.0#
@@ -72,6 +72,36 @@ if(1): # Oblique harmonic
 	
 	xgrid = np.linspace(lbx,ubx,101)#200)
 	ygrid = np.linspace(lby,uby,101)#200)
+	x,y = np.meshgrid(xgrid,ygrid)
+
+	potgrid = pes.potential_xy(x,y)
+	
+	plt.contour(x,y,potgrid,colors='k',levels=np.arange(0.0,10,0.5))	
+	plt.show()
+
+if(1): #Tanimura_SB
+	lbx = -5.0#
+	ubx = 10.0#
+	lby = -5.0#
+	uby = 10.0
+	
+	m = 1.0
+	mb= 1.0
+	delta_anh = 0.1
+	w_10 = 1.0
+	wb = w_10
+	wc = w_10 + delta_anh
+	alpha = (m*delta_anh)**0.5
+	D = m*wc**2/(2*alpha**2)
+
+	VLL = -0.75*wb#0.05*wb
+	VSL = 0.75*wb#0.05*wb
+	cb = 0.0#0.45*wb#0.75*wb
+
+	pes = Tanimura_SB(D,alpha,m,mb,wb,VLL,VSL,cb)
+			
+	xgrid = np.linspace(lbx,ubx,101)
+	ygrid = np.linspace(lby,uby,101)
 	x,y = np.meshgrid(xgrid,ygrid)
 
 	potgrid = pes.potential_xy(x,y)

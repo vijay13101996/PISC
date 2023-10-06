@@ -111,7 +111,7 @@ if(0):
 #fig.savefig('/home/vgs23/Images/PSOS_gyr_D2.pdf'.format(g), dpi=400,bbox_inches='tight',pad_inches=0.0)
 
 fig.set_size_inches(3, 2)
-fig.savefig('/home/vgs23/Images/PSOS_gyr_1_Leverhulme.pdf'.format(g), dpi=400,bbox_inches='tight',pad_inches=0.0)
+#fig.savefig('/home/vgs23/Images/PSOS_gyr_1_Leverhulme.pdf'.format(g), dpi=400,bbox_inches='tight',pad_inches=0.0)
 
 
 #fig.savefig('/home/vgs23/Images/FIG_4_D1.png'.format(g), dpi=400,bbox_inches='tight',pad_inches=0.0)

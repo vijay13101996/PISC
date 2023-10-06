@@ -5,14 +5,14 @@ import pickle
 import multiprocessing as mp
 from functools import partial
 from PISC.utils.mptools import chunks, batching
-from PISC.potentials import quartic_bistable, Harmonic_oblique
+from PISC.potentials import Tanimura_SB,quartic_bistable, Harmonic_oblique
 from PISC.engine.PI_sim_core import SimUniverse
 import time
 import os 
 
 dim=2
 
-if(1): ### 2D Double well
+if(0): ### 2D Double well
 	lamda = 2.0
 	g = 0.08
 	Vb = lamda**4/(64*g)
@@ -59,16 +59,52 @@ if(0): ### Oblique harmonic oscillator
 	potkey = 'TESTharmonicObl'
 	Tkey = 'T_{}'.format(T)
 
+if(1):
+	# Tanimura's system-bath potential
+	m = 1.0
+	mb= 1.0
+	delta_anh = 0.1
+	w_10 = 1.0
+	wb = w_10
+	wc = w_10 + delta_anh
+	alpha = (m*delta_anh)**0.5
+	D = m*wc**2/(2*alpha**2)
+
+	VLL = -0.75*wb#0.05*wb
+	VSL = 0.75*wb#0.05*wb
+	cb = 0.75#*wb#0.65*wb#0.75*wb
+
+	pes = Tanimura_SB(D,alpha,m,mb,wb,VLL,VSL,cb)
+				
+	TinK = 300
+	K2au = 3.1667e-6
+	T = 0.125#TinK*K2au
+	beta = 1/T
+
+	potkey = 'Tanimura_SB_D_{}_alpha_{}_VLL_{}_VSL_{}_cb_{}'.format(D,alpha,VLL,VSL,cb)
+	Tkey = 'T_{}'.format(T)
+	print('pot', potkey)
+
+	N = 1000
+	dt_therm = 0.05#10.0
+	dt = 0.01#2.0
+	time_therm = 50.0#60000.0
+	time_total = 100.0#20000.0
+
+	nbeads=16
+
 path = os.path.dirname(os.path.abspath(__file__))
+#path = '/scratch/vgs23/PISC/examples/2D/rpmd'
+
 
 method = 'RPMD'
 sysname = 'Selene'		
-corrkey = 'OTOC'#'pq_TCF'#'OTOC'
+corrkey = 'qq_TCF'#'pq_TCF'#'OTOC'
 enskey = 'thermal'
 ### -----------------------------------------------------------------------------
 E = T
-xg = np.linspace(-6,6,int(1e2)+1)
-yg = np.linspace(-5,10,int(1e2)+1)
+xg = np.linspace(-3,3,int(1e2)+1)
+yg = np.linspace(-3,3,int(1e2)+1)
 xgrid,ygrid = np.meshgrid(xg,yg)
 potgrid = pes.potential_xy(xgrid,ygrid)
 
@@ -98,8 +134,8 @@ Sim_class.set_runtime(time_therm,time_total)
 
 start_time=time.time()
 func = partial(Sim_class.run_seed)
-seeds = range(100,200)
-seed_split = chunks(seeds,10)
+seeds = range(10)
+seed_split = chunks(seeds,2)
 
 param_dict = {'Temperature':Tkey,'CType':corrkey,'m':m,\
 	'therm_time':time_therm,'time_total':time_total,'nbeads':nbeads,'dt':dt,'dt_therm':dt_therm}

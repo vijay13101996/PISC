@@ -37,6 +37,7 @@ OTOCarr = np.zeros_like(tarr) +0j
 
 #Path extensions
 path = os.path.dirname(os.path.abspath(__file__))	
+#path = '/scratch/vgs23/PISC/examples/2D'
 qext = '{}/quantum/Datafiles/'.format(path)
 cext = '{}/cmd/Datafiles/'.format(path)
 Cext = '{}/classical/Datafiles/'.format(path)
@@ -51,6 +52,42 @@ syskey = 'Selene'
 fig,ax = plt.subplots()
 
 if(1):
+	wb = 1.0
+	dt = 0.01
+	tarr = np.arange(0.0,100.0,0.01)
+
+	for c in [0.0,0.25*wb, 0.35*wb, 0.45*wb, 0.55*wb,0.65*wb,0.75*wb]:
+		ext = 'RPMD_thermal_qq_TCF_Tanimura_SB_D_6.050000000000001_alpha_0.31622776601683794_VLL_-0.75_VSL_0.75_cb_{}_T_0.125_nbeads_1_dt_0.01'.format(c)
+		ext = rpext+ext
+		data = np.loadtxt("{}.txt".format(ext),dtype=complex)
+		#tarr = data[:,0]
+		carr = (data[:,1])
+		plt.plot(tarr,carr,label='c={}'.format(c))
+		if(0):
+			tau = 13
+			n_order = 2
+			delta = np.power( (np.abs(tarr)) / tau, n_order)
+			carr*=np.exp(-delta)#(1+np.exp(delta))
+			FFT = np.fft.fft(np.fft.fftshift(carr))*dt
+			FFT = np.abs(np.fft.fftshift(FFT))
+			freq = np.fft.fftfreq(len(tarr), dt)
+			#print('freq',freq,freq[1]-freq[0]) 
+			freq *= 2.0 * np.pi
+			freq = np.fft.fftshift(freq)
+				
+			#tarr = np.arange(0,200.01,0.1)
+			#sig = np.cos(tarr)
+			#FFT = np.abs(np.fft.fft(sig)*0.1)
+			#freq = np.fft.fftfreq(len(tarr),0.1)*2*np.pi
+		
+			plt.title(r'Linear spectra (Fourier transform of $<q(0)q(t)>$)')	
+			plt.plot(freq, FFT,label='c={}'.format(c))
+			plt.xlim([-5,5])
+			#plt.show()
+
+	
+
+if(0):
 	dt=0.002
 	corrkey = 'OTOC'
 	enskey = 'thermal'

@@ -6,34 +6,43 @@ import multiprocessing as mp
 from functools import partial
 from PISC.utils.mptools import chunks, batching
 from PISC.potentials.double_well_potential import double_well
-from PISC.potentials.Quartic import quartic
+from PISC.potentials import quartic, mildly_anharmonic
 from PISC.engine.PI_sim_core import SimUniverse
 import time
 import os 
 
 dim=1
-a = 1.0
+m = 1.0
 
-pes = quartic(a)
+if(0): #Quartic
+	a = 1.0
+	pes = quartic(a)
+	potkey = 'quartic_a_{}'.format(a) 
+
+if(1): #Mildly anharmonic
+	omega = 1.0
+	a = 1.0#1.0/10
+	b = 1.0#1.0/100
+	pes = mildly_anharmonic(m,a,b)
+	potkey = 'mildly_anharmonic_a_{}_b_{}'.format(a,b)
 
 Tc = 1.0#0.5*lamda/np.pi
 times = 1.0
-T = 1.0#times*Tc
+T = 1.0/8#times*Tc
 
-m = 1.0
 N = 1000
 dt_therm = 0.05
 dt = 0.01
 time_therm = 50.0
-time_total = 30.0
+time_total = 10.0
 
-nbeads = 1
+nbeads = 8
 
 method = 'RPMD'
-potkey = 'quartic_a_{}'.format(a) 
+
 sysname = 'Selene'		
 Tkey = 'T_{}'.format(T)#'{}Tc'.format(times)
-corrkey = 'qq_TCF'
+corrkey = 'pq_TCF'#'singcomm'
 enskey = 'thermal'
 	
 path = os.path.dirname(os.path.abspath(__file__))
@@ -47,7 +56,7 @@ Sim_class.set_runtime(time_therm,time_total)
 
 start_time=time.time()
 func = partial(Sim_class.run_seed)
-seeds = range(100,1000)
+seeds = range(10)
 seed_split = chunks(seeds,10)
 
 param_dict = {'Temperature':Tkey,'CType':corrkey,'Ensemble':enskey,'m':m,\

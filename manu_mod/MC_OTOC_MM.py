@@ -5,6 +5,10 @@ import os
 from PISC.utils.plottools import plot_1D
 from PISC.utils.misc import find_OTOC_slope
 
+plt.rcParams.update({'font.size': 10, 'font.family': 'serif','font.style':'italic','font.serif':'Garamond'})
+matplotlib.rcParams['axes.unicode_minus'] = False
+
+
 
 path = os.path.dirname(os.path.abspath(__file__))
 Cext = '/home/vgs23/PISC/examples/2D/classical/Datafiles/'
@@ -34,7 +38,7 @@ rpc = 'b'
 qc = 'r'
 Cc = 'k'#'g'
 
-if(0):
+if(1):
 	### Temperature: 10 Tc -----------------------------------------------------------
 		
 	times = 10.0

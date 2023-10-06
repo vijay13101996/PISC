@@ -1,9 +1,9 @@
 import numpy as np
 from PISC.dvr.dvr import DVR2D
-from PISC.potentials import coupled_harmonic, quartic_bistable, Heller_Davis, Harmonic_oblique, four_well
+from PISC.potentials import coupled_harmonic, quartic_bistable, Heller_Davis, Harmonic_oblique, four_well, Tanimura_SB
 from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr, read_arr
-from PISC.engine import OTOC_f_1D
-from PISC.engine import OTOC_f_2D_omp_updated
+#from PISC.engine import OTOC_f_1D
+#from PISC.engine import OTOC_f_2D_omp_updated
 from matplotlib import pyplot as plt
 import os 
 import time 
@@ -19,6 +19,86 @@ Don't forget to set export OMP_NUM_THREADS=#thread_count in the .bashrc file!
 """
 
 start_time = time.time()
+
+if(1): #Tanimura_SB
+	lbx = -3.0#
+	ubx = 7.0#
+	lby = -4.0#
+	uby = 8.0
+	ngrid = 100
+	ngridx = ngrid
+	ngridy = ngrid
+
+
+	m = 1.0
+	mb= 1.0
+	delta_anh = 0.1
+	w_10 = 1.0
+	wb = w_10
+	wc = w_10 + delta_anh
+	alpha = (m*delta_anh)**0.5
+	D = m*wc**2/(2*alpha**2)
+
+	VLL = -0.75*wb
+	VSL = 0.75*wb
+	cb = 0.75*wb
+
+	pes = Tanimura_SB(D,alpha,m,mb,wb,VLL,VSL,cb)
+			
+	T = 0.125
+	beta = 1/T
+	print('beta', beta)
+	
+	potkey = 'Tanimura_SB_D_{}_alpha_{}_VLL_{}_VSL_{}_cb_{}'.format(D,alpha,VLL,VSL,cb)
+	Tkey = 'T_{}'.format(T)
+	
+	xgrid = np.linspace(lbx,ubx,101)
+	ygrid = np.linspace(lby,uby,101)
+	x,y = np.meshgrid(xgrid,ygrid)
+
+	potgrid = pes.potential_xy(x,y)
+	plt.contour(x,y,potgrid,colors='k',levels=np.arange(0.0,5,0.5))	
+	plt.show()
+
+	
+
+	x = np.linspace(lbx,ubx,ngridx+1)
+	fname = 'Eigen_basis_{}_ngrid_{}'.format(potkey,ngrid)	
+	path = os.path.dirname(os.path.abspath(__file__))
+
+	DVR = DVR2D(ngridx,ngridy,lbx,ubx,lby,uby,m,pes.potential_xy)
+	n_eig_tot = 200
+	if(1): #Diagonalization
+		param_dict = {'lbx':lbx,'ubx':ubx,'lby':lby,'uby':uby,'m':m,'ngridx':ngridx,'ngridy':ngridy,'n_eig':n_eig_tot}
+		with open('{}/Datafiles/Input_log_{}.txt'.format(path,potkey),'a') as f:	
+			f.write('\n'+str(param_dict))#print(param_dict,file=f)
+		
+		vals,vecs = DVR.Diagonalize()#_Lanczos(n_eig_tot)
+
+		store_arr(vecs[:,:n_eig_tot],'{}_vecs'.format(fname),'{}/Datafiles'.format(path))
+		store_arr(vals[:n_eig_tot],'{}_vals'.format(fname),'{}/Datafiles'.format(path))
+
+	vals = read_arr('{}_vals'.format(fname),'{}/Datafiles'.format(path))
+	vecs = read_arr('{}_vecs'.format(fname),'{}/Datafiles'.format(path))
+
+	basis_N = 140#165
+	n_eigen = 50#150
+
+	n=8#15
+	M=1
+	print('vals[n]', vals[n])
+	if(1):
+		xg = np.linspace(lbx,ubx,ngridx)
+		yg = np.linspace(lby,uby,ngridy)
+		xgr,ygr = np.meshgrid(xg,yg)
+		#plt.contour(pes.potential_xy(xgr,ygr),levels=np.arange(0,10,0.5))
+		#fig, ax = plt.subplots(1,3)
+		#for i in range(3):
+		#	ax[i].contour(DVR.eigenstate(vecs[:,i+2])**2,levels=np.arange(0,0.1,0.005))
+		#plt.show()
+	plt.imshow(DVR.eigenstate(vecs[:,n])**2,origin='lower')
+	plt.show()
+	
 
 if(0): #2D double well
 	lbx = -10.0#-7
@@ -191,7 +271,7 @@ if(0): #2D double well
 		
 		print('time',time.time()-start_time)
 	
-if(1):
+if(0):
 	L = 10.0#
 	lbx = -10.0#
 	ubx = 10.0#
@@ -240,8 +320,6 @@ if(1):
 	plt.imshow(DVR.eigenstate(vecs[:,n])**2,origin='lower')
 	plt.show()
 	
-
-
 if(0): #Four well
 	L = 5.0
 	lbx = -L
@@ -289,9 +367,7 @@ if(0): #Four well
 	n=2
 	plt.imshow(DVR.eigenstate(vecs[:,n])**2,origin='lower')
 	plt.show()
-	
-
-	
+		
 if(0):
 	L = 4.0
 	lbx = -L

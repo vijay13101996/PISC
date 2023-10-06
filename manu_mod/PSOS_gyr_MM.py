@@ -13,8 +13,8 @@ plt.rcParams.update({'font.size': 10, 'font.family': 'serif','font.style':'itali
 matplotlib.rcParams['axes.unicode_minus'] = False
 
 xl_fs = 14 
-yl_fs = 13
-tp_fs = 9
+yl_fs = 14
+tp_fs = 12
 
 le_fs = 9
 ti_fs = 12
@@ -73,7 +73,7 @@ ax1.set_xlabel(r'max $r_g$',fontsize=xl_fs-1)
 ax1.set_ylabel(r'$N_{{traj}}$',fontsize=yl_fs)
 ax1.set_xticks(np.arange(0.0,1.21,0.2))
 ax1.set_yticks([0,2,4,6,8])
-ax1.yaxis.set_label_coords(-0.11,0.44)#(-0.13,0.44)
+ax1.yaxis.set_label_coords(-0.07,0.44)#(-0.13,0.44)
 ax1.annotate('83%',xy=(0.63,0.22), xytext=(0.45,0.5), xycoords='axes fraction',fontsize=tp_fs+2,arrowprops=dict(facecolor='black', width=0.03,headlength=5.0,headwidth=5.0))
 ax1.annotate('17%',xy=(0.18,0.17), xytext=(0.22,0.5), xycoords='axes fraction',fontsize=tp_fs+2,arrowprops=dict(facecolor='black', width=0.03,headlength=5.0,headwidth=5.0))
 ax1.tick_params(axis='both', which='major', labelsize=tp_fs)
@@ -105,14 +105,14 @@ ax3.set_xlabel(r'$x$',fontsize=xl_fs)
 #ax3.set_ylabel(r'$p_x$',fontsize=15)
 ax3.set_yticks([])
 
-fig.set_size_inches(3, 4)
-fig.savefig('/home/vgs23/Images/PSOS_gyr_D3.pdf'.format(g), dpi=400,bbox_inches='tight',pad_inches=0.0)
+#fig.set_size_inches(3, 4)
+#fig.savefig('/home/vgs23/Images/PSOS_gyr_D3.pdf'.format(g), dpi=400,bbox_inches='tight',pad_inches=0.0)
 
-#fig.set_size_inches(5, 5)
-#fig.savefig('/home/vgs23/Images/PSOS_gyr_thesis.pdf'.format(g), dpi=400,bbox_inches='tight',pad_inches=0.0)
+fig.set_size_inches(5, 5)
+fig.savefig('/home/vgs23/Images/PSOS_gyr_thesis.pdf'.format(g), dpi=400,bbox_inches='tight',pad_inches=0.0)
 
 
 #fig.savefig('/home/vgs23/Images/FIG_4_D1.png'.format(g), dpi=400,bbox_inches='tight',pad_inches=0.0)
 
 
-#plt.show()
+plt.show()

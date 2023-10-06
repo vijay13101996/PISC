@@ -1,30 +1,30 @@
 import numpy as np
 from PISC.utils.plottools import plot_1D
-from PISC.utils.misc import find_OTOC_slope,seed_collector,seed_finder
+from PISC.utils.misc import find_OTOC_slope,seed_collector,seed_finder,seed_collector_imagedata
 from matplotlib import pyplot as plt
 import os
-from PISC.potentials import double_well, quartic, morse
-from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr, read_arr
+from PISC.potentials import double_well, quartic, morse, mildly_anharmonic
+from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr, read_arr, store_2D_imagedata_column
 from PISC.utils.nmtrans import FFT
 
 dim = 1
 
-if(1): #Double well potential
+if(0): #Double well potential
 	lamda = 2.0
-	g = 0.02#8
+	g = 0.08
 	Vb = lamda**4/(64*g)
 
 	Tc = lamda*(0.5/np.pi)
-	times = 20.0#0.6
+	times = 0.95
 	T = times*Tc
 	beta=1/T
 	print('T',T)
 
 	m = 0.5
 	N = 1000
-	dt = 0.005
+	dt = 0.001
 
-	time_total = 5.0#
+	time_total = 20.0#
 
 	potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
 	pes = double_well(lamda,g)
@@ -36,19 +36,61 @@ if(0): #Quartic
 
 	pes = quartic(a)
 
-	T = 1.0/8
+	T = 1.0
 	
 	m = 1.0
 	N = 1000
 	dt_therm = 0.05
-	dt = 0.02
+	dt = 0.01
 
 	time_therm = 50.0
-	time_total = 20.0
+	time_total = 30.0
 
-	potkey = 'TESTquart'.format(a)
+	potkey = 'quartic_a_{}'.format(a)
 	Tkey = 'T_{}'.format(T)
+
+if(0): #Mildly anharmonic
+	omega = 1.0
+	a = 0.4#-0.605#0.5#
+	b = a**2#0.427#a**2#
 	
+	T = 1.0#times*Tc
+	beta = 1/T	
+
+	m=1.0
+	N = 1000
+	dt_therm = 0.05
+	dt = 0.002
+	
+	time_therm = 50.0
+	time_total = 30.0
+
+	pes = mildly_anharmonic(m,a,b)
+	
+	potkey = 'mildly_anharmonic_a_{}_b_{}'.format(a,b)
+	Tkey = 'T_{}'.format(np.around(T,3))
+	
+
+if(1): #Morse_SB	
+	m=1.0
+	delta_anh = 0.05#1
+	w_10 = 1.0
+	wb = w_10
+	wc = w_10 + delta_anh
+	alpha = (m*delta_anh)**0.5
+	D = m*wc**2/(2*alpha**2)
+
+	pes = morse(D,alpha)
+	T = 1.0#TinK*K2au
+	beta = 1/T
+
+	potkey = 'Morse_D_{}_alpha_{}'.format(D,alpha)
+	Tkey = 'T_{}'.format(T)
+	dt = 0.002
+	time_total = 20.0
+	
+
+
 if(0): #Morse
 	m=0.5
 	D = 9.375
@@ -74,20 +116,21 @@ tarr = np.arange(0.0,time_total,dt)
 OTOCarr = np.zeros_like(tarr) +0j
 
 #Path extensions
-path = os.path.dirname(os.path.abspath(__file__))	
+path = '/scratch/vgs23/PISC/examples/1D'#
+#path = os.path.dirname(os.path.abspath(__file__))	
 qext = '{}/quantum/Datafiles/'.format(path)
 cext = '{}/cmd/Datafiles/'.format(path)
 Cext = '{}/classical/Datafiles/'.format(path)
 rpext = '{}/rpmd/Datafiles/'.format(path)
 
 #Simulation specifications
-corrkey = 'qp_TCF'
+corrkey = 'qq_TCF'#'singcomm' #
 syskey = 'Selene'
 
-if(0):#RPMD
+if(1):#RPMD
 	nbeads = 1
 	beadkey = 'nbeads_{}_'.format(nbeads)
-	if(1): ##Collect files of thermal ensembles
+	if(0): ##Collect files of thermal ensembles
 		methodkey = 'RPMD'
 		enskey = 'thermal'
 
@@ -129,6 +172,7 @@ if(0):#RPMD
 		E=[]
 		V=[]
 		K=[]
+		Q=[]
 				
 		for qfile,pfile in zip(fqlist,fplist):
 			qcart = read_arr(qfile,rpext)
@@ -152,15 +196,19 @@ if(0):#RPMD
 			E.extend(Etot)
 			K.extend(kin)
 			V.extend(pot)
-			
+			Q.extend(q[:,0,0])			
+
 		E=np.array(E)
 		V=np.array(V)
 		K=np.array(K)
 		E/=nbeads
 		V/=nbeads
 		K/=nbeads
+
+		plt.hist(Q,bins=100)
+		plt.show()
 		
-		bins = np.linspace(0.0,10.0,200)
+		bins = np.linspace(0.0,0.25,200)
 		dE = bins[1]-bins[0]
 		#countsV, bin_edgeV = np.histogram(V,bins=200)
 		#countsK, bin_edgeK = np.histogram(K,bins=200)
@@ -230,7 +278,45 @@ if(0):#RPMD
 		plt.plot(countarr,data_arr)
 		plt.show()
 
-if(1): ##Classical
+	if(1):
+		methodkey = 'RPMD'
+		enskey = 'thermal'
+		corrkey = 'R2'
+		suffix = '_asym'
+		kwlist = [methodkey,corrkey,syskey,potkey,Tkey+'_',beadkey,'dt_{}'.format(dt),suffix]#,'qqq']
+		
+		X,Y,F = seed_collector_imagedata(kwlist,rpext)#,allseeds=False,seedcount=20)
+		X[:,len(X)//2+1:] = X[:,:-len(X)//2:-1]
+		Y[len(Y)//2+1:,:] = Y[:-len(Y)//2:-1,:]
+		F[:,len(X)//2+1:] = F[:,:-len(X)//2:-1]
+		F[len(Y)//2+1:,:] = F[:-len(Y)//2:-1,:]
+	
+		X=np.roll(X,len(X)//2,axis=1)
+		Y=np.roll(Y,len(Y)//2,axis=0)	
+		F=np.roll(np.roll(F,len(X)//2,axis=1), len(Y)//2, axis=0)
+				
+		#print('Y', Y.shape, F.shape,X)
+		#F/=nbeads
+		#plt.scatter(0,0,c='r')
+		#print('length', X.shape)	
+		#print(Y[:,300+30],X[:,330])
+		#plt.title(r'$\beta={}, N_b={}$'.format(1/T,nbeads))
+		#plt.plot(Y[:,330],F[:,330])
+		#plt.xlabel('t')
+		#plt.ylabel(r'$K_{xxx}^{sym}(t,t\'=3)$')
+		fig, ax = plt.subplots()
+		pos = ax.imshow(F.T,extent=[X[0].min(),X[0].max(0),Y[:,0].min(),Y[:,0].max()],origin='lower',cmap='bwr')#,vmin=-10,vmax=10)
+		#ax.scatter(X.flatten(), Y.flatten(), c=(F.T).flatten())	
+		#ax.set_xlim([-20,20])
+		#ax.set_ylim([-20,20])	
+		fig.set_size_inches(12, 6)
+		fig.colorbar(pos,ax=ax)		
+		plt.show()
+		#potkey = 'mildly_anharmonic_a_{}_b_{}'.format(a,np.around(b,2))
+	
+		store_2D_imagedata_column(X,Y,F,'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}{}'.format(enskey,corrkey,potkey,Tkey,nbeads,dt,suffix),rpext,extcol=np.zeros_like(X))
+
+if(0): ##Classical
 	sigma = 10.0
 	q0 = 0.0
 	#potkey = 'FILT_{}_g_{}_sigma_{}_q0_{}'.format(lamda,g,sigma,q0)
@@ -286,22 +372,23 @@ if(0):
 	corrkey = 'qq_TCF'
 	potkey='quartic_a_1.0'
 	dt = 0.01
-	Tkey='T_0.125'
+	Tkey='T_1.0'
 	
 	kwlist = [methodkey,corrkey,syskey,potkey,Tkey,beadkey,'dt_{}'.format(dt)]
 	
 	tarr = np.arange(0.0,time_total,dt)
 	OTOCarr = np.zeros_like(tarr) +0j
-
-	for sc in [1,3,5,10,13,16,20]:
-		tarr,OTOCarr,stdarr = seed_collector(kwlist,rpext,tarr,OTOCarr,allseeds=False,seedcount=sc,logerr=False)
-		print('std,C0',stdarr[0],OTOCarr[0]/nbeads)
+	tarr,OTOCarr,stdarr= seed_collector(kwlist,rpext,tarr,OTOCarr,allseeds=True)
+		
+	#for sc in [1,3,5,10,13,16,20]:
+	#	tarr,OTOCarr,stdarr = seed_collector(kwlist,rpext,tarr,OTOCarr,allseeds=False,seedcount=sc,logerr=False)
+	#	print('std,C0',stdarr[0],OTOCarr[0]/nbeads)
 
 	if(corrkey!='OTOC'):
 		OTOCarr/=nbeads
 	#plt.plot(tarr,OTOCarr)
 	plt.plot(tarr,OTOCarr)
-	plt.errorbar(tarr,OTOCarr,yerr=stdarr/2,ecolor='m',errorevery=100,capsize=2.0)	
+	#plt.errorbar(tarr,OTOCarr,yerr=stdarr/2,ecolor='m',errorevery=100,capsize=2.0)	
 	plt.show()
 	store_1D_plotdata(tarr,OTOCarr,'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,nbeads,dt),rpext)
 

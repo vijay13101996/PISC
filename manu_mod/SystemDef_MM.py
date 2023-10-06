@@ -56,11 +56,11 @@ if(1):#
 	
 n = 7
 
-tp_fs = 10
-xl_fs = 14
-yl_fs = 14
+tp_fs = 16
+xl_fs = 19
+yl_fs = 19
 
-if(0):  #PES plot
+if(1):  #PES plot
 	xg = np.linspace(-5,5,int(1e3)+1)
 	yg = np.linspace(-3,6,int(1e3)+1)
 
@@ -78,10 +78,10 @@ if(0):  #PES plot
 	ax.set_yticks(np.arange(-2,5.01))
 	ax.set_xlim([-5.1,5.1])
 	ax.set_ylim([-2.5,5.5])
-	fig.set_size_inches(3, 2)
-	fig.savefig('/home/vgs23/Images/PES_D3.pdf', dpi=400,bbox_inches='tight',pad_inches=0.0)
+	fig.set_size_inches(6,4)#3, 2)
+	fig.savefig('/home/vgs23/Images/PES_thesis.pdf', dpi=400,bbox_inches='tight',pad_inches=0.0)
 
-	#plt.show()
+	plt.show()
 
 xgrid = np.linspace(lbx-0.1,ubx+0.1,201)
 ygrid = np.linspace(lby-0.1,uby+0.1,201)
@@ -120,7 +120,7 @@ if(0): #Wavefunction plot
 
 	#plt.show()
 
-if(1): #Husimi section
+if(0): #Husimi section
 	nbasis = 201
 	dist = read_arr('Husimi_section_x_{}_nbasis_{}_E_{}'.format(potkey,nbasis,E_wf), '{}/quantum/Datafiles'.format(path))
 

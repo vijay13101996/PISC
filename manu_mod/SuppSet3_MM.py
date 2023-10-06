@@ -3,20 +3,20 @@ import os
 import ast
 from PISC.dvr.dvr import DVR2D
 from PISC.potentials.Quartic_bistable import quartic_bistable
-from PISC.utils.colour_tools import lighten_color
+#from PISC.utils.colour_tools import lighten_color
 from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr, read_arr
 from matplotlib import pyplot as plt
 import matplotlib
 import itertools
 
-path = os.path.dirname(os.path.abspath(__file__))	
+path = '/home/vgs23/PISC/examples/2D'
 qext = '{}/quantum'.format(path)
 Cext = '{}/classical'.format(path)
 
-plt.rcParams.update({'font.size': 10, 'font.family': 'serif','font.serif':'Times New Roman'})
+plt.rcParams.update({'font.size': 10, 'font.family': 'serif','font.style':'italic','font.serif':'Garamond'})
 matplotlib.rcParams['axes.unicode_minus'] = False
 
-tp_fs = 15
+tp_fs = 13
 xl_fs = 16
 yl_fs = 16
 

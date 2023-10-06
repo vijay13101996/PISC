@@ -19,13 +19,27 @@ if(1): #Double Well potential
 	
 	potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
 
+if(1): #Mildly anharmonic
+	omega = 1.0
+	a = 1.0/10
+	b = 1.0/100
+	
+	T = 1.0/8#times*Tc
+	
+	m=1.0
+		
+	potkey = 'mildly_anharmonic_a_{}_b_{}'.format(a,b)
+	Tkey = 'T_{}'.format(T)
+
+
 N = 1000
-dt = 0.002
-nbeads = 16
+dt = 0.01
+nbeads = 1
 gamma = 16
 
 #Path extensions
-path = os.path.dirname(os.path.abspath(__file__))	
+path = '/scratch/vgs23/PISC/examples/1D/'#
+path = os.path.dirname(os.path.abspath(__file__))
 qext = '{}/quantum/Datafiles/'.format(path)
 cext = '{}/cmd/Datafiles/'.format(path)
 Cext = '{}/classical/Datafiles/'.format(path)
@@ -33,7 +47,89 @@ rpext = '{}/rpmd/Datafiles/'.format(path)
 
 fig,ax = plt.subplots()
 
+if(0):
+	nbeads = 16
+	corrkey = 'R2'
+	suffix = '_asym'
+	enskey = 'thermal'
+	data =np.loadtxt('{}RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}{}.txt'.format(rpext,enskey,corrkey,potkey,Tkey,nbeads,dt,suffix))
+	X = data[:,0]
+	Y = data[:,1]
+	F = data[:,2]
+	plt.scatter(X,Y,c=F)
+
 if(1):
+	corrkey= 'qq_TCF'
+	Tkey = 'T_1.0'
+	potkey = 'quartic_a_1.0'
+	fname = 'Quantum_{}_{}_{}_{}_basis_{}_n_eigen_{}.txt'.format('Kubo',corrkey,potkey,Tkey,50,30)	
+	ext = qext+fname
+	data =np.loadtxt(ext,dtype=complex)
+	X = data[:,0]
+	Y = data[:,1]
+
+	fig, ax = plt.subplots(1)
+	ax.plot(X,Y,color='k',label=r'$Quantum$',lw=2)
+
+	fname = 'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}.txt'.format('thermal',corrkey,potkey,Tkey,1,0.01)
+	ext = rpext + fname
+	data =np.loadtxt(ext,dtype=complex)
+	X = data[:,0]
+	Y = data[:,1]
+
+	ax.plot(X,Y,color='r',label=r'$Classical$',lw=2)
+	ax.set_xlabel(r'$t$',fontsize=16)
+	ax.set_ylabel(r'$c_{qq}(t)$',fontsize=16)
+	ax.set_ylim([-0.6,0.8])
+	fig.set_size_inches(5, 3)	
+	ax.legend()	
+	fig.savefig('/home/vgs23/Images/cqq.png', dpi=400,bbox_inches='tight',pad_inches=0.0)
+	plt.show()
+
+if(0):
+	for nbeads,sty in zip([1,8],['-','-.']):
+		#nbeads = 1
+		corrkey = 'singcomm'
+		enskey = 'thermal'
+		fname_sc = 'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,nbeads,dt)
+		ext = rpext+fname_sc
+		plot_1D(ax,ext, label=r'Commutator, $N_b={}$'.format(nbeads),color='k',linewidth=1.5,style=sty)
+			
+		corrkey = 'pq_TCF'
+		fname_pq = 'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,nbeads,dt)
+		ext = rpext+fname_pq
+		plot_1D(ax,ext, label=r'pq TCF, $N_b={}$'.format(nbeads),color='m',linewidth=1.5,magnify=(1.0/(m*nbeads*T)),style=sty)
+		
+if(0):
+	dt = 0.002
+	corrkey = 'OTOC'
+	enskey = 'thermal'
+	potkey_asym = 'asym_double_well_lambda_{}_g_{}_k_{}'.format(2.0,0.08,0.04)
+	potkey_sym  = 'asym_double_well_lambda_{}_g_{}_k_{}'.format(2.0,0.08,0.0)
+	
+	T_arr = [0.95,1.2,1.4,3.0,10.0]
+	bead_arr = 	[16,16,16,8,8]
+	color_arr = ['r','g','b','c','k','m']
+	td_arr = [3.3,3.0,3.0,2.0,1.0]
+	tu_arr = [4.3,4.0,4.0,3.0,2.0]
+	for times,beads,c,td,tu in zip(T_arr,bead_arr,color_arr,td_arr,tu_arr):
+		Tkey = 'T_{}Tc'.format(times)
+		fname_asym = 'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}'.format(enskey,corrkey,potkey_asym,Tkey,beads,dt)
+		ext = rpext+fname_asym
+		slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,td,tu)
+		ax.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k')
+		plot_1D(ax,ext, label=r'$T={}Tc$, Asymmetric, $\lambda={}$'.format(times,np.around(slope,2)),log=True,color=c,linewidth=1.5)
+		
+		fname_sym = 'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}'.format(enskey,corrkey,potkey_sym,Tkey,beads,dt)
+		ext = rpext+fname_sym
+		slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,td,tu)
+		ax.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k')
+		plot_1D(ax,ext, label=r'$T={}Tc$, Symmetric, $\lambda={}$'.format(times,np.around(slope,2)),log=True,color=c,linewidth=1.5,style='--')
+		
+	
+	#plt.show()
+
+if(0):
 	dt = 0.005
 	corrkey = 'singcomm'#'OTOC'
 	enskey = 'thermal'

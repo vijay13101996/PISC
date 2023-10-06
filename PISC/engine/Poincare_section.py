@@ -93,7 +93,7 @@ class Poincare_SOS(object):
 			py = self.rp.pcart[ind,1,:]
 			if(i%1e1==0):
 				#ax.scatter(self.sim.t,y)
-				ax.scatter(x,y,s=7)
+				ax.scatter(x,y,s=7,color='r')
 				plt.pause(0.05)	
 			
 	def PSOS_Y(self,x0):
