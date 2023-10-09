@@ -331,6 +331,10 @@ def check_parameters(sim_parameters,ensemble_param):
         else:
             raise NotImplementedError('method {} is not implemented'.format(sim_parameters["method"]))
 
+        if sim_parameters["CFtype"] == "R2":
+            assert len(sim_parameters["operator_list"]) == 3, 'Please specify operators list (example -op_list q q q ) to R2 simulations '
+
+
         if ensemble_param["ensemble"]=="thermal":
             assert ensemble_param["temperature"]>0, '{} K is not a valid temperature for the ensemble {}'.format(ensemble_param["temperature"],ensemble_param["ensemble"])
             assert ensemble_param["tau"]>0, '{} K is not a valid thermostat constant for the ensemble {}'.format(ensemble_param["tau"],ensemble_param["ensemble"])
@@ -338,4 +342,6 @@ def check_parameters(sim_parameters,ensemble_param):
             assert ensemble_param["energy_mc"] is not None, 'Please specify energy to run in the microcanonical ensemble'
         else:
             raise NotImplementedError
+
+
 
