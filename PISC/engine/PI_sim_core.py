@@ -22,9 +22,9 @@ class SimUniverse(object):
 		self.Tkey = Tkey
 		self.ext_kwlist = ext_kwlist
 		self.folder_name = folder_name
-	
+
 	def set_sysparams(self,pes,T,mass,dim):
-		''' Set system paramenters 
+		''' Set system paramenters
 		    pes = potential energy surface
 		    T = temperature
 		    mass = particle mass
@@ -33,9 +33,9 @@ class SimUniverse(object):
 		self.pes = pes
 		self.T = T
 		self.m = mass
-		self.dim = dim 
-		
-	def set_simparams(self,N,dt_ens=1e-2,dt=5e-3,extparam=None):	
+		self.dim = dim
+
+	def set_simparams(self,N,dt_ens=1e-2,dt=5e-3,extparam=None):
 		self.N = N
 		self.dt_ens = dt_ens
 		self.dt = dt
@@ -53,39 +53,39 @@ class SimUniverse(object):
 	def set_runtime(self,time_ens=100.0,time_run=5.0):
 		self.time_ens = time_ens
 		self.time_run = time_run
-	
+
 	def set_ensparams(self,tau0 = 1.0, pile_lambda=100.0, E=None, qlist= None, plist = None, filt_func = None):
 		self.tau0 = tau0
-		print('tau0, pi',tau0) 
+		print('tau0, pi',tau0)
 		self.pile_lambda = pile_lambda
 		self.E = E
 		self.qlist = qlist
 		self.plist = plist
 		self.filt_func = filt_func
-	
+
 	def gen_ensemble(self,ens,rng,rngSeed):
 		if(self.enskey== 'thermal'):
-			thermalize_rp(self.pathname,self.m,self.dim,self.N,self.nbeads,ens,self.pes,rng,self.time_ens,self.dt_ens,self.potkey,rngSeed,self.qlist,self.tau0,self.pile_lambda,folder_name=self.folder_name)	
+			thermalize_rp(self.pathname,self.m,self.dim,self.N,self.nbeads,ens,self.pes,rng,self.time_ens,self.dt_ens,self.potkey,rngSeed,self.qlist,self.tau0,self.pile_lambda,folder_name=self.folder_name)
 			qcart = read_arr('Thermalized_rp_qcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(self.N,self.nbeads,ens.beta,self.potkey,rngSeed),"{}/{}".format(self.pathname,self.folder_name))
 			pcart = read_arr('Thermalized_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(self.N,self.nbeads,ens.beta,self.potkey,rngSeed),"{}/{}".format(self.pathname,self.folder_name))
-			return qcart,pcart	
+			return qcart,pcart
 		elif(self.enskey=='mc'):
 			generate_rp(self.pathname,self.m,self.dim,self.N,self.nbeads,ens,self.pes,rng,self.time_ens,self.dt_ens,self.potkey,rngSeed,self.E,self.qlist,self.plist,self.filt_func,folder_name=self.folder_name)
 			qcart = read_arr('Microcanonical_rp_qcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(self.N,self.nbeads,ens.beta,self.potkey,rngSeed),"{}/{}".format(self.pathname,self.folder_name))
-			pcart = read_arr('Microcanonical_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(self.N,self.nbeads,ens.beta,self.potkey,rngSeed),"{}/{}".format(self.pathname,self.folder_name)) 
-			return qcart,pcart	
+			pcart = read_arr('Microcanonical_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(self.N,self.nbeads,ens.beta,self.potkey,rngSeed),"{}/{}".format(self.pathname,self.folder_name))
+			return qcart,pcart
 
 	def run_OTOC(self,sim,single=False):
 		tarr = []
 		Mqqarr = []
 		if(self.method == 'CMD'):
-			stride = self.gamma	
+			stride = self.gamma
 			dt = self.dt/self.gamma
 			nsteps = int(2*self.time_run/dt)
 			for i in range(nsteps):
 				sim.step(mode="nvt",var='monodromy',pc=False)
 				if(i%stride == 0):
-					Mqq = np.mean(abs(sim.rp.Mqq[:,0,0,0,0]**2)) 
+					Mqq = np.mean(abs(sim.rp.Mqq[:,0,0,0,0]**2))
 					tarr.append(sim.t)
 					Mqqarr.append(Mqq)
 		else:
@@ -110,7 +110,7 @@ class SimUniverse(object):
 		""" Run simulation to compute second order (sym and asym) response functions """
 		# IMPORTANT: Be careful when you use it for 2D! There are parts used in this code,
 		# which are 1D-specific.
-	
+
 		tarr, qarr, parr, Marr = [], [], [], []
 		dt = self.dt
 		nsteps = int(self.time_run/dt) + 1
@@ -122,28 +122,28 @@ class SimUniverse(object):
 			#Mqp = sim.rp.Mqp[:,0,0,0,0].copy()
 			#Mpq = sim.rp.Mpq[:,0,0,0,0].copy()
 			Mpp = sim.rp.Mpp[:,0,0,0,0].copy()
-			q = sim.rp.q[:,0,0].copy()		
+			q = sim.rp.q[:,0,0].copy()
 			p = sim.rp.p[:,0,0].copy()/sim.rp.m
-		
-			Mval = Mqq/sim.rp.m#-Mpp#comm_dict[B+A][0]*(vars()[comm_dict[B+A][1]])	
+
+			Mval = Mqq/sim.rp.m#-Mpp#comm_dict[B+A][0]*(vars()[comm_dict[B+A][1]])
 			tarr.append(sim.t)
 			Marr.append(Mval)
 			qarr.append(q/sqrtnbeads)  #Needed to define centroids with correct scaling
 			parr.append(p/sqrtnbeads)
-					
+
 		pcart = sim.rp.pcart.copy()
-		qcart = sim.rp.qcart.copy() 
- 
+		qcart = sim.rp.qcart.copy()
+
 		#Forward propagation
 		for i in range(nsteps):
 			record_var()
 			sim.step(mode="nve",var='monodromy')
-		
+
 		#Reinitialising position and momenta for backward propagation
 		sim.rp = RingPolymer(qcart=qcart,pcart=pcart,m=sim.rp.m,mode='rp') #Only RPMD here!
 		sim.motion = Motion(dt=-self.dt,symporder=sim.motion.order)
 		sim.bind(sim.ens,sim.motion,sim.rng,sim.rp,sim.pes,sim.propa,sim.therm)
-		sim.t = 0.0	
+		sim.t = 0.0
 
 		#Backward propagation
 		for i in range(nsteps-1):
@@ -151,16 +151,16 @@ class SimUniverse(object):
 			record_var()
 
 		print('Propagation completed')
-		
+
 		op_dict = {'I':np.ones_like(np.array(qarr)),'q':qarr,'p':parr}
 		Aarr = np.array(op_dict[A].copy())
 		Barr = np.array(op_dict[B].copy())
 		Carr = np.array(op_dict[C].copy())
 
-		Marr = np.array(Marr.copy()) 
+		Marr = np.array(Marr.copy())
 		Marr = Marr[:,:,None] # NEEDS TO CHANGE FOR 2D
 		tarr = np.array(tarr)
-	
+
 		tarr1,Csym = gen_2pt_tcf(dt,tarr,Carr,Barr,Aarr)  # In the order t2,t1 and t0.
 		tarr2,Casym = gen_2pt_tcf(dt,tarr,Carr,Marr)
 		if(np.alltrue(tarr1 == tarr2)):
@@ -179,21 +179,21 @@ class SimUniverse(object):
 			#Mqp = sim.rp.Mqp[:,0,0,0,0].copy()
 			#Mpq = sim.rp.Mpq[:,0,0,0,0].copy()
 			Mpp = sim.rp.Mpp[:,0,0,0,0].copy()
-			q = sim.rp.q[:,:,0].copy()		
+			q = sim.rp.q[:,:,0].copy()
 			p = sim.rp.p[:,:,0].copy()
-			
+
 			tarr.append(sim.t)
 			Marr.append(Mval)
 			qarr.append(q/sqrtnbeads)  #Needed to define centroids with correct scaling
 			parr.append(p/sqrtnbeads)
-		
+
 
 	def run_TCF(self,sim):
 		tarr = []
 		qarr = []
 		parr = []
 		if(self.method == 'CMD'):
-			stride = self.gamma	
+			stride = self.gamma
 			dt = self.dt/self.gamma
 			nsteps = int(self.time_run/dt)
 			for i in range(nsteps):
@@ -203,10 +203,10 @@ class SimUniverse(object):
 					p = sim.rp.p[:,:,0].copy()
 					tarr.append(sim.t)
 					qarr.append(q)
-					parr.append(p)	
+					parr.append(p)
 		else:
 			dt = self.dt
-			nsteps = int(2*self.time_run/dt) + 1	
+			nsteps = int(2*self.time_run/dt) + 1
 			for i in range(nsteps):
 				q = sim.rp.q[:,:,0].copy()
 				p = sim.rp.p[:,:,0].copy()
@@ -214,10 +214,10 @@ class SimUniverse(object):
 				qarr.append(q)
 				parr.append(p)
 				sim.step(mode="nve",var='pq')
-				
+
 
 		qarr = np.array(qarr)
-		parr = np.array(parr)	
+		parr = np.array(parr)
 		#NOTE: The correlation function is between vector quantities unless explicitly specified.
 		#This needs to be rewritten at some point
 		if(self.corrkey=='qq_TCF'):
@@ -227,15 +227,15 @@ class SimUniverse(object):
 		elif(self.corrkey=='pp_TCF'):
 			tarr,tcf = gen_tcf(parr,parr,tarr,corraxis=0)
 		elif(self.corrkey=='pp2_TCF'):
-			tarr,tcf = gen_tcf(parr**2,parr**2,tarr)	
+			tarr,tcf = gen_tcf(parr**2,parr**2,tarr)
 		elif(self.corrkey=='qp_TCF'):
 			tarr,tcf = gen_tcf(qarr,parr,tarr,corraxis=0)
-		elif(self.corrkey=='pq_TCF'):		
+		elif(self.corrkey=='pq_TCF'):
 			tarr,tcf = gen_tcf(parr,qarr,tarr,corraxis=0)
-		return tarr,tcf	
-	
+		return tarr,tcf
+
 	def run_seed(self,rngSeed,op=None):
-		print('Seed {} : T {}, nbeads {}'.format(rngSeed,self.T,self.nbeads))	
+		print('Seed {} : T {}, nbeads {}'.format(rngSeed,self.T,self.nbeads))
 		rng = np.random.default_rng(rngSeed)
 		ens = Ensemble(beta=1/self.T,ndim=self.dim)
 		qcart,pcart = self.gen_ensemble(ens,rng,rngSeed)
@@ -244,18 +244,18 @@ class SimUniverse(object):
 			rp = RingPolymer(qcart=qcart,pcart=pcart,m=self.m,mode='rp')
 		elif(self.method=='CMD'):
 			rp = RingPolymer(qcart=qcart,pcart=pcart,m=self.m,mode='rp',nmats=1,sgamma=self.gamma)
-	
-		therm = PILE_L(tau0=self.tau0,pile_lambda=self.pile_lambda) 
+
+		therm = PILE_L(tau0=self.tau0,pile_lambda=self.pile_lambda)
 		if(self.corrkey=='OTOC'):
-			motion = Motion(dt = self.dt,symporder=4)	
+			motion = Motion(dt = self.dt,symporder=4)
 			propa = Symplectic_order_IV()
 		else:
 			motion = Motion(dt=self.dt,symporder=2)
 			propa = Symplectic_order_II()
-			
+
 		sim = RP_Simulation()
 		sim.bind(ens,motion,rng,rp,self.pes,propa,therm)
-		
+
 		if(self.corrkey =='OTOC'):
 			tarr, Carr = self.run_OTOC(sim)
 		elif('TCF' in self.corrkey):
@@ -270,11 +270,11 @@ class SimUniverse(object):
 		elif(self.corrkey == 'R2' and self.extparam is not None):
 			tarr, Csym, Casym = self.run_R2(sim,self.extparam[0],self.extparam[1],self.extparam[2])
 			self.store_time_series_2D(tarr,Csym,rngSeed,'sym')
-			self.store_time_series_2D(tarr,Casym,rngSeed,'asym')	
+			self.store_time_series_2D(tarr,Casym,rngSeed,'asym')
 			return
 		else:
-			return	
-	
+			return
+
 		self.store_time_series(tarr,Carr,rngSeed)
 
 	def assign_fname(self,rngSeed,suffix=None):
@@ -286,17 +286,17 @@ class SimUniverse(object):
 			methext = '_nbeads_{}_'.format(self.nbeads)
 		elif(self.method=='CMD'):
 			methext = '_nbeads_{}_gamma_{}_'.format(self.nbeads,self.gamma)
-		
+
 		if(self.corrkey!='stat_avg'):
 			seedext = 'seed_{}'.format(rngSeed)
 		else:
 			seedext = ''
 
 		if(self.ext_kwlist is None and suffix is None):
-			fname = ''.join([fext,methext,seedext])	
+			fname = ''.join([fext,methext,seedext])
 		elif(self.ext_kwlist is None):
-			fname = ''.join([fext,methext,suffix+'_',seedext])	
-		else:	
+			fname = ''.join([fext,methext,suffix+'_',seedext])
+		else:
 			namelst = [fext,methext,suffix+'_']
 			namelst.append('_'.join(self.ext_kwlist) + '_')
 			namelst.append(seedext)
@@ -304,13 +304,13 @@ class SimUniverse(object):
 
 		return fname
 
-	def store_time_series(self,tarr,Carr,rngSeed): 
-		fname = self.assign_fname(rngSeed)	
-		store_1D_plotdata(tarr,Carr,fname,'{}/{}'.format(self.pathname,self.folder_name))	
+	def store_time_series(self,tarr,Carr,rngSeed):
+		fname = self.assign_fname(rngSeed)
+		store_1D_plotdata(tarr,Carr,fname,'{}/{}'.format(self.pathname,self.folder_name))
                 #ALBERTO
 
-	def store_time_series_2D(self,tarr,Carr,rngSeed,suffix=None): 
-		fname = self.assign_fname(rngSeed,suffix)	
+	def store_time_series_2D(self,tarr,Carr,rngSeed,suffix=None):
+		fname = self.assign_fname(rngSeed,suffix)
 		store_2D_imagedata(tarr,tarr,Carr,fname,'{}/{}'.format(self.pathname,self.folder_name))
 
 	def store_scalar(self,scalar,rngSeed):
@@ -318,4 +318,24 @@ class SimUniverse(object):
 		fname = self.assign_fname(rngSeed)
 		f = open('{}/{}/{}.txt'.format(self.pathname,self.folder_name,fname),'a')
 		f.write(str(rngSeed) + "  " + str(scalar) + '\n')
-		f.close()	
+		f.close()
+
+def check_parameters(sim_parameters,ensemble_param):
+        """ Checks the consistency of  simulation and ensemble  parameters """
+        if sim_parameters["method"] == 'classical' or sim_parameters["method"] == 'Classical':
+            assert sim_parameters["nbeads"] ==1, 'Classical simulations requires nbeads == 1'
+        elif sim_parameters["method"] == 'cmd':
+            assert sim_parameters["cmd_gamma"] is not None, 'Please specify the cmd_gamma parameter to run cmd simulations'
+        elif sim_parameters["method"] == 'rpmd':
+            assert sim_parameters["pile_lambda"] is not None, 'Please specify the pile_lambda parameter to run trpmd simulations'
+        else:
+            raise NotImplementedError('method {} is not implemented'.format(sim_parameters["method"]))
+
+        if ensemble_param["ensemble"]=="thermal":
+            assert ensemble_param["temperature"]>0, '{} K is not a valid temperature for the ensemble {}'.format(ensemble_param["temperature"],ensemble_param["ensemble"])
+            assert ensemble_param["tau"]>0, '{} K is not a valid thermostat constant for the ensemble {}'.format(ensemble_param["tau"],ensemble_param["ensemble"])
+        elif ensemble_param["ensemble"]=="mc":
+            assert ensemble_param["energy_mc"] is not None, 'Please specify energy to run in the microcanonical ensemble'
+        else:
+            raise NotImplementedError
+

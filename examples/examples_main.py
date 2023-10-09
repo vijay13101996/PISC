@@ -1,47 +1,37 @@
-# from matplotlib import pyplot as plt
-# import multiprocessing as mp
 import argparse
 import numpy as np
 import pathlib as Path
 import time
-import os
 
 from functools import partial
 from PISC.utils.mptools import chunks
 from PISC.utils.mptools import batching
 from PISC.engine.PI_sim_core import SimUniverse
+from PISC.engine.PI_sim_core import check_parameters
+from PISC.potentials import check_pes_param
 
-test=True
+
 def main(system_param, pes_param, ensemble_param, simulation_param):
     path = Path.Path(__file__).parent.resolve()
-    # pes  = check_pes_param(pes_param) #ALBERTO
-    # check_ensemble_param(ensemble_param) #ALBERTO
-    # check_simulation_param(simulation_param) #ALBERTO
-
-    if test: #ALBERTO
-        times = 20
-        lamda = 2.0
-        g = 0.02  # 8
-        Tc = 0.5 * lamda / np.pi
-        times = 20.0
-        ensemble_param["temperature"] = times * Tc
-        from PISC.potentials.double_well_potential import double_well
-        pes = double_well(lamda, g)
-        potkey = "inv_harmonic_lambda_{}_g_{}".format(lamda, g)
-        Tkey = "T_{}Tc".format(times)  #'{}Tc'.format(times)
+    pes, pot_key = check_pes_param(pes_param)
+    check_parameters(simulation_param, ensemble_param)
+    Tkey = "T_{}K".format(ensemble_param["temperature"])
 
     Sim_class = SimUniverse(
         simulation_param["method"],
         str(path),
         system_param["sys_name"],
-        potkey,
+        pot_key,
         simulation_param["CFtype"],
         ensemble_param["ensemble"],
         Tkey,
         folder_name=simulation_param["folder_name"],
     )
     Sim_class.set_sysparams(
-        pes, ensemble_param["temperature"], system_param["mass"], system_param["dimension"]
+        pes,
+        ensemble_param["temperature"],
+        system_param["mass"],
+        system_param["dimension"],
     )
     Sim_class.set_simparams(
         simulation_param["n_traj"],
@@ -56,12 +46,12 @@ def main(system_param, pes_param, ensemble_param, simulation_param):
 
     start_time = time.time()
     func = partial(Sim_class.run_seed)
-    seeds = range(simulation_param['nseeds'])
-    seed_split = chunks(seeds, simulation_param['chunk_size'])
+    seeds = range(simulation_param["nseeds"])
+    seed_split = chunks(seeds, simulation_param["chunk_size"])
 
-    output_folder = path/simulation_param["folder_name"]
+    output_folder = path / simulation_param["folder_name"]
     Path.Path(output_folder).mkdir(parents=True, exist_ok=True)
-    with open(output_folder/"input_log_{}.txt".format(potkey), "w") as f:
+    with open(output_folder / "input_log_{}.txt".format(pot_key), "w") as f:
         f.write("\n" + str(system_param))
         f.write("\n" + str(pes_param))
         f.write("\n" + str(ensemble_param))
@@ -94,7 +84,7 @@ parser.add_argument(
 parser.add_argument(
     "-m", "--mass", type=float, required=True, help="mass in atomic units"
 )
-parser.add_argument("-sys_name", "--sys_name", type=str, required=True, help="ALBERTO")
+parser.add_argument("-sys_name", "--sys_name", type=str, required=False, default='Selene', help="System name (Legacy flag)")
 
 # ------- Method ------------#
 parser.add_argument(
@@ -102,7 +92,7 @@ parser.add_argument(
     "--method",
     type=str,
     required=True,
-    choices=["Classical"],
+    choices=["Classical", "cmd", "rpmd"],
     help="Type of simulation to be performed",
 )
 parser.add_argument(
@@ -120,6 +110,13 @@ parser.add_argument(
     required=False,
     help="Parameter that determines the adiabatic separation for cmd calculations",
 )
+parser.add_argument(
+    "-pile_lambda",
+    "--pile_lambda",
+    type=float,
+    required=False,
+    help="Lambda parameter for PILE thermostats  (see Eq. 30 in J. Chem. Phys. 140, 234116 (2014))",
+)
 
 # ------- Ensemble --------------------------------------------#
 parser.add_argument(
@@ -127,22 +124,32 @@ parser.add_argument(
     "--ensemble",
     type=str,
     required=True,
-    choices=["thermal"],
-    help="Ensemble",
+    choices=["thermal", "mc"],
+    help="Ensemble. 'Thermal' refers to canonical, 'mc' refers to microcanonical",
 )
+
 parser.add_argument(
     "-temp",
     "--temp",
     type=float,
-    required=True,
+    required=False,
+    default=-1.0,
     help="Temperature in atomic units ",
 )
 parser.add_argument(
     "-temp_tau",
     "--temp_tau",
     type=float,
-    required=True,
+    required=False,
+    default=-1.0,
     help="Time constant of the Langevin thermostat in atomic units",
+)
+parser.add_argument(
+    "-energy",
+    "--energy_mc",
+    type=float,
+    required=False,
+    help="Energy (needed for microcanonical ensemble)",
 )
 
 # ------------ Simulation parameters --------------------#
@@ -221,7 +228,16 @@ parser.add_argument(
     "--corr_func",
     type=str,
     required=True,
-    choices=["qq_TCF","pp_TCF","qq2_TCF","pp2_TCF","qp_TCF","pq_TCF","OTOC","R2"],
+    choices=[
+        "qq_TCF",
+        "pp_TCF",
+        "qq2_TCF",
+        "pp2_TCF",
+        "qp_TCF",
+        "pq_TCF",
+        "OTOC",
+        "R2",
+    ],
     help="Correlation function to be computed",
 )
 
@@ -233,18 +249,20 @@ system_param = {
     "mass": args.mass,
 }
 aux = list(map(float, args.pes_parameters))
-pes_param = {"dimension": args.dimension, "pes_name": args.pes, "pes_param":aux}
+pes_param = {"dimension": args.dimension, "pes_name": args.pes, "pes_param": aux}
 
 ensemble_param = {
     "ensemble": args.ensemble,
     "temperature": args.temp,
     "tau": args.temp_tau,
+    "energy_mc": args.energy_mc,
 }
 
 simulation_param = {
     "method": args.method,
     "nbeads": args.nbeads,
     "cmd_gamma": args.cmd_gamma,
+    "pile_lambda": args.pile_lambda,
     "n_traj": args.n_traj,
     "time_therma": args.time_therma,
     "time_total": args.time_total,
