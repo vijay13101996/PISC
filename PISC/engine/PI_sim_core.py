@@ -271,26 +271,84 @@ class SimUniverse(object):
 
         return tarr, Csym, Casym
 
-    def run_R3(self, sim):
+    def run_R2_eq(self, sim, A="q", B="q", C="q", D='q', seed_number=None):
+        """Run simulation to compute third order response functions propagating the stability matrix
+        R3  COMPLETE with Eq. #ALBERTO
+        with Mqq(t1,t0)= \partial q(t1)/\partial q(t0)
+        """
+
+        assert (
+            self.dim == 1
+        ), "dimension = {} but R2 is only implemented for dim==1, sorry".format(
+            self.dim
+        )
+
         tarr, qarr, parr, Marr = [], [], [], []
         dt = self.dt
         nsteps = int(self.time_run / dt) + 1
         sqrtnbeads = sim.rp.nbeads**0.5
+        # comm_dict = {'qq':[-1.0,'Mqp'],'qp':[1.0,'Mqq'], 'pq':[-1.0,'Mpp'], 'pp':[1.0,'Mpq']}
 
         def record_var():
             Mqq = sim.rp.Mqq[:, 0, 0, 0, 0].copy()
             # Mqp = sim.rp.Mqp[:,0,0,0,0].copy()
             # Mpq = sim.rp.Mpq[:,0,0,0,0].copy()
-            Mpp = sim.rp.Mpp[:, 0, 0, 0, 0].copy()
-            q = sim.rp.q[:, :, 0].copy()
-            p = sim.rp.p[:, :, 0].copy()
+            # Mpp = sim.rp.Mpp[:,0,0,0,0].copy()
+            q = sim.rp.q[:, 0, 0].copy()
+            p = sim.rp.p[:, 0, 0].copy() / sim.rp.m
 
+            Mval = Mqq / sim.rp.m
             tarr.append(sim.t)
             Marr.append(Mval)
             qarr.append(
                 q / sqrtnbeads
-            )  # Needed to define centroids with correct scaling
+            )  # Needed to add further scaling to transform the 0 normal mode to centroid
             parr.append(p / sqrtnbeads)
+
+        pcart = sim.rp.pcart.copy()
+        qcart = sim.rp.qcart.copy()
+
+        # Forward propagation
+        for i in range(nsteps):
+            record_var()
+            sim.step(mode="nve", var="monodromy")
+
+        # Reinitialising position and momenta for backward propagation
+        sim.rp = RingPolymer(
+            qcart=qcart, pcart=pcart, m=sim.rp.m, mode="rp"
+        )  # Only RPMD here!
+        sim.motion = Motion(dt=-self.dt, symporder=sim.motion.order)
+        sim.bind(sim.ens, sim.motion, sim.rng, sim.rp, sim.pes, sim.propa, sim.therm)
+        sim.t = 0.0
+
+        # Backward propagation
+        for i in range(nsteps - 1):
+            sim.step(mode="nve", var="monodromy")
+            record_var()
+        if seed_number is None:
+            print("Propagation completed")
+        else:
+            print("Propagation completed. Seed: {}".format(seed_number))
+
+        op_dict = {"I": np.ones_like(np.array(qarr)), "q": qarr, "p": parr}
+        Aarr = np.array(op_dict[A].copy())
+        Barr = np.array(op_dict[B].copy())
+        Carr = np.array(op_dict[C].copy())
+        Darr = np.array(op_dict[D].copy())
+
+        Marr = np.array(Marr.copy())
+        Marr = Marr[:, :, None]  # NEEDS TO CHANGE FOR 2D
+        tarr = np.array(tarr)
+
+        # Compute correlation function
+        tarr1, Csym = gen_2pt_tcf(
+            dt, tarr, Carr, Barr, Aarr
+        )  # In the order t2,t1 and t0.
+        tarr2, Casym = gen_2pt_tcf(dt, tarr, Carr, Marr)
+        if np.alltrue(tarr1 == tarr2):
+            tarr = tarr1
+
+        return tarr, Csym, Casym
 
     def run_TCF(self, sim):
         tarr = []
