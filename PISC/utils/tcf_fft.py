@@ -1,5 +1,12 @@
 import numpy as np
-from PISC.utils import tcf_fort_tools, tcf_fort_tools_omp
+import sys
+
+try:
+   from PISC.utils import tcf_fort_tools as tcf_fort_tools_omp
+except:
+   print('\nCannot import tcf_fort_tools @ PISC/utils/tcf_fft.py')
+   print('Please compile these tools by running the "PISC/utils/compile.sh" script\n')
+   sys.exit(1)
 
 def gen_tcf(Aarr,Barr,tarr,corraxis=None):
 	q1arr=np.array(Aarr)

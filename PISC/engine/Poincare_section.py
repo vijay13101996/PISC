@@ -10,7 +10,7 @@ from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr,
 from matplotlib import pyplot as plt
 
 class Poincare_SOS(object):
-	def __init__(self,method,pathname,potkey,Tkey):
+	def __init__(self,method,pathname,potkey,Tkey,folder_name='Datafiles'):
 		self.method = method
 		self.pathname = pathname
 		self.potkey = potkey
@@ -19,6 +19,7 @@ class Poincare_SOS(object):
 		self.Y = []
 		self.PX = []
 		self.PY = []
+                self.folder_name = folder_name
 					
 	def set_sysparams(self,pes,T,m,dim):
 		self.pes = pes
@@ -52,8 +53,8 @@ class Poincare_SOS(object):
 		# returns the initial conditions pcartg, qcartg to use for plotting the Poincare section. 	
 		if(E is not None):	
 			generate_rp(self.pathname,self.m,self.dim,self.N,self.nbeads,self.ens,self.pes,self.rng,self.time_ens,self.dt,self.potkey,self.rngSeed,E,qcartg)
-			qcartg = read_arr('Microcanonical_rp_qcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(self.N,self.nbeads,self.beta,self.potkey,self.rngSeed),"{}/Datafiles".format(self.pathname))
-			pcartg = read_arr('Microcanonical_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(self.N,self.nbeads,self.beta,self.potkey,self.rngSeed),"{}/Datafiles".format(self.pathname)) 
+			qcartg = read_arr('Microcanonical_rp_qcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(self.N,self.nbeads,self.beta,self.potkey,self.rngSeed),"{}/{}".format(self.pathname,self.folder_name))
+			pcartg = read_arr('Microcanonical_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(self.N,self.nbeads,self.beta,self.potkey,self.rngSeed),"{}/{}".format(self.pathname,self.folder_name)) 
 		
 		if(specific_traj is not None):
 			qcartg = qcartg[specific_traj]
@@ -214,7 +215,7 @@ class Poincare_SOS(object):
 		fname = ''.join([fext])
 
 		if(coord=='x'):	
-			store_1D_plotdata(self.X,self.PX,fname,'{}/Datafiles'.format(self.pathname))	
+			store_1D_plotdata(self.X,self.PX,fname,'{}/{}'.format(self.pathname,self.folder_name))	
 
 		if(coord=='y'):	
-			store_1D_plotdata(self.Y,self.PY,fname,'{}/Datafiles'.format(self.pathname))
+			store_1D_plotdata(self.Y,self.PY,fname,'{}/{}'.format(self.pathname,self.folder_name))

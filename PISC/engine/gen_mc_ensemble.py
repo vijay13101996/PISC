@@ -10,7 +10,7 @@ from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr,
 import time
 from copy import deepcopy
 
-def generate_rp(pathname,m,dim,N,nbeads,ens,pes,rng,time_relax,dt_relax,potkey,rngSeed,E,qlist,plist=None,filt_func=None):
+def generate_rp(pathname,m,dim,N,nbeads,ens,pes,rng,time_relax,dt_relax,potkey,rngSeed,E,qlist,plist=None,filt_func=None,folder_name='Datafiles'):
 	index_arr = rng.choice(len(qlist),N)  # Choose N points at random from the qlist
 	qcart = np.zeros((N,dim,nbeads))
 	pcart = np.zeros((N,dim,nbeads))
@@ -85,10 +85,10 @@ def generate_rp(pathname,m,dim,N,nbeads,ens,pes,rng,time_relax,dt_relax,potkey,r
 		ind_arr = range(N) # Include all trajectories if no filter is applied
 	#plt.scatter(rp.qcart[0,0,:],rp.qcart[0,1,:])
 	#plt.show()
-	store_arr(rp.qcart[ind_arr],'Microcanonical_rp_qcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(rp.nsys,rp.nbeads,ens.beta,potkey,rngSeed),"{}/Datafiles".format(pathname))
-	store_arr(rp.pcart[ind_arr],'Microcanonical_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(rp.nsys,rp.nbeads,ens.beta,potkey,rngSeed),"{}/Datafiles".format(pathname)) 
+	store_arr(rp.qcart[ind_arr],'Microcanonical_rp_qcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(rp.nsys,rp.nbeads,ens.beta,potkey,rngSeed),"{}/{}".format(pathname,folder_name))
+	store_arr(rp.pcart[ind_arr],'Microcanonical_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}'.format(rp.nsys,rp.nbeads,ens.beta,potkey,rngSeed),"{}/{}".format(pathname,folder_name)) 
 
-def generate_rp_gyr(pathname,m,dim,N,nbeads,ens,pes,rng,time_relax,dt_relax,potkey,rngSeed,E,qlist,gyr_lower=0,gyr_upper=0.2,hist=False):
+def generate_rp_gyr(pathname,m,dim,N,nbeads,ens,pes,rng,time_relax,dt_relax,potkey,rngSeed,E,qlist,gyr_lower=0,gyr_upper=0.2,hist=False,folder_name='Datafiles'):
 	#=============================================
 	# Title:  Generator of Rg filtered mc ensemble
 	# Author: Lars Meuser
@@ -150,6 +150,6 @@ def generate_rp_gyr(pathname,m,dim,N,nbeads,ens,pes,rng,time_relax,dt_relax,potk
 	#plt.show()
 
 	store_arr(rp.qcart[logic_filter,:,:],'Filtered_MC_rp_qcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}_rg_min{}_rg_max{}'.format\
-				(rp.nsys,rp.nbeads,ens.beta,potkey,rngSeed,gyr_lower,gyr_upper),"{}/Datafiles".format(pathname))
+				(rp.nsys,rp.nbeads,ens.beta,potkey,rngSeed,gyr_lower,gyr_upper),"{}/{}".format(pathname,folder_name))
 	store_arr(rp.qcart[logic_filter,:,:],'Filtered_MC_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}_rg_min{}_rg_max{}'.format\
-				(rp.nsys,rp.nbeads,ens.beta,potkey,rngSeed,gyr_lower,gyr_upper),"{}/Datafiles".format(pathname)) 	
+				(rp.nsys,rp.nbeads,ens.beta,potkey,rngSeed,gyr_lower,gyr_upper),"{}/{}".format(pathname,folder_name)) 	
