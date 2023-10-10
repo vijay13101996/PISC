@@ -2,7 +2,7 @@ import argparse
 import numpy as np
 from pathlib import Path
 import time
-
+import sys
 from functools import partial
 from PISC.utils.mptools import chunks
 from PISC.utils.mptools import batching
@@ -10,7 +10,7 @@ from PISC.engine.PI_sim_core import SimUniverse
 from PISC.engine.PI_sim_core import check_parameters
 from PISC.potentials import check_pes_param
 
-
+debug=True
 def main(system_param, pes_param, ensemble_param, simulation_param):
     #path = Path.Path(__file__).parent.resolve()
     path = Path.cwd()
@@ -219,6 +219,14 @@ if __name__ =='__main__':
     )
 
     parser.add_argument(
+        "-sym_order",
+        "--sympletic_order",
+        type=int,
+        required=False,
+        help="Sympletic order of time propagator. If not provided is 4 for OTOC and 2 for anything else.",
+    )
+
+    parser.add_argument(
         "-pes_param",
         "--pes_parameters",
         nargs="+",
@@ -249,7 +257,7 @@ if __name__ =='__main__':
         "--operator_list",
         nargs='+',
         required=False,
-        help="Operator order in decreasing time order,(Example for R2 it q q q is q(t2), q(t1), q(t0))",
+        help="Operator order in decreasing time order,(Example for R2 it q q q is q(t0), q(t1), q(t2))",
     )
 
     args = parser.parse_args()
@@ -285,6 +293,6 @@ if __name__ =='__main__':
         "folder_name": args.folder_name,
         "simulation_label": args.sim_label,
         "operator_list": args.operator_list,
+        "sympletic_order": args.sympletic_order,
     }
-
     main(system_param, pes_param, ensemble_param, simulation_param)
