@@ -412,12 +412,16 @@ class SimUniverse(object):
             "dt_{}".format(self.dt),
         ]
         fext = "_".join(key)
-        if self.method == "Classical":
+        if self.method == "Classical" or self.method == "classical":
             methext = "_"
         elif self.method == "RPMD" or self.method == "rpmd":
             methext = "_nbeads_{}_".format(self.nbeads)
-        elif self.method == "CMD":
+        elif self.method == "CMD" or self.method == "cmd":
             methext = "_nbeads_{}_gamma_{}_".format(self.nbeads, self.gamma)
+        else:
+            raise NotImplementedError(
+                "{} method is not implemented, sorry".format(self.method)
+            )
 
         if self.corrkey != "stat_avg":
             seedext = "seed_{}".format(rngSeed)
