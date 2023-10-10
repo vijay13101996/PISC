@@ -46,11 +46,7 @@ def main(system_param, pes_param, ensemble_param, simulation_param):
         simulation_param["time_therma"], simulation_param["time_total"]
     )
 
-    start_time = time.time()
-    func = partial(Sim_class.run_seed)
-    seeds = range(simulation_param["nseeds"])
-    seed_split = chunks(seeds, simulation_param["chunk_size"])
-
+    # Save log
     output_folder = path / simulation_param["folder_name"]
     Path(output_folder).mkdir(parents=True, exist_ok=True)
     with open(output_folder / "input_log_{}.txt".format(pot_key), "w") as f:
@@ -59,6 +55,11 @@ def main(system_param, pes_param, ensemble_param, simulation_param):
         f.write("\n" + str(ensemble_param))
         f.write("\n" + str(simulation_param))
 
+    # Run simulation in parallel
+    start_time = time.time()
+    func = partial(Sim_class.run_seed)
+    seeds = range(simulation_param["nseeds"])
+    seed_split = chunks(seeds, simulation_param["chunk_size"])
     batching(func, seed_split, max_time=1e6)
     print("time", time.time() - start_time)
     print("Have a nice day")
