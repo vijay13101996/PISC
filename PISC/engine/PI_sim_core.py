@@ -1,5 +1,4 @@
 import numpy as np
-import PISC
 from PISC.engine.integrators import Symplectic_order_II, Symplectic_order_IV
 from PISC.engine.beads import RingPolymer
 from PISC.engine.ensemble import Ensemble
@@ -7,9 +6,10 @@ from PISC.engine.motion import Motion
 from PISC.engine.thermostat import PILE_L
 from PISC.engine.simulation import RP_Simulation
 from PISC.utils.readwrite import store_1D_plotdata, store_2D_imagedata, read_arr
-from PISC.utils.tcf_fft import gen_tcf, gen_2pt_tcf
+from PISC.utils.tcf_fft import gen_tcf, gen_2pt_tcf, gen_R3_tcf
 from PISC.engine.thermalize_PILE_L import thermalize_rp
 from PISC.engine.gen_mc_ensemble import generate_rp
+from PISC.utils.time_order import reorder_time
 
 
 class SimUniverse(object):
@@ -51,6 +51,7 @@ class SimUniverse(object):
 
         self.pes = pes
         self.T = T
+        self.beta = 1.0 / self.T
         self.m = mass
         self.dim = dim
 
@@ -173,10 +174,10 @@ class SimUniverse(object):
         else:
             dt = self.dt
             nsteps = int(self.time_run / dt)
-            q = sim.rp.q.copy()
-            sigma = 0.5
-            ind = np.where(abs(q) < sigma)
-            wgt = np.exp(-q / (2 * sigma**2)) / (2 * np.pi * sigma) ** 0.5
+            # q = sim.rp.q.copy()
+            # sigma = 0.5
+            # ind = np.where(abs(q) < sigma)
+            # wgt = np.exp(-q / (2 * sigma**2)) / (2 * np.pi * sigma) ** 0.5
             for i in range(nsteps):
                 sim.step(mode="nve", var="monodromy")
                 if single:
@@ -191,10 +192,11 @@ class SimUniverse(object):
         return tarr, Mqqarr
 
     def run_R2(self, sim, A="p", B="p", C="q", seed_number=None):
-        """Run simulation to compute second order (sym and asym) response functions
+        r"""Run simulation to compute second order (sym and asym) response functions
         symR2  <C(t2)B(t1)A(t0)>
         asymR2 <C(t2)Mqq(t1,t0)>
         with Mqq(t1,t0)= \partial q(t1)/\partial q(t0)
+        We propagate the stability matrix (var="monodromy" inside the step call)
         """
 
         # IMPORTANT: Be careful when you use it for 2D! There are parts used in this code,
@@ -271,10 +273,11 @@ class SimUniverse(object):
 
         return tarr, Csym, Casym
 
-    def run_R2_eq(self, sim, A="q", B="q", C="q", D='q', seed_number=None):
-        """Run simulation to compute third order response functions propagating the stability matrix
-        R3  COMPLETE with Eq. #ALBERTO
-        with Mqq(t1,t0)= \partial q(t1)/\partial q(t0)
+    def run_R3_eq(self, sim, seed_number=None):
+        r"""Run simulation to compute third order response functions propagating the stability matrix
+        R3 = beta < (Mqq(t3,t0)Mqp(t2,t0) - Mqp(t3,t0)Mqq(t2,t0)) - (Mpp(-t1,t0)-beta p(0)p(-t1)) >
+        with Mxy(t1,t0)= \partial x(t1)/\partial y(t0)
+        We propagate the stability matrix (var="monodromy" inside the step call)
         """
 
         assert (
@@ -283,23 +286,38 @@ class SimUniverse(object):
             self.dim
         )
 
-        tarr, qarr, parr, Marr = [], [], [], []
+        tarr, qarr, parr, Marr_qq, Marr_qp, Marr_pq, Marr_pp = (
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+        )
         dt = self.dt
         nsteps = int(self.time_run / dt) + 1
         sqrtnbeads = sim.rp.nbeads**0.5
         # comm_dict = {'qq':[-1.0,'Mqp'],'qp':[1.0,'Mqq'], 'pq':[-1.0,'Mpp'], 'pp':[1.0,'Mpq']}
 
         def record_var():
+            """Define variables to be stored during simulation and required to compute the observables"""
             Mqq = sim.rp.Mqq[:, 0, 0, 0, 0].copy()
-            # Mqp = sim.rp.Mqp[:,0,0,0,0].copy()
-            # Mpq = sim.rp.Mpq[:,0,0,0,0].copy()
-            # Mpp = sim.rp.Mpp[:,0,0,0,0].copy()
+            Mqp = sim.rp.Mqp[:, 0, 0, 0, 0].copy()
+            Mpq = sim.rp.Mpq[:, 0, 0, 0, 0].copy()
+            Mpp = sim.rp.Mpp[:, 0, 0, 0, 0].copy()
             q = sim.rp.q[:, 0, 0].copy()
-            p = sim.rp.p[:, 0, 0].copy() / sim.rp.m
+            p = sim.rp.p[:, 0, 0].copy() / sim.rp.m  # CHECK ALBERTO
 
-            Mval = Mqq / sim.rp.m
+            Mval_qq = Mqq  # CHECK ALBERTO
+            Mval_qp = Mqp
+            Mval_pq = Mpq
+            Mval_pp = Mpp
             tarr.append(sim.t)
-            Marr.append(Mval)
+            Marr_qq.append(Mval_qq)
+            Marr_qp.append(Mval_qp)
+            Marr_pq.append(Mval_pq)
+            Marr_pp.append(Mval_pp)
             qarr.append(
                 q / sqrtnbeads
             )  # Needed to add further scaling to transform the 0 normal mode to centroid
@@ -329,28 +347,30 @@ class SimUniverse(object):
             print("Propagation completed")
         else:
             print("Propagation completed. Seed: {}".format(seed_number))
+        # End of propagation
 
-        op_dict = {"I": np.ones_like(np.array(qarr)), "q": qarr, "p": parr}
-        Aarr = np.array(op_dict[A].copy())
-        Barr = np.array(op_dict[B].copy())
-        Carr = np.array(op_dict[C].copy())
-        Darr = np.array(op_dict[D].copy())
+        # TCF calculation
+        # rearrange arrays to have time in increasing order
+        nmode = 0
+        tarr = reorder_time(np.array(tarr)[:, np.newaxis], len(tarr), mode=nmode)
+        Aarr = reorder_time(np.array(parr)[:, np.newaxis], len(tarr), mode=nmode)
+        Barr = reorder_time(np.array(parr)[:, np.newaxis], len(tarr), mode=nmode)
 
-        Marr = np.array(Marr.copy())
-        Marr = Marr[:, :, None]  # NEEDS TO CHANGE FOR 2D
-        tarr = np.array(tarr)
+        Marr = {
+            "qq": reorder_time(np.array(Marr_qq)[:, np.newaxis], len(tarr), mode=nmode),
+            "pp": reorder_time(np.array(Marr_pp)[:, np.newaxis], len(tarr), mode=nmode),
+            "qp": reorder_time(np.array(Marr_qp)[:, np.newaxis], len(tarr), mode=nmode),
+            "pq": reorder_time(np.array(Marr_pq)[:, np.newaxis], len(tarr), mode=nmode),
+        }
 
         # Compute correlation function
-        tarr1, Csym = gen_2pt_tcf(
-            dt, tarr, Carr, Barr, Aarr
-        )  # In the order t2,t1 and t0.
-        tarr2, Casym = gen_2pt_tcf(dt, tarr, Carr, Marr)
-        if np.alltrue(tarr1 == tarr2):
-            tarr = tarr1
+        R3eq = gen_R3_tcf(dt, tarr, Aarr, Barr, Marr, self.beta)
 
-        return tarr, Csym, Casym
+        return tarr, R3eq
 
     def run_TCF(self, sim):
+        """Run simulation to compute 'simple' correlation functions, such as qq,qq2,etc
+        We do not propagate the stability matrix (var="pq" inside the step call)"""
         tarr = []
         qarr = []
         parr = []
@@ -442,7 +462,9 @@ class SimUniverse(object):
             return
         elif self.corrkey == "singcomm":
             tarr, Carr = self.run_OTOC(sim, single=True)
-        elif self.corrkey == "R2" and self.extparam is not None:
+        elif self.corrkey == "R2":
+            assert self.extparam is not None
+
             tarr, Csym, Casym = self.run_R2(
                 sim,
                 self.extparam[0],
@@ -452,6 +474,14 @@ class SimUniverse(object):
             )
             self.store_time_series_2D(tarr, Csym, rngSeed, "sym")
             self.store_time_series_2D(tarr, Casym, rngSeed, "asym")
+            return
+
+        elif self.corrkey == "R3eq":
+            tarr, R3_eq = self.run_R3_eq(
+                sim,
+                seed_number=rngSeed,
+            )
+            # self.store_time_series_2D(tarr, R3_eq, rngSeed, "R3_eq")
             return
         else:
             return
@@ -503,7 +533,6 @@ class SimUniverse(object):
         store_1D_plotdata(
             tarr, Carr, fname, "{}/{}".format(self.pathname, self.folder_name)
         )
-        # ALBERTO
 
     def store_time_series_2D(self, tarr, Carr, rngSeed, suffix=None):
         fname = self.assign_fname(rngSeed, suffix)
@@ -545,6 +574,10 @@ def check_parameters(sim_parameters, ensemble_param):
         assert (
             len(sim_parameters["operator_list"]) == 3
         ), "Please specify operators list (example -op_list q q q ) to R2 simulations "
+    elif sim_parameters["CFtype"] == "R3eq":
+        assert (
+            sim_parameters["operator_list"]
+        ) is None, "Sorry, we always assume A=q B=q C=q D=q, please do not use the  -op_list keyword "
 
     if ensemble_param["ensemble"] == "thermal":
         assert (
