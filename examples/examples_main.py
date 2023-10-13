@@ -249,6 +249,8 @@ if __name__ =='__main__':
             "pq_TCF",
             "OTOC",
             "R2",
+            "R2eq",
+            "R3eq",
         ],
         help="Correlation function to be computed",
     )

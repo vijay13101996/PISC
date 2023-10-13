@@ -90,13 +90,55 @@ def gen_2pt_tcf(dt, tarr, Carr, Barr, Aarr=None, dt_tcf=0.1, trans_sym=False):
 
         return tar, tcf
 
+def gen_R2_tcf(dt, tarr, Aarr, Marr, beta,dt_tcf=0.1, verbose=0):
+    r"""Function to compute second-order response
+       R^(2)(t1,t2) = -\beta < Mqp(t2,t0)p(-t1) >
+       with Mqp(t1,t0) = \partial q(t2)/\partial q(t0)
+    """
+    if verbose > 1:
+        print("tar", tarr.shape)
+        print("Aar", Aarr.shape)
+        print("Mqp", Marr['qp'].shape)
+    stride = 1
+    if dt < dt_tcf:
+        stride = int(dt_tcf // dt)
+    tar = tarr[::stride]
+    par = Aarr[::stride]
+    Mqp = Marr["qp"][::stride]
 
-def gen_R3_tcf(dt, tarr, Aarr, Barr, Marr, beta, dt_tcf=0.1, verbose=0):
+    index_t0 = len(tar) // 2
+    ndim = len(tar)
+    tcf_pos_time_length = len(tar)//2
+
+    tcf = np.zeros((ndim, ndim))
+
+    if verbose > 1:
+        print("tar", tar.shape)
+        print("par", par.shape)
+        print("Mqp", Mqp.shape)
+        print("tcf", tcf.shape)
+
+    if 1:  # PYTHON
+        #Positive t1,t2
+        for it1 in range(ndim):
+            for it2 in range(ndim):
+                    tcf[it1, it2] = -beta *np.mean( Mqp[it2] *par[-it1] )
+        #Rotate_axis
+        new_tcf=np.zeros(tcf.shape)
+        #for i1 in range(ndim):
+        #    for i2 in range(ndim):
+        #        it1 = i1+i2-ndim
+        #        it2 = i2-i1
+        #        new_tcf[it1,it2]=tcf[i1,i2]
+        new_tcf=tcf
+        if verbose>2:
+            print('tcf shape',tcf.shape)
+        return tar, new_tcf
+
+def gen_R3_tcf(dt, tarr, Aarr, Barr, Marr, beta, dt_tcf=0.5, verbose=0):
     """Function to compute third-order response
     R3 = beta < (Mqq(t3,t0)Mqp(t2,t0) - Mqp(t3,t0)Mqq(t2,t0)) - (Mpp(-t1,t0)-beta p(0)p(-t1)) >
     """
-    verbose = 5
-
     stride = 1
     if dt < dt_tcf:
         stride = int(dt_tcf // dt)
@@ -136,7 +178,6 @@ def gen_R3_tcf(dt, tarr, Aarr, Barr, Marr, beta, dt_tcf=0.1, verbose=0):
                 index1 = tlen + it1 - 1
             else:
                 index1 = it1
-            print(it1)
             for it2 in range(tlen + 1):
                 for it3 in range(tlen + 1):
                     # Dot product and ensemble average in the same line.
@@ -146,5 +187,6 @@ def gen_R3_tcf(dt, tarr, Aarr, Barr, Marr, beta, dt_tcf=0.1, verbose=0):
                         beta * (Mqq[it3] * Mqp[it2] - Mqp[it3] * Mqq[it2])
                         - (Mpp[index1] - beta * Bar[0] * Aar[index1])
                     )
-
-        return tar, tcf
+        if verbose>2:
+            print('tcf shape',tcf.shape)
+        return tcf

@@ -5,8 +5,13 @@ from PISC.engine.ensemble import Ensemble
 from PISC.engine.motion import Motion
 from PISC.engine.thermostat import PILE_L
 from PISC.engine.simulation import RP_Simulation
-from PISC.utils.readwrite import store_1D_plotdata, store_2D_imagedata, read_arr
-from PISC.utils.tcf_fft import gen_tcf, gen_2pt_tcf, gen_R3_tcf
+from PISC.utils.readwrite import (
+    store_1D_plotdata,
+    store_2D_imagedata,
+    store_3D_imagedata,
+    read_arr,
+)
+from PISC.utils.tcf_fft import gen_tcf, gen_2pt_tcf, gen_R2_tcf, gen_R3_tcf
 from PISC.engine.thermalize_PILE_L import thermalize_rp
 from PISC.engine.gen_mc_ensemble import generate_rp
 from PISC.utils.time_order import reorder_time
@@ -273,6 +278,77 @@ class SimUniverse(object):
 
         return tarr, Csym, Casym
 
+    def run_R2_eq(self, sim, seed_number=None):
+        r"""Run simulation to compute second order response function
+        R^(2)(t1,t2) = -\beta < Mqp(t2,t0)p(-t1) >
+        with Mqp(t1,t0) = \partial q(t2)/\partial q(t0)
+        We propagate the stability matrix (var="monodromy" inside the step call)
+        """
+
+        # IMPORTANT: Be careful when you use it for 2D! There are parts used in this code,
+        # which are 1D-specific.
+        assert (
+            self.dim == 1
+        ), "dimension = {} but R2 is only implemented for dim==1, sorry".format(
+            self.dim
+        )
+
+        tarr, qarr, parr, Marr = [], [], [], []
+        dt = self.dt
+        nsteps = int(self.time_run / dt) + 1
+        sqrtnbeads = sim.rp.nbeads**0.5
+
+        def record_var():
+            Mqp = sim.rp.Mqp[:,0,0,0,0].copy()
+            # Mpq = sim.rp.Mpq[:,0,0,0,0].copy()
+            # Mpp = sim.rp.Mpp[:,0,0,0,0].copy()
+            q = sim.rp.q[:, 0, 0].copy()
+            p = sim.rp.p[:, 0, 0].copy() / sim.rp.m
+
+            Mval = Mqp / sim.rp.m
+            tarr.append(sim.t)
+            Marr.append(Mval)
+            qarr.append(
+                q / sqrtnbeads
+            )  # Needed to add further scaling to transform the 0 normal mode to centroid
+            parr.append(p / sqrtnbeads)
+
+        pcart = sim.rp.pcart.copy()
+        qcart = sim.rp.qcart.copy()
+
+        # Forward propagation
+        for i in range(nsteps):
+            record_var()
+            sim.step(mode="nve", var="monodromy")
+
+        # Reinitialising position and momenta for backward propagation
+        sim.rp = RingPolymer(
+            qcart=qcart, pcart=pcart, m=sim.rp.m, mode="rp"
+        )  # Only RPMD here!
+        sim.motion = Motion(dt=-self.dt, symporder=sim.motion.order)
+        sim.bind(sim.ens, sim.motion, sim.rng, sim.rp, sim.pes, sim.propa, sim.therm)
+        sim.t = 0.0
+
+        # Backward propagation
+        for i in range(nsteps - 1):
+            sim.step(mode="nve", var="monodromy")
+            record_var()
+        if seed_number is None:
+            print("Propagation completed")
+        else:
+            print("Propagation completed. Seed: {}".format(seed_number))
+
+        tarr = reorder_time(np.array(tarr),len(tarr),mode=1)
+        Aarr = reorder_time(np.array(parr),len(tarr),mode=1)
+        Marr = {
+            "qp": reorder_time(np.array(Marr),len(tarr),mode=1)
+        }
+
+        # Compute correlation function
+        tar, R2eq = gen_R2_tcf(dt, tarr, Aarr, Marr,self.beta)
+
+        return tar, R2eq
+
     def run_R3_eq(self, sim, seed_number=None):
         r"""Run simulation to compute third order response functions propagating the stability matrix
         R3 = beta < (Mqq(t3,t0)Mqp(t2,t0) - Mqp(t3,t0)Mqq(t2,t0)) - (Mpp(-t1,t0)-beta p(0)p(-t1)) >
@@ -475,15 +551,25 @@ class SimUniverse(object):
             self.store_time_series_2D(tarr, Csym, rngSeed, "sym")
             self.store_time_series_2D(tarr, Casym, rngSeed, "asym")
             return
+        elif self.corrkey == "R2eq":
+            assert self.extparam is not None
+
+            tarr, R2 = self.run_R2_eq(
+                sim,
+                seed_number=rngSeed,
+            )
+            self.store_time_series_2D(tarr, R2, rngSeed, "R2",mode=2)
+            return
 
         elif self.corrkey == "R3eq":
             tarr, R3_eq = self.run_R3_eq(
                 sim,
                 seed_number=rngSeed,
             )
-            # self.store_time_series_2D(tarr, R3_eq, rngSeed, "R3_eq")
+            self.store_time_series_3D(tarr, R3_eq, rngSeed, "R3_eq")
             return
         else:
+            raise NotImplementedError  # YL: I don't think we should reach this line ever
             return
 
         self.store_time_series(tarr, Carr, rngSeed)
@@ -534,10 +620,21 @@ class SimUniverse(object):
             tarr, Carr, fname, "{}/{}".format(self.pathname, self.folder_name)
         )
 
-    def store_time_series_2D(self, tarr, Carr, rngSeed, suffix=None):
+    def store_time_series_2D(self, tarr, Carr, rngSeed, suffix=None,mode=1):
         fname = self.assign_fname(rngSeed, suffix)
         store_2D_imagedata(
-            tarr, tarr, Carr, fname, "{}/{}".format(self.pathname, self.folder_name)
+            tarr, tarr, Carr, fname, "{}/{}".format(self.pathname, self.folder_name),mode=mode
+        )
+
+    def store_time_series_3D(self, tarr, Carr, rngSeed, suffix=None):
+        fname = self.assign_fname(rngSeed, suffix)
+        store_3D_imagedata(
+            tarr,
+            tarr,
+            tarr,
+            Carr,
+            fname,
+            "{}/{}".format(self.pathname, self.folder_name),
         )
 
     def store_scalar(self, scalar, rngSeed):
@@ -570,10 +667,11 @@ def check_parameters(sim_parameters, ensemble_param):
             "method {} is not implemented".format(sim_parameters["method"])
         )
 
-    if sim_parameters["CFtype"] == "R2":
+    if sim_parameters["CFtype"] == "R2" or sim_parameters["CFtype"] == "R2eq":
         assert (
             len(sim_parameters["operator_list"]) == 3
         ), "Please specify operators list (example -op_list q q q ) to R2 simulations "
+
     elif sim_parameters["CFtype"] == "R3eq":
         assert (
             sim_parameters["operator_list"]
