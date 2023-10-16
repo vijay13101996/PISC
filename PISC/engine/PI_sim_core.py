@@ -68,11 +68,11 @@ class SimUniverse(object):
             self.extparam = extparam
 
     def set_methodparams(self, nbeads=1, gamma=1):
-        if self.method == "Classical":
+        if self.method == "Classical" or self.method == "classical":
             self.nbeads = 1
         else:
             self.nbeads = nbeads
-        if self.method == "CMD":
+        if self.method == "CMD" or self.method =='cmd':
             self.gamma = gamma
 
     def set_runtime(self, time_ens=100.0, time_run=5.0):
@@ -552,8 +552,6 @@ class SimUniverse(object):
             self.store_time_series_2D(tarr, Casym, rngSeed, "asym")
             return
         elif self.corrkey == "R2eq":
-            assert self.extparam is not None
-
             tarr, R2 = self.run_R2_eq(
                 sim,
                 seed_number=rngSeed,
@@ -667,10 +665,15 @@ def check_parameters(sim_parameters, ensemble_param):
             "method {} is not implemented".format(sim_parameters["method"])
         )
 
-    if sim_parameters["CFtype"] == "R2" or sim_parameters["CFtype"] == "R2eq":
+    if sim_parameters["CFtype"] == "R2":
         assert (
             len(sim_parameters["operator_list"]) == 3
         ), "Please specify operators list (example -op_list q q q ) to R2 simulations "
+
+    if sim_parameters["CFtype"] == "R2eq":
+        assert (
+            sim_parameters["operator_list"] is None
+        ), "R2eq doesn't need op_list keyword. For safety reasons we abort here"
 
     elif sim_parameters["CFtype"] == "R3eq":
         assert (

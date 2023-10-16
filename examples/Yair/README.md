@@ -1,0 +1,12 @@
+- Reimplement R2 : DONE
+- Test classical/RPMD R2 : DONE
+- Implement R3 : 
+- Test classical/RPMD R3 : DONE
+- tests:
+      - 2D cuts of R3 == R2
+      - average value
+- (if needed)Fortran code R3 
+- implement 2D?
+
+- implement eq-noeq R2
+- implement eq-noeq R3

@@ -10,9 +10,11 @@ from PISC.engine.PI_sim_core import SimUniverse
 from PISC.engine.PI_sim_core import check_parameters
 from PISC.potentials import check_pes_param
 
-debug=True
+debug = True
+
+
 def main(system_param, pes_param, ensemble_param, simulation_param):
-    #path = Path.Path(__file__).parent.resolve()
+    # path = Path.Path(__file__).parent.resolve()
     path = Path.cwd()
     pes, pot_key = check_pes_param(pes_param)
     check_parameters(simulation_param, ensemble_param)
@@ -40,7 +42,9 @@ def main(system_param, pes_param, ensemble_param, simulation_param):
         simulation_param["dt"],
         simulation_param["operator_list"],
     )
-    Sim_class.set_methodparams()
+    Sim_class.set_methodparams(
+        simulation_param["nbeads"], simulation_param["cmd_gamma"]
+    )
     Sim_class.set_ensparams(ensemble_param["tau"])
     Sim_class.set_runtime(
         simulation_param["time_therma"], simulation_param["time_total"]
@@ -64,9 +68,11 @@ def main(system_param, pes_param, ensemble_param, simulation_param):
     print("time", time.time() - start_time)
     print("Have a nice day")
 
-if __name__ =='__main__':
 
-    parser = argparse.ArgumentParser(description="""Master script run  simulations.\n""")
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="""Master script run  simulations.\n"""
+    )
 
     # ------ System definition --------------#
     parser.add_argument(
@@ -82,13 +88,26 @@ if __name__ =='__main__':
         "--pes",
         type=str,
         required=True,
-        choices=["double_well","mildly_anharmonic","harmonic_1D","harmonic_2D","morse"],
+        choices=[
+            "double_well",
+            "mildly_anharmonic",
+            "harmonic_1D",
+            "harmonic_2D",
+            "morse",
+        ],
         help="Potential energy surface",
     )
     parser.add_argument(
         "-m", "--mass", type=float, required=True, help="mass in atomic units"
     )
-    parser.add_argument("-sys_name", "--sys_name", type=str, required=False, default='Selene', help="System name (Legacy flag)")
+    parser.add_argument(
+        "-sys_name",
+        "--sys_name",
+        type=str,
+        required=False,
+        default="Selene",
+        help="System name (Legacy flag)",
+    )
 
     # ------- Method ------------#
     parser.add_argument(
@@ -257,7 +276,7 @@ if __name__ =='__main__':
     parser.add_argument(
         "-op_list",
         "--operator_list",
-        nargs='+',
+        nargs="+",
         required=False,
         help="Operator order in decreasing time order,(Example for R2 it q q q is q(t0), q(t1), q(t2))",
     )

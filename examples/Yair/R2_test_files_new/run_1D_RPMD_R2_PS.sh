@@ -1,15 +1,15 @@
 
 sys_name='Tosca2'
-method='Classical'
+method='rpmd'
 corr_func='R2eq'
 
 pes='mildly_anharmonic'
 dim=1
 param1=1.0 #m
-param2=0.1 #a
-param3=0.01 #b
+param2=-0.605 #a
+param3=+0.427 #b
 mass=1.0
-nbeads='1'
+nbeads=8
 
 
 ens='thermal'
@@ -20,14 +20,13 @@ dt_therma=0.05
 time_therma=50.0
 
 dt=0.01
-time_total=50.0
-ndim=1001
-
+time_total=20.0;ndim=401
+time_total=50.0;ndim=1001
 n_traj=1000
 nseeds=20
 chunk_size=10
 label='RPMD'
-folder_name='classical_R2'
+folder_name='RPMD_R2_PS'
 
 dir=/scratch2/yl899/gitlab/PISC
 rm -f ${folder_name}/*
