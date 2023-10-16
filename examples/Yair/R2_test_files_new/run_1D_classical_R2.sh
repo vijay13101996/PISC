@@ -36,4 +36,6 @@ python  ${dir}/examples/examples_main.py  -dim ${dim} -pes ${pes} -m ${mass} -sy
 
 python ${dir}/PISC/tools/average_tcf.py -pre ${method}  -folder ${folder_name}
 mv average.out ${folder_name}
-./get_spectra.sh
+python ${dir}/PISC/tools/rotate_time.py ${folder_name}/average.out 2 0.1 aux.dat
+mv aux.dat ${folder_name}/rot_average.out
+./get_spectra.sh ${folder_name} rot_average.out
