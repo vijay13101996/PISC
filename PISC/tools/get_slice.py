@@ -1,5 +1,6 @@
 import numpy as np
 import argparse
+import sys
 
 debug = False
 
@@ -28,7 +29,16 @@ def get_slice(filename, axis, time, output_filename, manual=False):
             new_data = aux_data[:, :, index_time, :]
         else:
             raise ValueError("axis must be t1, t2, or t3")
-
+        if debug:
+            print("shape", new_data.shape)
+    if debug:
+         with open(output_filename, "w") as outfile:
+           for i in range(nlen):
+              for j in range(nlen):
+               for k in range(nlen):
+                    outfile.write(
+                         "{:6.3f} {:6.3f} {:6.3f} {:6.3f} {:6.3f}\n".format(aux_data[i,j,k,0], aux_data[i,j,k,1],aux_data[i,j,k,2],aux_data[i,j,k,3],aux_data[i,j,k,4]))
+         sys.exit()
     with open(output_filename, "w") as outfile:
         for i in range(nlen):
             for j in range(nlen):

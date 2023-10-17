@@ -20,8 +20,10 @@ dt_therma=0.05
 time_therma=30.0
 
 dt=0.01
-time_total=50
+time_total=30
 ndim=121
+time_total=50
+ndim=201
 dt_tcf=0.5
 
 n_traj=1000
