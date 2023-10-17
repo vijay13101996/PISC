@@ -1,20 +1,22 @@
 import numpy as np
 import argparse
 
+debug = False
+
 
 def rotate_time(file_name, ndimensions, dt, output_name):
     """Interface to specific functions"""
     if ndimensions == 2:
-        rotate_time_R2(file_name, ndimensions, dt, output_name)
+        rotate_time_R2(file_name, dt, output_name)
     elif ndimensions == 3:
-        rotate_time_R3(file_name, ndimensions, dt, output_name)
+        rotate_time_R3(file_name, dt, output_name)
     else:
         raise NotImplementedError(
             "rotate time for {} dimensions is not implemented".format(ndimensions)
         )
 
 
-def rotate_time_R3(file_name, ndimensions, dt, output_name):
+def rotate_time_R3(file_name, dt, output_name):
     """Rotate time from (t1,t2,t3) to (t1,t1+t2,t1+t3)"""
     data = np.loadtxt(file_name)
     assert data.shape[1] == 5, "Data must have four columns"
@@ -22,7 +24,7 @@ def rotate_time_R3(file_name, ndimensions, dt, output_name):
     # Get the time
     nlen = round(data.shape[0] ** (1.0 / 3.0))
     # Rotate the data
-    tcf_data = data[:, 2].reshape((nlen, nlen, nlen))  # Assumes only real data
+    tcf_data = data[:, 3].reshape((nlen, nlen, nlen))  # Assumes only real data
     # print("\ntcf_data.shape", tcf_data.shape)
     new_len = nlen
 
@@ -33,11 +35,11 @@ def rotate_time_R3(file_name, ndimensions, dt, output_name):
                 aux1_i = i + nlen // 2
                 aux1_j = j + nlen // 2
                 aux1_k = k + nlen // 2
-                aux2_j = (i + j) + nlen // 2
-                aux2_k = (i + k) + nlen // 2
+                aux2_j = (i + j) + nlen // 2  # ALBERTO
+                aux2_k = (i + k) + nlen // 2  # ALBERTO
                 if np.absolute(aux2_j) < new_len and np.absolute(aux2_k) < new_len:
-                    new_data[aux1_i, aux2_j, aux2_k] = tcf_data[aux1_i, aux1_j, aux1_k]
-
+                    aux = tcf_data[aux1_i, aux1_j, aux1_k]
+                    new_data[aux1_i, aux2_j, aux2_k] = aux
     imaginary_part = 0.0
     with open(output_name, "w") as outfile:
         for i in range(new_len):
@@ -52,10 +54,11 @@ def rotate_time_R3(file_name, ndimensions, dt, output_name):
                             imaginary_part,
                         )
                     )
+
     print("\nRotating frame completed\n")
 
 
-def rotate_time_R2(file_name, ndimensions, dt, output_name):
+def rotate_time_R2(file_name, dt, output_name):
     """Rotate time from (t1,t2) to (t1,t1+t2)"""
     data = np.loadtxt(file_name)
     assert data.shape[1] == 4, "Data must have four columns"
@@ -70,6 +73,7 @@ def rotate_time_R2(file_name, ndimensions, dt, output_name):
     # new_data = np.array(list(zip(*tcf_data[::-1]))) # rotates 90
 
     new_data = np.zeros((new_len, new_len))
+    imaginary_part = 0.0
     for i in range(-nlen // 2, nlen // 2):
         for j in range(-nlen // 2, nlen // 2):
             aux1_i = i + nlen // 2
@@ -81,12 +85,11 @@ def rotate_time_R2(file_name, ndimensions, dt, output_name):
         for i in range(new_len):
             for j in range(new_len):
                 outfile.write(
-                    "{:6.3f} {:6.3f} {:6.3f} {:6.3f} {:6.3f}\n".format(
-                        new_data[i, j][0],
-                        new_data[i, j][1],
-                        new_data[i, j][2],
-                        new_data[i, j][3],
-                        new_data[i, j][4],
+                    "{:8.5f} {:8.5f} {:8.5f} {:8.5f}\n".format(
+                        (i - nlen // 2) * dt,
+                        (j - nlen // 2) * dt,
+                        new_data[i, j],
+                        imaginary_part,
                     )
                 )
     print("\nRotating frame completed\n")
