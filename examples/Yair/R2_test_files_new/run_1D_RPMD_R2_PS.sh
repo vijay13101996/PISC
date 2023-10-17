@@ -9,8 +9,7 @@ param1=1.0 #m
 param2=-0.605 #a
 param3=+0.427 #b
 mass=1.0
-nbeads=8
-
+nbeads=32
 
 ens='thermal'
 temp=0.125 #beta 8
@@ -18,15 +17,17 @@ temp_tau=1.0
 pile_lambda=1000.0
 dt_therma=0.05
 time_therma=50.0
+time_therma=100.0 #VJ
 
 dt=0.01
-time_total=20.0;ndim=401
 time_total=50.0;ndim=1001
-n_traj=1000
-nseeds=20
+n_traj=100
+nseeds=100
 chunk_size=10
 label='RPMD'
-folder_name='RPMD_R2_PS'
+
+
+folder_name="RPMD_R2_PS_t010_nb${nbeads}_${nseeds}seeds_thermax4"
 
 dir=/scratch2/yl899/gitlab/PISC
 rm -f ${folder_name}/*
