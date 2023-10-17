@@ -16,6 +16,8 @@ from PISC.engine.thermalize_PILE_L import thermalize_rp
 from PISC.engine.gen_mc_ensemble import generate_rp
 from PISC.utils.time_order import reorder_time
 
+debug = False
+
 
 class SimUniverse(object):
     def __init__(
@@ -72,7 +74,7 @@ class SimUniverse(object):
             self.nbeads = 1
         else:
             self.nbeads = nbeads
-        if self.method == "CMD" or self.method =='cmd':
+        if self.method == "CMD" or self.method == "cmd":
             self.gamma = gamma
 
     def set_runtime(self, time_ens=100.0, time_run=5.0):
@@ -299,7 +301,7 @@ class SimUniverse(object):
         sqrtnbeads = sim.rp.nbeads**0.5
 
         def record_var():
-            Mqp = sim.rp.Mqp[:,0,0,0,0].copy()
+            Mqp = sim.rp.Mqp[:, 0, 0, 0, 0].copy()
             # Mpq = sim.rp.Mpq[:,0,0,0,0].copy()
             # Mpp = sim.rp.Mpp[:,0,0,0,0].copy()
             q = sim.rp.q[:, 0, 0].copy()
@@ -338,14 +340,12 @@ class SimUniverse(object):
         else:
             print("Propagation completed. Seed: {}".format(seed_number))
 
-        tarr = reorder_time(np.array(tarr),len(tarr),mode=1)
-        Aarr = reorder_time(np.array(parr),len(tarr),mode=1)
-        Marr = {
-            "qp": reorder_time(np.array(Marr),len(tarr),mode=1)
-        }
+        tarr = reorder_time(np.array(tarr), len(tarr), mode=1)
+        Aarr = reorder_time(np.array(parr), len(tarr), mode=1)
+        Marr = {"qp": reorder_time(np.array(Marr), len(tarr), mode=1)}
 
         # Compute correlation function
-        tar, R2eq = gen_R2_tcf(dt, tarr, Aarr, Marr,self.beta)
+        tar, R2eq = gen_R2_tcf(dt, tarr, Aarr, Marr, self.beta)
 
         return tar, R2eq
 
@@ -358,7 +358,7 @@ class SimUniverse(object):
 
         assert (
             self.dim == 1
-        ), "dimension = {} but R2 is only implemented for dim==1, sorry".format(
+        ), "dimension = {} but R3 is only implemented for dim==1, sorry".format(
             self.dim
         )
 
@@ -372,6 +372,8 @@ class SimUniverse(object):
             [],
         )
         dt = self.dt
+        if debug:
+            print("here: dt", dt)
         nsteps = int(self.time_run / dt) + 1
         sqrtnbeads = sim.rp.nbeads**0.5
         # comm_dict = {'qq':[-1.0,'Mqp'],'qp':[1.0,'Mqq'], 'pq':[-1.0,'Mpp'], 'pp':[1.0,'Mpq']}
@@ -427,7 +429,7 @@ class SimUniverse(object):
 
         # TCF calculation
         # rearrange arrays to have time in increasing order
-        nmode = 0
+        nmode = 1
         tarr = reorder_time(np.array(tarr)[:, np.newaxis], len(tarr), mode=nmode)
         Aarr = reorder_time(np.array(parr)[:, np.newaxis], len(tarr), mode=nmode)
         Barr = reorder_time(np.array(parr)[:, np.newaxis], len(tarr), mode=nmode)
@@ -440,9 +442,9 @@ class SimUniverse(object):
         }
 
         # Compute correlation function
-        R3eq = gen_R3_tcf(dt, tarr, Aarr, Barr, Marr, self.beta)
+        tar, R3eq = gen_R3_tcf(dt, tarr, Aarr, Barr, Marr, self.beta)
 
-        return tarr, R3eq
+        return tar, R3eq
 
     def run_TCF(self, sim):
         """Run simulation to compute 'simple' correlation functions, such as qq,qq2,etc
@@ -556,7 +558,7 @@ class SimUniverse(object):
                 sim,
                 seed_number=rngSeed,
             )
-            self.store_time_series_2D(tarr, R2, rngSeed, "R2",mode=2)
+            self.store_time_series_2D(tarr, R2, rngSeed, "R2", mode=2)
             return
 
         elif self.corrkey == "R3eq":
@@ -618,10 +620,15 @@ class SimUniverse(object):
             tarr, Carr, fname, "{}/{}".format(self.pathname, self.folder_name)
         )
 
-    def store_time_series_2D(self, tarr, Carr, rngSeed, suffix=None,mode=1):
+    def store_time_series_2D(self, tarr, Carr, rngSeed, suffix=None, mode=1):
         fname = self.assign_fname(rngSeed, suffix)
         store_2D_imagedata(
-            tarr, tarr, Carr, fname, "{}/{}".format(self.pathname, self.folder_name),mode=mode
+            tarr,
+            tarr,
+            Carr,
+            fname,
+            "{}/{}".format(self.pathname, self.folder_name),
+            mode=mode,
         )
 
     def store_time_series_3D(self, tarr, Carr, rngSeed, suffix=None):

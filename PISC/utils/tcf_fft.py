@@ -1,6 +1,8 @@
 import numpy as np
 import sys
 
+debug = False
+
 try:
     from PISC.utils import tcf_fort_tools as tcf_fort_tools_omp
 except ImportError:
@@ -56,7 +58,7 @@ def gen_2pt_tcf(dt, tarr, Carr, Barr, Aarr=None, dt_tcf=0.1, trans_sym=False):
     else:
         stride = 1
         if dt < dt_tcf:
-            stride = int(dt_tcf // dt)
+            stride = int(np.round(dt_tcf / dt))
         tar = tarr[::stride]
         Car = Carr[::stride]
         Bar = Barr[::stride]
@@ -90,25 +92,26 @@ def gen_2pt_tcf(dt, tarr, Carr, Barr, Aarr=None, dt_tcf=0.1, trans_sym=False):
 
         return tar, tcf
 
-def gen_R2_tcf(dt, tarr, Aarr, Marr, beta,dt_tcf=0.1, verbose=0):
+
+def gen_R2_tcf(dt, tarr, Aarr, Marr, beta, dt_tcf=0.1, verbose=0):
     r"""Function to compute second-order response
-       R^(2)(t1,t2) = -\beta < Mqp(t2,t0)p(-t1) >
-       with Mqp(t1,t0) = \partial q(t2)/\partial q(t0)
+    R^(2)(t1,t2) = -\beta < Mqp(t2,t0)p(-t1) >
+    with Mqp(t1,t0) = \partial q(t2)/\partial q(t0)
     """
     if verbose > 1:
         print("tar", tarr.shape)
         print("Aar", Aarr.shape)
-        print("Mqp", Marr['qp'].shape)
+        print("Mqp", Marr["qp"].shape)
     stride = 1
     if dt < dt_tcf:
-        stride = int(dt_tcf // dt)
+        stride = int(np.round(dt_tcf / dt))
     tar = tarr[::stride]
     par = Aarr[::stride]
     Mqp = Marr["qp"][::stride]
 
     index_t0 = len(tar) // 2
     ndim = len(tar)
-    tcf_pos_time_length = len(tar)//2
+    tcf_positive_time_length = len(tar) // 2
 
     tcf = np.zeros((ndim, ndim))
 
@@ -119,21 +122,32 @@ def gen_R2_tcf(dt, tarr, Aarr, Marr, beta,dt_tcf=0.1, verbose=0):
         print("tcf", tcf.shape)
 
     if 1:  # PYTHON
-        #Positive t1,t2
-        for it1 in range(ndim):
-            for it2 in range(ndim):
-                    tcf[it1, it2] = -beta *np.mean( Mqp[it2] *par[-it1] )
-        #Rotate_axis
-        new_tcf=np.zeros(tcf.shape)
-        #for i1 in range(ndim):
-        #    for i2 in range(ndim):
-        #        it1 = i1+i2-ndim
-        #        it2 = i2-i1
-        #        new_tcf[it1,it2]=tcf[i1,i2]
-        new_tcf=tcf
-        if verbose>2:
-            print('tcf shape',tcf.shape)
+        # Positive t1,t2
+        for it1 in range(tcf_positive_time_length):
+            for it2 in range(tcf_positive_time_length):
+                tcf[index_t0 + it1, index_t0 + it2] = -beta * np.mean(
+                    Mqp[index_t0 + it2] * par[index_t0 - it1]
+                )
+                tcf[index_t0 - it1, index_t0 - it2] = -beta * np.mean(
+                    Mqp[index_t0 - it2] * par[index_t0 + it1]
+                )
+                tcf[index_t0 + it1, index_t0 - it2] = -beta * np.mean(
+                    Mqp[index_t0 - it2] * par[index_t0 - it1]
+                )
+                tcf[index_t0 - it1, index_t0 + it2] = -beta * np.mean(
+                    Mqp[index_t0 + it2] * par[index_t0 + it1]
+                )
+
+        # Original
+        # for it1 in range(ndim):
+        #    for it2 in range(ndim):
+        #            tcf[it1, it2] = -beta *np.mean( Mqp[it2] *par[-it1] )
+
+        new_tcf = tcf
+        if verbose > 2:
+            print("tcf shape", tcf.shape)
         return tar, new_tcf
+
 
 def gen_R3_tcf(dt, tarr, Aarr, Barr, Marr, beta, dt_tcf=0.5, verbose=0):
     """Function to compute third-order response
@@ -141,7 +155,9 @@ def gen_R3_tcf(dt, tarr, Aarr, Barr, Marr, beta, dt_tcf=0.5, verbose=0):
     """
     stride = 1
     if dt < dt_tcf:
-        stride = int(dt_tcf // dt)
+        stride = int(np.round(dt_tcf / dt))
+        if debug:
+            print("here: dt,dt_tcf,stride", dt, dt_tcf, stride)
     tar = tarr[::stride]
     Aar = Aarr[::stride]
     Bar = Barr[::stride]
@@ -149,9 +165,12 @@ def gen_R3_tcf(dt, tarr, Aarr, Barr, Marr, beta, dt_tcf=0.5, verbose=0):
     Mqp = Marr["qp"][::stride]
     Mpq = Marr["pq"][::stride]
     Mpp = Marr["pp"][::stride]
-    tlen = len(tar) // 2
-    ndim = 2 * tlen + 1
-    tcf = np.zeros((tlen + 1, tlen + 1, tlen + 1))
+    ndim = len(tar)
+    tcf = np.zeros((ndim, ndim, ndim))
+    index_t0 = len(tar) // 2
+    ndim = len(tar)
+    tcf_positive_time_length = len(tar) // 2
+
     if verbose > 1:
         print("tar", tar.shape)
         print("Aar", Aar.shape)
@@ -173,20 +192,23 @@ def gen_R3_tcf(dt, tarr, Aarr, Barr, Marr, beta, dt_tcf=0.5, verbose=0):
         #    tcf = tcf_fort_tools_omp.tcf_tools.two_pt_2op_tcf(Bar, Car, tcf_fort)
     if 1:  # PYTHON
         # tarr [0,1,...,tlen,-1,...,-tlen]*dt_tcf
-        for it1 in range(tlen + 1):
-            if it1 > 0:
-                index1 = tlen + it1 - 1
-            else:
-                index1 = it1
-            for it2 in range(tlen + 1):
-                for it3 in range(tlen + 1):
+        for t1 in range(tcf_positive_time_length):
+            if debug:
+                print("{}/{}".format(t1, tcf_positive_time_length))
+            for t2 in range(tcf_positive_time_length):
+                for t3 in range(tcf_positive_time_length):
                     # Dot product and ensemble average in the same line.
-                    # tcf[it3,it2,it1] = np.mean(np.sum(Car[j]*Bar[i]*Aar[0],axis=1),axis=0)
                     # R3 = beta < ( Mqq(t3,t0) Mqp(t2,t0) - Mqp(t3,t0)Mqq(t2,t0)  ) - (Mpp(-t1,t0)-beta p(0)p(-t1)) >
-                    tcf[it3, it2, it1] = np.mean(
-                        beta * (Mqq[it3] * Mqp[it2] - Mqp[it3] * Mqq[it2])
-                        - (Mpp[index1] - beta * Bar[0] * Aar[index1])
-                    )
-        if verbose>2:
-            print('tcf shape',tcf.shape)
-        return tcf
+                    import itertools
+
+                    for sg1, sg2, sg3 in itertools.product([1, -1], repeat=3):
+                        it1 = index_t0 + sg1 * t1
+                        it2 = index_t0 + sg2 * t2
+                        it3 = index_t0 + sg3 * t3
+                        tcf[it1, it2, it3] = np.mean(
+                            beta * (Mqq[it3] * Mqp[it2] - Mqp[it3] * Mqq[it2])
+                            - (Mpp[-it1] - beta * Bar[0] * Aar[-it1])
+                        )
+    if verbose > 2:
+        print("tcf shape", tcf.shape)
+    return tar, tcf

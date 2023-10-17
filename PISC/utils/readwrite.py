@@ -64,40 +64,47 @@ def store_2D_imagedata(X, Y, F, fname, fpath=None, mode=1):
                 np.savetxt(outfile, data)
     elif mode == 2:
         datafile_path = "{}/{}.txt".format(fpath, fname)
-        X=X.flatten()
-        Y=Y.flatten()
+        X = X.flatten()
+        Y = Y.flatten()
         ndimx = len(X)
         ndimy = len(Y)
-        assert F.shape == (ndimx, ndimy),'We expect F shape to be {} but we got {}'.format((ndimx, ndimy),F.shape)
+        assert F.shape == (
+            ndimx,
+            ndimy,
+        ), "We expect F shape to be {} but we got {}".format((ndimx, ndimy), F.shape)
         with open(datafile_path, "w") as outfile:
             for i1 in range(ndimx):
                 for i2 in range(ndimy):
-                    outfile.write( "{} {} {} {}\n".format(X[i1], Y[i2], F[i1, i2], 0.0) )
+                    outfile.write("{} {} {} {}\n".format(X[i1], Y[i2], F[i1, i2], 0.0))
     else:
-        raise NotImplemetedError
+        raise NotImplementedError
 
 
-def store_3D_imagedata(X, Y, Z, F, fname, fpath=None):
-    """ Saves data assuming two independendent variables (normally time) and one observable (normally a correlation function)
-        Format:
-            write('#x')
-            np.savedata(X)
-            write('#y')
-            np.savedata(X)
-            write('#f')
-            np.savedata(F)
-             """ ""
+def store_3D_imagedata(X, Y, Z, F, fname, fpath):
+    """Saves data assuming two independendent variables (normally time) and one observable (normally a correlation function)"""
     x, y, z = X, Y, Z
 
-    if fpath is None:
-        datafile_path = "/home/vgs23/Pickle_files/{}.txt".format(fname)
-    else:
-        datafile_path = "{}/{}.txt".format(fpath, fname)
-
+    datafile_path = "{}/{}.txt".format(fpath, fname)
+    X = X.flatten()
+    Y = Y.flatten()
+    Z = Z.flatten()
+    ndimx = len(X)
+    ndimy = len(Y)
+    ndimz = len(Z)
+    assert F.shape == (
+        ndimx,
+        ndimy,
+        ndimz,
+    ), "We expect F shape to be {} but we got {}".format((ndimx, ndimy, ndimz), F.shape)
     with open(datafile_path, "w") as outfile:
-        for data, qual in zip([x, y, z, F.flatten()], ["x", "y", "z", "f"]):
-            outfile.write("#{}\n".format(qual))
-            np.savetxt(outfile, data)
+        for i1 in range(ndimx):
+            for i2 in range(ndimy):
+                for i3 in range(ndimz):
+                    outfile.write(
+                        "{} {} {} {} {}\n".format(
+                            X[i1], Y[i2], Z[i3], F[i1, i2, i3], 0.0
+                        )
+                    )
 
 
 def read_2D_imagedata(fname):

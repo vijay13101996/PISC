@@ -28,7 +28,7 @@ def main(prefix, name_output, folder):
         CF += data
 
     CF /= ndata
-    np.savetxt(name_output, CF)
+    np.savetxt(name_output, CF, fmt="%6.3f")
     print("# Please check {}\n".format(name_output))
 
 
