@@ -1,6 +1,6 @@
 
 sys_name='Tosca2'
-method='Classical'
+method='rpmd'
 corr_func='R3eq'
 
 pes='mildly_anharmonic'
@@ -9,7 +9,7 @@ param1=1.0 #m
 param2=0.1 #a
 param3=0.01 #b
 mass=1.0
-nbeads='1'
+nbeads='32'
 
 
 ens='thermal'
