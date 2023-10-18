@@ -13,7 +13,7 @@ nbeads='1'
 
 
 ens='thermal'
-temp=1.0
+temp=0.125
 temp_tau=1.0
 pile_lambda=1000.0
 dt_therma=0.05

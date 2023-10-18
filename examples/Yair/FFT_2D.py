@@ -63,8 +63,8 @@ def main(
     CF_1 = temp_r1   + 1.0j * temp_i1
     #CF_1 = temp_i1   #+ 1.0j * temp_i1
     if tcf_type=='Quantum':
-        CF_1 =-(-1.0j)**3 *(CF_1 - np.conj(CF_1)) #ALBERTO
-        CF_1 =  2.0 * CF_1
+        CF_1 =(-1.0j)**3 *(CF_1 - np.conj(CF_1))*0.5
+        #CF_1 =  2.0 * CF_1
     elif tcf_type=='classical':
          pass
     elif tcf_type=='rpmd':
