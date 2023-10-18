@@ -32,13 +32,20 @@ def get_slice(filename, axis, time, output_filename, manual=False):
         if debug:
             print("shape", new_data.shape)
     if debug:
-         with open(output_filename, "w") as outfile:
-           for i in range(nlen):
-              for j in range(nlen):
-               for k in range(nlen):
-                    outfile.write(
-                         "{:6.3f} {:6.3f} {:6.3f} {:6.3f} {:6.3f}\n".format(aux_data[i,j,k,0], aux_data[i,j,k,1],aux_data[i,j,k,2],aux_data[i,j,k,3],aux_data[i,j,k,4]))
-         sys.exit()
+        with open(output_filename, "w") as outfile:
+            for i in range(nlen):
+                for j in range(nlen):
+                    for k in range(nlen):
+                        outfile.write(
+                            "{:6.3f} {:6.3f} {:6.3f} {:6.3f} {:6.3f}\n".format(
+                                aux_data[i, j, k, 0],
+                                aux_data[i, j, k, 1],
+                                aux_data[i, j, k, 2],
+                                aux_data[i, j, k, 3],
+                                aux_data[i, j, k, 4],
+                            )
+                        )
+        sys.exit()
     with open(output_filename, "w") as outfile:
         for i in range(nlen):
             for j in range(nlen):
@@ -99,5 +106,5 @@ if __name__ == "__main__":
     )
 
     args = argparser.parse_args()
-
+    print("Getting slice at {}={}".format(args.axis, args.time))
     get_slice(args.filename, args.axis, args.time, args.output_filename, args.manual)

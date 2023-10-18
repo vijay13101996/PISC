@@ -17,14 +17,16 @@ temp=1.0
 temp_tau=1.0
 pile_lambda=1000.0
 dt_therma=0.05
-time_therma=30.0
+time_therma=100.0
 
 dt=0.01
-time_total=30
-ndim=121
-time_total=50
-ndim=201
-dt_tcf=0.5
+#time_total=50
+#ndim=201
+
+time_total=25
+ndim=101
+
+dt_tcf=0.50
 
 n_traj=1000
 nseeds=10
@@ -40,9 +42,9 @@ python  ${dir}/examples/examples_main.py  -dim ${dim} -pes ${pes} -m ${mass} -sy
 
  python ${dir}/PISC/tools/average_tcf.py -pre ${method}  -folder ${folder_name}
  mv average.out ${folder_name}
- python ${dir}/PISC/tools/rotate_time.py ${folder_name}/average.out 3 0.5 aux.dat
- mv aux.dat ${folder_name}/rot_average.out
- python ${dir}/PISC/tools/get_slice.py  ${folder_name}/rot_average.out t2 0 aux.dat
+# python ${dir}/PISC/tools/rotate_time.py ${folder_name}/average.out 3 0.5 aux.dat
+# mv aux.dat ${folder_name}/rot_average.out
+ python ${dir}/PISC/tools/get_slice.py  ${folder_name}/average.out t2 0 aux.dat
  mv aux.dat ${folder_name}/slice_t2eq0_average.out
 
- ./get_spectra.sh ${folder_name} slice_t2eq0_average.out ${ndim} ${dt_tcf}
+ ./get_spectra_2D.sh ${folder_name} slice_t2eq0_average.out ${ndim} ${dt_tcf}

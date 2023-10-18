@@ -103,4 +103,5 @@ if __name__ == "__main__":
     args.add_argument("output_name", help="Name of the output file")
 
     args = args.parse_args()
+    print("\nRotating frame ...\n")
     rotate_time(args.file_name, args.ndimension, args.dt, args.output_name)

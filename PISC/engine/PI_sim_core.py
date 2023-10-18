@@ -351,7 +351,7 @@ class SimUniverse(object):
 
     def run_R3_eq(self, sim, seed_number=None):
         r"""Run simulation to compute third order response functions propagating the stability matrix
-        R3 = beta < (Mqq(t3,t0)Mqp(t2,t0) - Mqp(t3,t0)Mqq(t2,t0)) - (Mpp(-t1,t0)-beta p(0)p(-t1)) >
+        R3 = beta < (Mqq(t3,t0)Mqp(t2,t0) - Mqp(t3,t0)Mqq(t2,t0)) * (Mqq(t1,t0)-beta p(t1)p(t0)) >
         with Mxy(t1,t0)= \partial x(t1)/\partial y(t0)
         We propagate the stability matrix (var="monodromy" inside the step call)
         """

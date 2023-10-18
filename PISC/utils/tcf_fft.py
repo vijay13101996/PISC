@@ -151,7 +151,7 @@ def gen_R2_tcf(dt, tarr, Aarr, Marr, beta, dt_tcf=0.1, verbose=0):
 
 def gen_R3_tcf(dt, tarr, Aarr, Barr, Marr, beta, dt_tcf=0.5, verbose=0):
     """Function to compute third-order response
-    R3 = beta < (Mqq(t3,t0)Mqp(t2,t0) - Mqp(t3,t0)Mqq(t2,t0)) - (Mpp(-t1,t0)-beta p(0)p(-t1)) >
+    R3 = beta < (Mqq(t3,t0)Mqp(t2,t0) - Mqp(t3,t0)Mqq(t2,t0)) - (Mqq(t1,t0)-beta p(t1)p(t0)) >
     """
     stride = 1
     if dt < dt_tcf:
@@ -182,33 +182,17 @@ def gen_R3_tcf(dt, tarr, Aarr, Barr, Marr, beta, dt_tcf=0.5, verbose=0):
         print(tlen, ndim, tcf.shape)
     if 0:  # FORTRAN
         raise NotImplementedError
-        # tcf_fort = np.ascontiguousarray(tcf)
-        # Aar = np.asfortranarray(Aar)
-        # Bar = np.asfortranarray(Bar)
-        # if Aarr is not None:
-        #    Aar = np.asfortranarray(Aar)
-        #    tcf = tcf_fort_tools_omp.tcf_tools.two_pt_3op_tcf(Aar, Bar, Car, tcf_fort)
-        # else:
-        #    tcf = tcf_fort_tools_omp.tcf_tools.two_pt_2op_tcf(Bar, Car, tcf_fort)
     if 1:  # PYTHON
-        # tarr [0,1,...,tlen,-1,...,-tlen]*dt_tcf
-        for t1 in range(tcf_positive_time_length):
-            if debug:
-                print("{}/{}".format(t1, tcf_positive_time_length))
-            for t2 in range(tcf_positive_time_length):
-                for t3 in range(tcf_positive_time_length):
+        for it1 in range(ndim):
+            for it2 in range(ndim):
+                for it3 in range(ndim):
                     # Dot product and ensemble average in the same line.
-                    # R3 = beta < ( Mqq(t3,t0) Mqp(t2,t0) - Mqp(t3,t0)Mqq(t2,t0)  ) - (Mpp(-t1,t0)-beta p(0)p(-t1)) >
-                    import itertools
-
-                    for sg1, sg2, sg3 in itertools.product([1, -1], repeat=3):
-                        it1 = index_t0 + sg1 * t1
-                        it2 = index_t0 + sg2 * t2
-                        it3 = index_t0 + sg3 * t3
-                        tcf[it1, it2, it3] = np.mean(
-                            beta * (Mqq[it3] * Mqp[it2] - Mqp[it3] * Mqq[it2])
-                            - (Mpp[-it1] - beta * Bar[0] * Aar[-it1])
-                        )
+                    # R3 = beta < (Mqq(t3,t0)Mqp(t2,t0) - Mqp(t3,t0)Mqq(t2,t0)) * (Mqq(t1,t0)-beta p(t1)p(t0)) >
+                    tcf[it1, it2, it3] = np.mean(
+                        beta
+                        * (Mqq[it3] * Mqp[it2] - Mqp[it3] * Mqq[it2])
+                        * (Mqq[it1] - beta * Bar[it1] * Aar[index_t0])
+                    )
     if verbose > 2:
         print("tcf shape", tcf.shape)
     return tar, tcf

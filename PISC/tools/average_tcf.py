@@ -29,6 +29,7 @@ def main(prefix, name_output, folder):
 
     CF /= ndata
     np.savetxt(name_output, CF, fmt="%6.3f")
+    print("# Average computed")
     print("# Please check {}\n".format(name_output))
 
 
