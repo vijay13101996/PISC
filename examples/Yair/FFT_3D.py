@@ -73,7 +73,8 @@ def main(
     time_t,temp_r1, temp_i1 = np.loadtxt(filename, unpack=True, usecols=[0,3, 4])
     CF_1 = temp_r1   + 1.0j * temp_i1
     if tcf_type =='Quantum':
-       CF_1 = -1.0j*( (-1.0j)**3 ) * (CF_1 - np.conj(CF_1)) #ALBERTO REQUIRED FOR STD RESPONSE!!!
+       CF_1 = ( (-1.0j)**3 ) * (CF_1 - np.conj(CF_1))*0.5
+       CF_1 = -1.0 * CF_1 # ALBERTO
     elif tcf_type=='Kubo' or tcf_type=='Ksym':
        pass
     elif tcf_type=='classical':
