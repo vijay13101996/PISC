@@ -1,18 +1,15 @@
 - Reimplement R2 : DONE
 - Test classical/RPMD R2 : DONE
-- Implement R3 : 
-- Test classical R3 : 
-      - average value
-      - t0 values
-      - 2D cuts of R3 == R2
+- Implement R3 :  DONE
+- Get convergence parameters R3: DONE
 
-- Test RPMD  R3 : 
-      - 2D cuts of R3 == R2
-      - average value
+TO DO:
+- Compute {a=0.1-->0.5, and PS}x{cl,rpmd,exact}
+        Plot anh vs temperature 
+- Implement R2 2D PES  (use Tomislav model)
+- Implement R3 2D PES  (use Tomislav model)
 
-- (if needed) Fortran code R3 
-
-- (if needed) implement R2/R3 for 2D PES?
+- Thinks 2D porphycene model (test it with qq)
 
 - (if needed) implement eq-noeq R2
 - (if needed) implement eq-noeq R3
