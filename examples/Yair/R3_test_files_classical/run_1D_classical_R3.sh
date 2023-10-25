@@ -6,14 +6,14 @@ corr_func='R3eq'
 pes='mildly_anharmonic'
 dim=1
 param1=1.0 #m
-param2=0.1 #a
-param3=0.01 #b
+param2=${1} #a
+param3=${2} #b
 mass=1.0
 nbeads='1'
 
 
 ens='thermal'
-temp=0.125
+temp=0.250
 temp_tau=1.0
 pile_lambda=1000.0
 dt_therma=0.05
@@ -29,10 +29,10 @@ ndim=101
 dt_tcf=0.50
 
 n_traj=1000
-nseeds=10
+nseeds=064
 chunk_size=10
 label='RPMD'
-folder_name="Datafile_${method}_${corr_func}_nbeads${nbeads}_time${time_total}_dt001"
+folder_name="Datafile_${method}_${corr_func}_nbeads${nbeads}_nseeds${nseeds}_temp${temp}_a${param2}"
 
 dir=/scratch2/yl899/gitlab/PISC
 
@@ -44,8 +44,9 @@ python  ${dir}/examples/examples_main.py  -dim ${dim} -pes ${pes} -m ${mass} -sy
  mv average.out ${folder_name}
 # python ${dir}/PISC/tools/rotate_time.py ${folder_name}/average.out 3 0.5 aux.dat
 # mv aux.dat ${folder_name}/rot_average.out
- python ${dir}/PISC/tools/get_slice.py  ${folder_name}/average.out t2 0 aux.dat
- mv aux.dat ${folder_name}/slice_t2eq0_average.out
+ #python ${dir}/PISC/tools/get_slice.py  ${folder_name}/average.out t2 0 aux.dat
+ #mv aux.dat ${folder_name}/slice_t2eq0_average.out
 
- ./get_spectra_2D.sh ${folder_name} slice_t2eq0_average.out ${ndim} ${dt_tcf} &
- ./get_spectra_3D.sh ${folder_name} average.out ${ndim} ${dt_tcf} &
+ #./get_spectra_2D.sh ${folder_name} slice_t2eq0_average.out ${ndim} ${dt_tcf} &
+ ./get_spectra_3D.sh ${folder_name} average.out ${ndim} ${dt_tcf}
+ mv FFT_w21.0.png FFT_a${param2}_${nseeds}.png

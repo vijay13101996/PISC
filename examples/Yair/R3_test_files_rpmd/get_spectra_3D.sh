@@ -7,6 +7,6 @@ dt=${4}
 #python ${script} -beta 8 -tau 13 -dt ${dt} -n1 ${ndim} -n2 ${ndim} -t Quantum -file1 ${folder}/${filename}
 
 script=/scratch2/yl899/gitlab/PISC/examples/Yair/FFT_3D.py
-python ${script} -beta 8 -tau 13 -dt ${dt} -n1 ${ndim} -t rpmd -file1 ${folder}/${filename} -lmax 1000
+python ${script} -beta 4 -tau 13 -dt ${dt} -n1 ${ndim} -t rpmd -file1 ${folder}/${filename} #-lmax 3000
 
 
