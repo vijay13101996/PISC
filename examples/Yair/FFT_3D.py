@@ -16,8 +16,8 @@ __author__ = "Y. Litman"
 only_time=False
 plot_time=False
 positive_and_negative_times=True
-plot_1d_cuts=False
 plot_1d_cuts=True
+plot_1d_cuts=False
 # Parameters for plots
 cm_color = "jet"
 cm_color = "bwr"
@@ -347,7 +347,7 @@ def main(
 
 
     ###================================================================
-    plt.show()
+    plt.savefig('FFT_w2{}.pdf'.format(omega2))
 
     ###================================================================
     ###========================= Save-data ============================
