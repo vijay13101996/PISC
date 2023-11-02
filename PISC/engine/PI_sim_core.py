@@ -62,12 +62,17 @@ class SimUniverse(object):
         self.m = mass
         self.dim = dim
 
-    def set_simparams(self, N, dt_ens=1e-2, dt=5e-3, extparam=None):
+    def set_simparams(
+        self, N, dt_ens=1e-2, dt=5e-3, extparam=None, coordinate_list=None
+    ):
         self.N = N
         self.dt_ens = dt_ens
         self.dt = dt
         if extparam is not None:
             self.extparam = extparam
+
+        if coordinate_list is not None:
+            self.coord_list = coordinate_list
 
     def set_methodparams(self, nbeads=1, gamma=1):
         if self.method == "Classical" or self.method == "classical":
@@ -285,15 +290,28 @@ class SimUniverse(object):
         R^(2)(t1,t2) = -\beta < Mqp(t2,t0)p(-t1) >
         with Mqp(t1,t0) = \partial q(t2)/\partial q(t0)
         We propagate the stability matrix (var="monodromy" inside the step call)
-        """
 
-        # IMPORTANT: Be careful when you use it for 2D! There are parts used in this code,
-        # which are 1D-specific.
+        As a reminder for developers:
+           - M_xy.shape = (self.nsys,self.ndim,self.ndim,self.nmodes,self.nmodes)
+        """
         assert (
-            self.dim == 1
-        ), "dimension = {} but R2 is only implemented for dim==1, sorry".format(
+            self.dim <= 2
+        ), "dimension = {} but R2 is only implemented for dim==1 and dim==2, sorry".format(
             self.dim
         )
+        if self.dim == 1:
+            icoord_1 = 0  # Coordinate that couples with first pulse
+            icoord_2 = 0  # Coordinate that couples with second pulse
+            icoord_3 = 0  # Coordinate that couples that emmits light
+
+        elif self.dim == 2:
+            icoord_1 = self.coord_list[0]  # Coordinate that couples with first pulse
+            icoord_2 = self.coord_list[1]  # Coordinate that couples with second pulse
+            icoord_3 = self.coord_list[2]  # Coordinate that couples that emmits light
+
+        assert icoord_1 < self.dim
+        assert icoord_2 < self.dim
+        assert icoord_3 < self.dim
 
         tarr, qarr, parr, Marr = [], [], [], []
         dt = self.dt
@@ -301,19 +319,18 @@ class SimUniverse(object):
         sqrtnbeads = sim.rp.nbeads**0.5
 
         def record_var():
-            Mqp = sim.rp.Mqp[:, 0, 0, 0, 0].copy()
+            Mqp = sim.rp.Mqp[:, icoord_3, icoord_2, 0, 0].copy()
             # Mpq = sim.rp.Mpq[:,0,0,0,0].copy()
             # Mpp = sim.rp.Mpp[:,0,0,0,0].copy()
-            q = sim.rp.q[:, 0, 0].copy()
-            p = sim.rp.p[:, 0, 0].copy() / sim.rp.m
+            q = sim.rp.q[:, icoord_1, 0].copy()  # CENTROID
+            p = sim.rp.p[:, icoord_1, 0].copy() / sim.rp.m  # CENTROID
+            # Needed to add further scaling to transform the 0 normal mode to centroid
+            qarr.append(q / sqrtnbeads)
+            parr.append(p / sqrtnbeads)
 
             Mval = Mqp / sim.rp.m
             tarr.append(sim.t)
             Marr.append(Mval)
-            qarr.append(
-                q / sqrtnbeads
-            )  # Needed to add further scaling to transform the 0 normal mode to centroid
-            parr.append(p / sqrtnbeads)
 
         pcart = sim.rp.pcart.copy()
         qcart = sim.rp.qcart.copy()
@@ -650,8 +667,8 @@ class SimUniverse(object):
         f.close()
 
 
-def check_parameters(sim_parameters, ensemble_param):
-    """Checks the consistency of  simulation and ensemble  parameters"""
+def check_parameters(sim_parameters, ensemble_param, system_param):
+    """Checks the consistency of  simulation,  ensemble and system parameters"""
     if (
         sim_parameters["method"] == "classical"
         or sim_parameters["method"] == "Classical"
@@ -682,10 +699,26 @@ def check_parameters(sim_parameters, ensemble_param):
             sim_parameters["operator_list"] is None
         ), "R2eq doesn't need op_list keyword. For safety reasons we abort here"
 
+        if system_param["dimension"] > 1:
+            assert (
+                sim_parameters["coordinate_list"] is not None
+            ), "R2eq for dim>1 requires coordinate list argument"
+            assert (
+                len(sim_parameters["coordinate_list"]) == 3
+            ), "Coordinate list for R2eq should have exactly 3 arguments"
+
     elif sim_parameters["CFtype"] == "R3eq":
         assert (
             sim_parameters["operator_list"]
         ) is None, "Sorry, we always assume A=q B=q C=q D=q, please do not use the  -op_list keyword "
+
+        if system_param["dimension"] > 1:
+            assert (
+                sim_parameters["coordinate_list"] is not None
+            ), "R3eq for dim>1 requires coordinate list argument"
+            assert (
+                len(sim_parameters["coordinate_list"]) == 4
+            ), "Coordinate list for R3eq should have exactly 4 arguments"
 
     if ensemble_param["ensemble"] == "thermal":
         assert (

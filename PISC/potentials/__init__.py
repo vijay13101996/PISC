@@ -25,13 +25,13 @@ from PISC.potentials.mildly_anharmonic_2D import mildly_anharmonic_2D
 potentials = {
     "harmonic1D": harmonic1D,
     "mildly_anharmonic": mildly_anharmonic,
-    "mildly_anharmonic2D": mildly_anharmonic_2D,
+    "mildly_anharmonic_2D": mildly_anharmonic_2D,
     "double_well": double_well,
     "morse": morse,
     "quartic": quartic,
     "adams_function": adams_function,
     "coupled_harmonic": coupled_harmonic,
-    "harmonic2D": harmonic2D,
+    "harmonic_2D": harmonic2D,
     "Harmonic_oblique": Harmonic_oblique,
     "four_well": four_well,
     "heller_davis": heller_davis,
@@ -67,6 +67,15 @@ def check_pes_param(pes_param):
         pot_key = "{}_m_{}_a_{}_b_{}".format(
             name, parameters[0], parameters[1], parameters[2]
         )
+    elif name == "mildly_anharmonic_2D":
+        assert len(parameters) == 8, "{} requires 8 parameters (m,w1,a1,b1,w2,a2,b2,c)".format(name)
+        assert (
+            dimension == 2
+        ), "{} is a 2D model, but the dimension variable is set to {}".format(dimension)
+        pes = potentials[name](parameters[0], parameters[1], parameters[2],parameters[3],parameters[4],parameters[5],parameters[6],parameters[7])
+        pot_key = "{}_m_{}_a1_{}_b1_{}_a2_{}_b2_{}_c{}".format(
+            name, parameters[0], parameters[1], parameters[2], parameters[3], parameters[4], parameters[5]
+        )
     elif name == "morse":
         assert len(parameters) == 2, "{} requires 2 parameters (D,alpha)".format(name)
         assert (
@@ -88,11 +97,11 @@ def check_pes_param(pes_param):
         ), "{} is a 1D model, but the dimension variable is set to {}".format(dimension)
         pes = potentials[name](parameters[0])
         pot_key = "{}_a_{}".format(name, parameters[0])
-    elif name == "harmonic2D":
+    elif name == "harmonic_2D":
         assert len(parameters) == 1, "{} requires 1 parameter (omega)".format(name)
         assert (
             dimension == 2
-        ), "{} is a 1D model, but the dimension variable is set to {}".format(dimension)
+        ), "{} is a 2D model, but the dimension variable is set to {}".format(dimension)
         pes = potentials[name](parameters[0])
         pot_key = "{}_omega_{}".format(name, parameters[0])
     else:

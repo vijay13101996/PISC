@@ -17,7 +17,7 @@ def main(system_param, pes_param, ensemble_param, simulation_param):
     # path = Path.Path(__file__).parent.resolve()
     path = Path.cwd()
     pes, pot_key = check_pes_param(pes_param)
-    check_parameters(simulation_param, ensemble_param)
+    check_parameters(simulation_param, ensemble_param, system_param)
     Tkey = "T_{}K".format(ensemble_param["temperature"])
 
     Sim_class = SimUniverse(
@@ -41,6 +41,7 @@ def main(system_param, pes_param, ensemble_param, simulation_param):
         simulation_param["dt_therma"],
         simulation_param["dt"],
         simulation_param["operator_list"],
+        coordinate_list=simulation_param["coordinate_list"],
     )
     Sim_class.set_methodparams(
         simulation_param["nbeads"], simulation_param["cmd_gamma"]
@@ -91,6 +92,7 @@ if __name__ == "__main__":
         choices=[
             "double_well",
             "mildly_anharmonic",
+            "mildly_anharmonic_2D",
             "harmonic_1D",
             "harmonic_2D",
             "morse",
@@ -280,6 +282,13 @@ if __name__ == "__main__":
         required=False,
         help="Operator order in decreasing time order,(Example for R2 it q q q is q(t0), q(t1), q(t2))",
     )
+    parser.add_argument(
+        "-coord_list",
+        "--coordinate_list",
+        nargs="+",
+        required=False,
+        help="Coordinate list to compute R2 and R3 response function in multi-D systems. Coordinate for operators order by increasing time,(Example for R2 it  0 1 1  is q_0(t0), q_1(t1), q_1(t2))",
+    )
 
     args = parser.parse_args()
 
@@ -313,6 +322,7 @@ if __name__ == "__main__":
         "chunk_size": args.chunk_size,
         "folder_name": args.folder_name,
         "simulation_label": args.sim_label,
+        "coordinate_list": list(map(int, args.coordinate_list)),
         "operator_list": args.operator_list,
         "sympletic_order": args.sympletic_order,
     }
