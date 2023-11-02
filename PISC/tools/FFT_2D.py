@@ -11,8 +11,8 @@ __version__ = "2"
 __date__ = "Jan2023"
 __author__ = "Y. Litman"
 
-only_time=False
-positive_and_negative_times=True
+only_time = False
+positive_and_negative_times = True
 # Parameters for plots
 cm_color = "jet"
 cm_color = "bwr"
@@ -30,8 +30,8 @@ time_ylabel = "t2 (a.u.)"
 time_axis_x = [-20, 20]
 time_axis_y = [-20, 20]
 # Freq-plots
-freq_xlabel = r'$\omega_1$'
-freq_ylabel = r'$\omega_2$'
+freq_xlabel = r"$\omega_1$"
+freq_ylabel = r"$\omega_2$"
 freq_axis_x = [-2.5, 2.5]
 freq_axis_y = [-2.5, 2.5]
 
@@ -45,7 +45,8 @@ def main(
     beta=1,
     n_order=2,
     lmax=None,
-    tcf_type='Quantum'
+    tcf_type="Quantum",
+    what_to_plot="FT",
 ):
     """Compute and plot FFT CF-sym and CF-asym
     filename_sym: COMPLETE
@@ -59,44 +60,43 @@ def main(
     """
 
     ### Read data: Expected  order is [time1,time2,CF.real,CF.imag]
-    time_t,temp_r1, temp_i1 = np.loadtxt(filename, unpack=True, usecols=[0,2, 3])
-    CF_1 = temp_r1   + 1.0j * temp_i1
-    #CF_1 = temp_i1   #+ 1.0j * temp_i1
-    if tcf_type=='Quantum':
-        CF_1 =(-1.0j)**3 *(CF_1 - np.conj(CF_1))*0.5
-        #CF_1 =  2.0 * CF_1
-    elif tcf_type=='classical':
-         pass
-    elif tcf_type=='rpmd':
-         pass
-    elif tcf_type=='Kubo':
-         pass
+    time_t, temp_r1, temp_i1 = np.loadtxt(filename, unpack=True, usecols=[0, 2, 3])
+    CF_1 = temp_r1 + 1.0j * temp_i1
+    # CF_1 = temp_i1   #+ 1.0j * temp_i1
+    if tcf_type == "Quantum":
+        CF_1 = (-1.0j) ** 3 * (CF_1 - np.conj(CF_1)) * 0.5
+        # CF_1 =  2.0 * CF_1
+    elif tcf_type == "classical":
+        pass
+    elif tcf_type == "rpmd":
+        pass
+    elif tcf_type == "Kubo":
+        pass
     else:
-      raise NotImplementedError
+        raise NotImplementedError
 
     assert ndim1 == ndim2
     ndim = ndim1
 
     if not positive_and_negative_times:
-       tmax = ndim * dt
-       time = np.linspace(0, ndim * dt, ndim)
+        tmax = ndim * dt
+        time = np.linspace(0, ndim * dt, ndim)
     else:
-       tmax = (ndim-1)//2 * dt
-       time = np.linspace(-tmax, +tmax, ndim)
+        tmax = (ndim - 1) // 2 * dt
+        time = np.linspace(-tmax, +tmax, ndim)
 
-
-    #time = np.zeros(ndim)
-    #for i in range(ndim):
+    # time = np.zeros(ndim)
+    # for i in range(ndim):
     #    time[i] = temp_t[i]
-
-
 
     CF_1 = np.reshape(CF_1, [ndim, ndim])
 
     ### Apply damping
     for i in range(ndim):
         for j in range(ndim):
-            delta = np.power(np.abs(time[i]) / tau, n_order) + np.power(np.abs(time[j]) / tau, n_order   )
+            delta = np.power(np.abs(time[i]) / tau, n_order) + np.power(
+                np.abs(time[j]) / tau, n_order
+            )
             CF_1[i, j] *= np.exp(-delta)
     ###================================================================
     ###====================== Computing FFTs =========================#
@@ -106,9 +106,8 @@ def main(
     freq *= 2.0 * np.pi
     freq = np.fft.fftshift(freq)
 
-
-    CF_1_fft  = np.fft.fft2(np.fft.fftshift(CF_1))*dt*dt
-    CF_1_fft  = np.fft.fftshift(CF_1_fft)
+    CF_1_fft = np.fft.fft2(np.fft.fftshift(CF_1)) * dt * dt
+    CF_1_fft = np.fft.fftshift(CF_1_fft)
 
     print("\n >>> Performing 2D FFT: done \n")
 
@@ -118,10 +117,15 @@ def main(
 
     Resp_real = np.zeros([ndim, ndim])
     Resp_imag = np.zeros([ndim, ndim])
+    Resp_coscos = np.zeros([ndim, ndim])
+    Resp_sinsin = np.zeros([ndim, ndim])
     for i in range(ndim):
         for j in range(ndim):
-            Resp_real[i,j] =  CF_1_fft[i,j].real
-            Resp_imag[i,j] =  CF_1_fft[i,j].imag
+            Resp_real[i, j] = CF_1_fft[i, j].real
+            Resp_imag[i, j] = CF_1_fft[i, j].imag
+            Resp_coscos[i, j] = 0.5 * (CF_1_fft[i, j].real + CF_1_fft[-i, j].real)
+            Resp_sinsin[i, j] = 0.5 * (CF_1_fft[i, j].real - CF_1_fft[i, -j].real)
+            # Resp_sinsin[i, j] = -0.5 * (CF_1_fft[i, j].real - CF_1_fft[-i, j].real)
 
     ###================================================================
     ###===================== Plot Time-domain =========================
@@ -147,48 +151,56 @@ def main(
         axis_x=time_axis_x,
         axis_y=time_axis_y,
         figsize=figsize,
-        lmax=lmax
+        lmax=lmax,
     )
 
     if only_time:
         plt.show()
-        print('\n\nplot only time\n\n')
+        print("\n\nplot only time\n\n")
         sys.exit()
     ###================================================================
     ###==================== Plot Freq-domain ==========================
     ###================================================================
 
     if True:
-        title1 = "Resp Real"
-        title2 = "Resp imag"
-        temp_data_sym = Resp_real
-        temp_data_asym = Resp_imag
+        if what_to_plot == "FT":
+            title1 = "Resp Real"
+            title2 = "Resp imag"
+            temp_data_sym = Resp_real
+            temp_data_asym = Resp_imag
+        elif what_to_plot == "coscos" or what_to_plot == "sinsin":
+            title1 = "coscos"
+            title2 = "sinsin"
+            temp_data_sym = Resp_coscos
+            temp_data_asym = Resp_sinsin
 
         legend = [title1, title2]
 
         fig6 = plot_2d_2(
-        freq,
-        freq,
-        temp_data_sym,
-        temp_data_asym,
-        title1=title1,
-        title2=title2,
-        xlabel2=freq_xlabel,
-        ylabel1=freq_ylabel,
-        ylabel2=freq_ylabel,
-        axis_x=freq_axis_x,
-        axis_y=freq_axis_y,
-        lmax=lmax
-    )
+            freq,
+            freq,
+            temp_data_sym,
+            temp_data_asym,
+            title1=title1,
+            title2=title2,
+            xlabel2=freq_xlabel,
+            ylabel1=freq_ylabel,
+            ylabel2=freq_ylabel,
+            axis_x=freq_axis_x,
+            axis_y=freq_axis_y,
+            lmax=lmax,
+        )
         if False:
             idx = int(ndim / 2)
             data = [temp_data_sym[idx, :], temp_data_asym[idx, :]]
             title = "cut at w1={}".format(freq[idx])
-            fig6a = plot_1d_list(freq, data, title=title, xlabel="w", legend=legend,x_lim=freq_axis_x)
+            fig6a = plot_1d_list(
+                freq, data, title=title, xlabel="w", legend=legend, x_lim=freq_axis_x
+            )
 
     ###================================================================
     plt.show()
-    #plt.savefig('my_plot.pdf')
+    # plt.savefig('my_plot.pdf')
 
     ###================================================================
     ###========================= Save-data ============================
@@ -197,7 +209,9 @@ def main(
     print("Have a nice day!!\n")
 
 
-def plot_1d_list(x, y, figtitle="", title="", xlabel="", ylabel="", legend="",x_lim=None,y_lim=None):
+def plot_1d_list(
+    x, y, figtitle="", title="", xlabel="", ylabel="", legend="", x_lim=None, y_lim=None
+):
     """1d plot where y is a list of curves"""
 
     ### define figure
@@ -219,9 +233,9 @@ def plot_1d_list(x, y, figtitle="", title="", xlabel="", ylabel="", legend="",x_
     ax.set_xlabel(xlabel, size=labelsz)
     ax.set_ylabel(ylabel, size=labelsz)
     if x_lim is not None:
-       ax.set_xlim(x_lim)
+        ax.set_xlim(x_lim)
     if y_lim is not None:
-       ax.set_ylim(y_lim)
+        ax.set_ylim(y_lim)
 
     ax.legend()
 
@@ -240,7 +254,7 @@ def plot_2d(
     axis_y="",
     fisize=[8, 8],
     nlevels=100,
-    lmax=None
+    lmax=None,
 ):
     """Contour plot"""
 
@@ -249,7 +263,7 @@ def plot_2d(
 
     ### define levels
     if lmax is None:
-       lmax = np.max(np.abs(z))
+        lmax = np.max(np.abs(z))
     lmin = -lmax
     ldel = (lmax - lmin) / nlevels
     levels = np.arange(lmin, lmax + ldel, ldel)
@@ -299,7 +313,8 @@ def plot_2d_2(
     figsize=[8, 8],
     nlevels=100,
     reference=None,
-    lmax=None):
+    lmax=None,
+):
     """Contour plot [x2]"""
 
     ### define figure
@@ -308,14 +323,14 @@ def plot_2d_2(
     ### define levels
     if reference is None and lmax is None:
         lmax = max(np.max(np.abs(z1)), np.max(np.abs(z2)))
-    elif reference ==1 :
-            lmax = np.max(np.abs(z1))
-    elif reference ==2 :
-            lmax = np.max(np.abs(z2))
+    elif reference == 1:
+        lmax = np.max(np.abs(z1))
+    elif reference == 2:
+        lmax = np.max(np.abs(z2))
     elif reference is None and lmax is not None:
-         pass
+        pass
     else:
-            raise NotImplementedError
+        raise NotImplementedError
     lmin = -lmax
     ldel = (lmax - lmin) / nlevels
     levels = np.arange(lmin, lmax + ldel, ldel)
@@ -453,11 +468,11 @@ def plot_1d(x, y, figtitle="", title="", xlabel="", ylabel=""):
 
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser(
         description="""Script to plot two time CF in time and frequency domain.\n
         example of usage \n
-        python ../../FFT_2D.py -file1 DKTpp.dat --file2  KT_PB_ABCp.dat -n1 100 -n2 100 -beta 1 -dt 0.5 """ )
+        python ../../FFT_2D.py -file1 DKTpp.dat --file2  KT_PB_ABCp.dat -n1 100 -n2 100 -beta 1 -dt 0.5 """
+    )
 
     parser.add_argument(
         "-file1", "--file1", type=str, default="test_sym.dat", help="Symmetric CF"
@@ -479,7 +494,21 @@ if __name__ == "__main__":
         "-lmax", "--lmax", type=float, default=None, help="Intensity Maximum"
     )
     parser.add_argument(
-        "-t", "--tcf_type", type=str, choices=['Kubo','Quantum','classical','rpmd'],help='Type of TCF',required=True,
+        "-t",
+        "--tcf_type",
+        type=str,
+        choices=["Kubo", "Quantum", "classical", "rpmd"],
+        help="Type of TCF",
+        required=True,
+    )
+
+    parser.add_argument(
+        "-what",
+        "--what_to_plot",
+        type=str,
+        choices=["FT", "coscos", "sinsin"],
+        default="FT",
+        help="Freq plot to be shown ",
     )
 
     args = parser.parse_args()
@@ -490,4 +519,15 @@ if __name__ == "__main__":
     dt = args.dtime
     beta = args.beta
 
-    main(filename, tau, ndim1, ndim2, dt, beta,n_order=2,lmax=args.lmax,tcf_type=args.tcf_type)
+    main(
+        filename,
+        tau,
+        ndim1,
+        ndim2,
+        dt,
+        beta,
+        n_order=2,
+        lmax=args.lmax,
+        tcf_type=args.tcf_type,
+        what_to_plot=args.what_to_plot,
+    )
