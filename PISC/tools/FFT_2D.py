@@ -32,8 +32,8 @@ time_axis_y = [-20, 20]
 # Freq-plots
 freq_xlabel = r"$\omega_1$"
 freq_ylabel = r"$\omega_2$"
-freq_axis_x = [-2.5, 2.5]
-freq_axis_y = [-2.5, 2.5]
+freq_axis_x = [-3.5, 3.5]
+freq_axis_y = [-3.5, 3.5]
 
 
 def main(
@@ -123,9 +123,11 @@ def main(
         for j in range(ndim):
             Resp_real[i, j] = CF_1_fft[i, j].real
             Resp_imag[i, j] = CF_1_fft[i, j].imag
-            Resp_coscos[i, j] = 0.5 * (CF_1_fft[i, j].real + CF_1_fft[-i, j].real)
-            Resp_sinsin[i, j] = 0.5 * (CF_1_fft[i, j].real - CF_1_fft[i, -j].real)
-            # Resp_sinsin[i, j] = -0.5 * (CF_1_fft[i, j].real - CF_1_fft[-i, j].real)
+            # Resp_coscos[i, j] = 0.5 * (CF_1_fft[i, j].real + CF_1_fft[i, -j].real)
+            # Resp_sinsin[i, j] = -0.5 * (CF_1_fft[i, j].real - CF_1_fft[i, -j].real)
+
+            Resp_coscos[i, j] = 0.5 * (CF_1_fft[i, j].real + CF_1_fft[i, -j].real)
+            Resp_sinsin[i, j] = -0.5 * (CF_1_fft[i, j].real - CF_1_fft[i, -j].real)
 
     ###================================================================
     ###===================== Plot Time-domain =========================
