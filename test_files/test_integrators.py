@@ -53,7 +53,7 @@ Mqqcent = np.array(propa.centroid_Mqq(sol))
 
 #plt.plot(tarr,np.log(abs(Mqqcent[:,0,0,0]**2)),color='r')
 #plt.show()
-if(1): ### Symplectic 2nd order
+if(0): ### Symplectic 2nd order
 	rp = RingPolymer(qcart=qcart,m=m,mode='MFmats',nmats=3) 
 	ens = Ensemble(beta=beta,ndim=dim)
 	motion = Motion(dt = dt,symporder=2) 

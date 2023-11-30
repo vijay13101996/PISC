@@ -1,5 +1,5 @@
 import numpy as np
-from PISC.engine.integrators import Symplectic_order_II, Symplectic_order_IV
+from PISC.engine.integrators import Symplectic
 from PISC.engine.beads import RingPolymer
 from PISC.engine.ensemble import Ensemble
 from PISC.engine.motion import Motion
@@ -20,6 +20,23 @@ debug = False
 
 
 class SimUniverse(object):
+    """
+    Base class for the simulation universe. It contains all the parameters
+    required to run path-integral simulations. The class also contains the methods to
+    generate the ensembles and run the simulations.
+
+    Parameters:
+    method          : 'classical', 'RPMD', 'CMD' (so far)
+    pathname        : Path to the folder where the data is stored
+    sysname         : Name of the workstation/cluster where the simulation is run
+    potkey          : Name of the potential energy surface
+    corrkey         : Name of the correlation function to be computed
+    enskey          : Name of the ensemble to be used
+    Tkey            : Code for the temperature to be used (e.g. T=xTc)
+    ext_kwlist      : List of external parameters to be used (e.g. E)
+    folder_name     : Name of the folder where the data is stored (duplicate)
+    symplectic_order: Order of the symplectic integrator
+    """
     def __init__(
         self,
         method,
@@ -31,7 +48,7 @@ class SimUniverse(object):
         Tkey,
         ext_kwlist=None,
         folder_name="Datafiles",
-        sympletic_order=None,
+        symplectic_order=None,
     ):
         self.method = method
         self.pathname = pathname
@@ -42,19 +59,21 @@ class SimUniverse(object):
         self.Tkey = Tkey
         self.ext_kwlist = ext_kwlist
         self.folder_name = folder_name
-        if sympletic_order is None:
+        if symplectic_order is None: 
             if self.corrkey == "OTOC":
-                sympletic_order = 4
+                symplectic_order = 4
             else:
-                sympletic_order = 2
-        self.sympletic_order = sympletic_order
+                symplectic_order = 2
+        self.symplectic_order = symplectic_order
 
     def set_sysparams(self, pes, T, mass, dim):
-        """Set system paramenters
-        pes = potential energy surface
-        T = temperature
-        mass = particle mass
-        dim = dimensionality of the classical system"""
+        """
+        Set system parameters
+        pes   : potential energy surface
+        T     : temperature
+        mass  : particle mass
+        dim   : dimensionality of the classical system
+        """
 
         self.pes = pes
         self.T = T
@@ -63,8 +82,27 @@ class SimUniverse(object):
         self.dim = dim
 
     def set_simparams(
-        self, N, dt_ens=1e-2, dt=5e-3, extparam=None, coordinate_list=None
-    ):
+        self, N, dt_ens=1e-2, dt=5e-3, extparam=None, coordinate_list=None, fort=False):
+        """
+        Set simulation parameters
+        N               : Number of trajectories
+        dt_ens          : Time step for the ensemble propagation
+        dt              : Time step for the 'production' step
+        extparam        : External parameter (e.g. E)
+        coordinate_list : List of coordinates to be used for the 2D simulations
+        fort            : Boolean to specify whether the Fortran code is used or not
+        
+        Currently setting fort=True will call the respective fortran subroutines for
+        1. B, b, A, O and M steps of the propagator,
+        2. potential, dpotential and ddpotential functions of the PES 
+        3. thalfstep function of the thermostat
+        4. Transformation functions cart2mats_hess and mats2cart_hess (only the
+           hessian part of the transformation is implemented in Fortran, transforming
+           q and p is rather quick in Python with scipy's fft function).
+        5. Matrix multiplying the Hessian with the monodromy matrix elements.
+
+        This is potentially all the avenues to speed up the code.
+        """
         self.N = N
         self.dt_ens = dt_ens
         self.dt = dt
@@ -74,7 +112,14 @@ class SimUniverse(object):
         if coordinate_list is not None:
             self.coord_list = coordinate_list
 
+        self.fort =  fort
+
     def set_methodparams(self, nbeads=1, gamma=1):
+        """
+        Set method-specific parameters
+        nbeads : Number of beads
+        gamma  : Adiabaticity parameter for CMD
+        """
         if self.method == "Classical" or self.method == "classical":
             self.nbeads = 1
         else:
@@ -83,6 +128,7 @@ class SimUniverse(object):
             self.gamma = gamma
 
     def set_runtime(self, time_ens=100.0, time_run=5.0):
+        """ Set time to equilibrate ensemble and time to run the simulation """
         self.time_ens = time_ens
         self.time_run = time_run
 
@@ -95,8 +141,16 @@ class SimUniverse(object):
         plist=None,
         filt_func=None,
     ):
+        """
+        Set ensemble parameters
+        tau0        : PILE_L thermostat parameter
+        pile_lambda : PILE_L thermostat parameter
+        E           : Energy of the microcanonical ensemble
+        qlist       : List of positions to initialize the RP ensemble
+        plist       : List of momenta to initialize the RP ensemble
+        filt_func   : Filter function to be used for 'filtering' ensemble
+        """
         self.tau0 = tau0
-        print("tau0, pi", tau0)
         self.pile_lambda = pile_lambda
         self.E = E
         self.qlist = qlist
@@ -104,6 +158,10 @@ class SimUniverse(object):
         self.filt_func = filt_func
 
     def gen_ensemble(self, ens, rng, rngSeed):
+        """
+        Generate the ensembles and store it in pickle files.
+        (Currently only canonical and microcanonical ensembles are implemented)
+        """
         if self.enskey == "thermal":
             thermalize_rp(
                 self.pathname,
@@ -121,6 +179,7 @@ class SimUniverse(object):
                 self.qlist,
                 self.tau0,
                 self.pile_lambda,
+                fort=self.fort,
                 folder_name=self.folder_name,
             )
             qcart = read_arr(
@@ -171,6 +230,14 @@ class SimUniverse(object):
             return qcart, pcart
 
     def run_OTOC(self, sim, single=False):
+        """ 
+        Run simulation to compute out-of-time-order correlation function
+        C(t) = < [A(t),B(0)]^2 > (Quantum)
+        C(t) = < {A(t),B(0)}^2 > (Semiclassical)
+
+        Note: By default we assume A = x and B = p_x, so that 
+        C_sc(t) = < |Mqq(t)|^2 > 
+        """
         tarr = []
         Mqqarr = []
         if self.method == "CMD":
@@ -186,10 +253,6 @@ class SimUniverse(object):
         else:
             dt = self.dt
             nsteps = int(self.time_run / dt)
-            # q = sim.rp.q.copy()
-            # sigma = 0.5
-            # ind = np.where(abs(q) < sigma)
-            # wgt = np.exp(-q / (2 * sigma**2)) / (2 * np.pi * sigma) ** 0.5
             for i in range(nsteps):
                 sim.step(mode="nve", var="monodromy")
                 if single:
@@ -495,7 +558,7 @@ class SimUniverse(object):
         qarr = np.array(qarr)
         parr = np.array(parr)
         # NOTE: The correlation function is between vector quantities unless explicitly specified.
-        # This needs to be rewritten at some point
+        # This needs to be rewritten at some point to make it more general.
         if self.corrkey == "qq_TCF":
             tarr, tcf = gen_tcf(qarr, qarr, tarr, corraxis=0)
         elif self.corrkey == "qq2_TCF":
@@ -533,18 +596,12 @@ class SimUniverse(object):
                 sgamma=self.gamma,
             )
 
-        therm = PILE_L(tau0=self.tau0, pile_lambda=self.pile_lambda)
-
-        motion = Motion(dt=self.dt, symporder=self.sympletic_order)
-        if self.sympletic_order == 4:
-            propa = Symplectic_order_IV()
-        elif self.sympletic_order == 2:
-            propa = Symplectic_order_II()
-        else:
-            raise NotImplementedError
+        therm = PILE_L(tau0=self.tau0, pile_lambda=self.pile_lambda) 
+        motion = Motion(dt=self.dt, symporder=self.symplectic_order)
+        propa = Symplectic(fort=self.fort)
 
         sim = RP_Simulation()
-        sim.bind(ens, motion, rng, rp, self.pes, propa, therm)
+        sim.bind(ens, motion, rng, rp, self.pes, propa, therm, self.fort)
 
         if self.corrkey == "OTOC":
             tarr, Carr = self.run_OTOC(sim)
@@ -586,7 +643,7 @@ class SimUniverse(object):
             self.store_time_series_3D(tarr, R3_eq, rngSeed, "R3_eq")
             return
         else:
-            raise NotImplementedError  # YL: I don't think we should reach this line ever
+            raise NotImplementedError  # YL: I don't think we should reach this line ever. VJ: I agree :)
             return
 
         self.store_time_series(tarr, Carr, rngSeed)

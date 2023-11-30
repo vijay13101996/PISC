@@ -81,11 +81,11 @@ if(1): #Morse
 	qlist = qlist[:,None]
 
 
-N = 1000
+N = 10
 dt_therm = 0.05
-dt = 0.002
-time_therm = 50.0
-time_total = 20.0
+dt = 0.5
+time_therm = 1.0
+time_total = 1.0
 
 nbeads = 1
 
@@ -110,7 +110,7 @@ Sim_class.set_runtime(time_therm,time_total)
 
 start_time=time.time()
 func = partial(Sim_class.run_seed)
-seeds = range(10)
+seeds = range(1)
 seed_split = chunks(seeds,10)
 
 param_dict = {'Temperature':Tkey,'CType':corrkey,'Ensemble':enskey,'m':m,\

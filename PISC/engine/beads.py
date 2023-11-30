@@ -153,7 +153,7 @@ class RingPolymer(object):
                 self.nmats = nmats
         self.freqs = freqs
 
-    def bind(self, ens, motion, rng):
+    def bind(self, ens, motion, rng, fort=False):
         self.ens = ens
         self.motion = motion
         self.rng = rng
@@ -188,11 +188,12 @@ class RingPolymer(object):
 
         if self.Mpp is None and self.Mqq is None:
             self.Mpp = np.zeros(
-                (self.nsys, self.ndim, self.ndim, self.nmodes, self.nmodes)
+                (self.nsys, self.ndim, self.nmodes, self.ndim, self.nmodes)
             )
             for d in range(self.ndim):
-                self.Mpp[:, d, d] = np.eye(self.nmodes, self.nmodes)
+                self.Mpp[:, d, :, d] = np.eye(self.nmodes, self.nmodes)
             self.Mqq = self.Mpp.copy()
+
         if self.Mqp is None and self.Mpq is None:
             self.Mqp = np.zeros_like(self.Mqq)
             self.Mpq = np.zeros_like(self.Mqq)
@@ -206,42 +207,29 @@ class RingPolymer(object):
 
         self.get_RSP_coeffs()
         self.ddpot = np.zeros(
-            (self.nsys, self.ndim, self.ndim, self.nmodes, self.nmodes)
+            (self.nsys, self.ndim, self.nmodes, self.ndim, self.nmodes)
         )
         self.ddpot_cart = np.zeros(
-            (self.nsys, self.ndim, self.ndim, self.nbeads, self.nbeads)
+            (self.nsys, self.ndim, self.nbeads, self.ndim, self.nbeads)
         )
 
-        ##Check here when doing multi-D simulation with beads.
+        ##Check here when doing multi-D (more than 2D) simulation with beads.
         if self.nbeads > 1:
             for d in range(self.ndim):
-                self.ddpot[:, d, d] = np.eye(self.nmodes, self.nmodes)
-            # for d1 in range(self.ndim):
-            # 	for d2 in range(self.ndim):
-            # 		self.ddpot[:,d1,d2] = np.eye(self.nmodes,self.nmodes)
+                self.ddpot[:, d, :, d] = np.eye(self.nmodes, self.nmodes)
 
-            self.ddpot *= (self.dynm3 * self.dynfreq2)[:, :, None, :, None]
+            self.ddpot *= (self.dynm3 * self.dynfreq2)[:, :, :,None, None]
 
             for d in range(self.ndim):
                 for k in range(self.nbeads - 1):
-                    self.ddpot_cart[:, d, d, k, k] = 2
-                    self.ddpot_cart[:, d, d, k, k + 1] = -1
-                    self.ddpot_cart[:, d, d, k, k - 1] = -1
-                self.ddpot_cart[:, d, d, self.nbeads - 1, 0] = -1
-                self.ddpot_cart[:, d, d, self.nbeads - 1, self.nbeads - 1] = 2
-                self.ddpot_cart[:, d, d, self.nbeads - 1, self.nbeads - 2] = -1
-
-            # for d1 in range(self.ndim):
-            # 	for d2 in range(self.ndim):
-            # 		for k in range(self.nbeads-1):
-            # 			self.ddpot_cart[:,d1,d2,k,k] = 2
-            # 			self.ddpot_cart[:,d1,d2,k,k+1] = -1
-            # 			self.ddpot_cart[:,d1,d2,k,k-1] = -1
-            # 		self.ddpot_cart[:,d1,d2,self.nbeads-1,0] = -1
-            # 		self.ddpot_cart[:,d1,d2,self.nbeads-1,self.nbeads-1] = 2
-            # 		self.ddpot_cart[:,d1,d2,self.nbeads-1,self.nbeads-2] = -1
-
-            self.ddpot_cart *= (self.dynm3 * self.omegan**2)[:, :, None, :, None]
+                    self.ddpot_cart[:, d, k, d, k] = 2
+                    self.ddpot_cart[:, d, k, d, k + 1] = -1
+                    self.ddpot_cart[:, d, k, d, k - 1] = -1
+                self.ddpot_cart[:, d, self.nbeads - 1, d, 0] = -1
+                self.ddpot_cart[:, d, self.nbeads - 1, d, self.nbeads - 1] = 2
+                self.ddpot_cart[:, d, self.nbeads - 1, d, self.nbeads - 2] = -1
+ 
+            self.ddpot_cart *= (self.dynm3 * self.omegan**2)[:, :, :, None, None]
 
         if self.p is None and self.pcart is None:
             self.p = self.rng.normal(
@@ -252,6 +240,48 @@ class RingPolymer(object):
             self.pcart = self.nmtrans.mats2cart(self.p)
         else:
             self.p = self.nmtrans.cart2mats(self.pcart)
+
+        if fort is True:
+            self._bind_fort()
+
+    def _bind_fort(self):
+        """ Create Fortran contiguous arrays for all variables """
+        self.q_f = self.q.T
+        self.p_f = self.p.T
+        self.qcart_f = self.qcart.T
+        self.pcart_f = self.pcart.T
+
+        if self.dqcart is not None:
+            self.dqcart_f = self.dqcart.T
+            self.dpcart_f = self.dpcart.T
+        if self.dq is not None:
+            self.dq_f = self.dq.T
+            self.dp_f = self.dp.T
+
+        self.m3_f = self.m3.T
+        self.sqm3_f = self.sqm3.T
+        self.dynm3_f = self.dynm3.T
+        self.sqdynm3_f = self.sqdynm3.T
+       
+        self.freqs_f = self.freqs.T
+        self.freqs2_f = self.freqs2.T
+        self.dynfreqs_f = self.dynfreqs.T
+        self.dynfreq2_f = self.dynfreq2.T
+        
+        self.nmscale_f = self.nmscale.T
+        self.nm_matrix_f = self.nm_matrix.T
+
+        self.pot_f = self.pot.T
+        self.pot_cart_f = self.pot_cart.T
+        self.dpot_f = self.dpot.T
+        self.dpot_cart_f = self.dpot_cart.T
+        self.ddpot_f = self.ddpot.T
+        self.ddpot_cart_f = self.ddpot_cart.T
+        
+        self.Mpp_f = self.Mpp.T
+        self.Mpq_f = self.Mpq.T
+        self.Mqp_f = self.Mqp.T
+        self.Mqq_f = self.Mqq.T
 
     def get_dyn_scale(self):
         scale = np.ones(self.nmodes)
@@ -273,6 +303,7 @@ class RingPolymer(object):
             return scale
 
     def RSP_step(self):
+        """ Perform one step using reference-system propagator """
         qpvector = np.empty((self.nmodes, 2, self.ndim, len(self.q)))
         qpvector[:, 0] = (self.p / self.sqdynm3).T
         qpvector[:, 1] = (self.q * self.sqdynm3).T
@@ -283,6 +314,7 @@ class RingPolymer(object):
         self.q[:] = qpvector[:, 1].T / self.sqdynm3
 
     def get_rp_freqs(self):
+        """ Get ring-polymer normal mode frequencies """
         n = [0]
         for i in range(1, self.nmodes // 2 + 1):
             n.append(-i)
@@ -293,6 +325,7 @@ class RingPolymer(object):
         return freqs
 
     def get_mats_freqs(self):
+        """ Get Matsubara mode frequencies """
         n = [0]
         if self.mode == "mats":
             for i in range(1, self.nmodes // 2 + 1):
@@ -308,6 +341,7 @@ class RingPolymer(object):
             return freqs
 
     def get_RSP_coeffs(self):
+        """ Get reference-system propagator coefficients """
         self.RSP_coeffs = np.empty((self.nmodes, 2, 2))
         for n in range(self.nmodes):
             mat = np.eye(2) * np.cos(self.dynfreqs[n] * self.dt)
@@ -316,6 +350,7 @@ class RingPolymer(object):
             self.RSP_coeffs[n] = mat
 
     def nm_matrix(self):
+        """ Get the normal-mode transformation matrix """
         narr = [0]
         for i in range(1, self.nmodes // 2 + 1):
             narr.append(-i)
@@ -339,6 +374,7 @@ class RingPolymer(object):
                 self.nm_matrix[l, self.nmodes - 1] = (-1) ** l / np.sqrt(self.nmodes)
 
     def mats_beads(self):
+        """ Get the Matsubara bead positions """
         if self.nmats is None:
             return self.qcart
         else:
@@ -349,24 +385,44 @@ class RingPolymer(object):
             )  # Check this!
             return ret
 
-    def mats2cart(self):
-        self.qcart = self.nmtrans.mats2cart(self.q)
-        self.pcart = self.nmtrans.mats2cart(self.p)
-        if self.dq is not None:
-            self.dqcart = self.nmtrans.mats2cart(self.dq)
-            self.dpcart = self.nmtrans.mats2cart(self.dp)
+    def mats2cart(self,fortran=False):
+        """ Convert Matsubara bead positions to Cartesian coordinates """
+        if fortran is True:
+            self.nmtrans.mats2cart(self.q_f,self.qcart_f,fortran=True)
+            self.nmtrans.mats2cart(self.p_f,self.pcart_f,fortran=True)
+            if self.dqcart is not None:
+                self.nmtrans.mats2cart(self.dq_f,self.dqcart_f,fortran=True)
+                self.nmtrans.mats2cart(self.dp_f,self.dpcart_f,fortran=True)
+        else:
+            self.qcart[:] = self.nmtrans.mats2cart(self.q)
+            self.pcart[:] = self.nmtrans.mats2cart(self.p)
+            if self.dq is not None:
+                self.dqcart[:] = self.nmtrans.mats2cart(self.dq)
+                self.dpcart[:] = self.nmtrans.mats2cart(self.dp)
+        
         # If dq,dp are not None, convert them too
 
-    def cart2mats(self):
-        self.q = self.nmtrans.cart2mats(self.qcart)
-        self.p = self.nmtrans.cart2mats(self.pcart)
-        if self.dqcart is not None:
-            self.dq = self.nmtrans.cart2mats(self.dqcart)
-            self.dp = self.nmtrans.cart2mats(self.dpcart)
+    def cart2mats(self,fortran=False):
+        """ Convert Cartesian bead positions to Matsubara coordinates """
+        if fortran is True:
+            self.q_f[:] = self.nmtrans.cart2mats(self.qcart_f,fortran=True)
+            self.p_f[:] = self.nmtrans.cart2mats(self.pcart_f,fortran=True)
+            if self.dqcart is not None:
+                self.dq_f[:] = self.nmtrans.cart2mats(self.dqcart_f,fortran=True)
+                self.dp_f[:] = self.nmtrans.cart2mats(self.dpcart_f,fortran=True)
+        else:
+            self.q[:] = self.nmtrans.cart2mats(self.qcart,fortran=fortran)
+            self.p[:] = self.nmtrans.cart2mats(self.pcart,fortran=fortran)
+            if self.dqcart is not None:
+                self.dq[:] = self.nmtrans.cart2mats(self.dqcart,fortran=fortran)
+                self.dp[:] = self.nmtrans.cart2mats(self.dpcart,fortran=fortran)
+            
         # If dqcart,dpcart are not None, convert them too
 
     @property
-    def theta(self):  # Check for more than 1D
+    def theta(self):  
+        """ Get the Matsubara phase """
+        # Check for more than 1D
         ret = (
             self.matsfreqs
             * misc.pairwise_swap(self.q[..., : self.nmats], self.nmats)
@@ -376,18 +432,22 @@ class RingPolymer(object):
 
     @property
     def kin(self):
+        """ Get the kinetic energy """
         return np.sum(0.5 * (self.p / self.sqm3) ** 2)
 
     @property
     def dynkin(self):
+        """ Get the kinetic energy when masses are scaled """
         return np.sum(0.5 * (self.p / self.sqdynm3) ** 2)
 
     @property
     def pot(self):
+        """ Get the potential energy """
         return np.sum(0.5 * self.dynm3 * self.dynfreq2 * self.q**2)
 
     @property
     def pot_cart(self):
+        """ Get the potential energy in Cartesian coordinates """
         return np.sum(
             0.5
             * self.m3
@@ -397,10 +457,12 @@ class RingPolymer(object):
 
     @property
     def dpot(self):
+        """ Get the potential energy gradient in Matsubara coordinates "" """
         return self.dynm3 * self.dynfreq2 * self.q
 
     @property
     def dpot_cart(self):
+        """ Get the potential energy gradient in Cartesian coordinates """
         return (
             self.dynm3
             * self.omegan**2
@@ -409,4 +471,4 @@ class RingPolymer(object):
                 - np.roll(self.qcart, 1, axis=-1)
                 - np.roll(self.qcart, -1, axis=-1)
             )
-        )
+            )

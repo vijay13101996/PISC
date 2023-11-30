@@ -8,367 +8,246 @@ import scipy
 import scipy.integrate
 from scipy.integrate import odeint, ode
 from PISC.utils.misc import hess_compress, hess_mul
-
-### Work left to do:
-# 1. Declare the order of the integrator and splitting inside the Integrator class object.  
-# 2. Figure out how to do 4th order integration with the ring polymer springs.
-# 3. Work out how to convert the Hessian to normal mode coordinates - straightforward
-# 4. Make a list of possible places to optimize. 
-# 5. Find ways to probe the accuracy of this integrator.
-# 7. Include a separate spring force update step later, if required
+from PISC.utils.misc_f import misc
+from PISC.engine.integrator_f import integrator
 
 class Integrator(object):
-	def bind(self, ens, motion, rp, pes, rng, therm):
-		# Declare variables that contain all details from the various classes in bind 
-		self.motion = motion
-		self.rp = rp
-		self.pes = pes	
-		self.ens = ens
-		self.therm = therm
-		self.therm.bind(rp,motion,rng,ens)
-	
-	def force_update(self):
-		self.rp.mats2cart()
-		self.pes.update()
-	
-class Symplectic_order_II(Integrator):	
-	def O(self,pc):
-		""" Propagation of momenta due to the thermostat """
-		self.therm.thalfstep(pc)
+    def __init__(self,fort=False):
+        self.fort = fort
 
-	def b_cent(self):
-		self.rp.p[...,:self.rp.nmats]-=self.pes.centrifugal_term()*self.motion.pdt
-	
-	def A(self):
-		self.rp.q+=self.rp.p*self.motion.qdt/self.rp.dynm3
-		self.force_update()	
+    def bind(self, ens, motion, rp, pes, rng, therm,fort=False):
+        # Declare variables that contain all details from the various classes in bind 
+        self.motion = motion
+        self.rp = rp
+        self.pes = pes  
+        self.ens = ens
+        self.therm = therm
+        self.fort = fort
+        self.therm.bind(rp,motion,rng,ens)
+    
+    def force_update(self,update_hess=False,fortran=False):
+        """ Update the force and Hessian """
+        self.rp.mats2cart()
+        self.pes.update(update_hess=update_hess,fortran=fortran)
 
-	def Av(self):
-		self.rp.dq+=self.rp.dp*self.motion.qdt/self.rp.dynm3
-	
-	def B(self,centmove=True):
-		""" Propagation of momenta """
-		if(centmove):
-			self.rp.p-=self.pes.dpot*self.motion.pdt	
-		else:
-			self.rp.p[...,1:]-=self.pes.dpot[...,1:]*self.motion.pdt
+class Symplectic(Integrator):
+    """
+    This class implements the symplectic integrators of second and fourth order, and can be easily extended 
+    to higher orders. The second order integrator is the usual Verlet algorithm, while the fourth order 
+    integrator is adopted from the paper:
+     
+     Mark L. Brewer, Jeremy S. Hulme, and David E. Manolopoulos, 
+    "Semiclassical dynamics in up to 15 coupled vibrational degrees of freedom", 
+     J. Chem. Phys. 106, 4832-4839 (1997)
 
-	def Bv(self,centmove=True):
-		hess = hess_compress(self.pes.ddpot,self.rp)
-		#self.pes.ddpot.swapaxes(2,3).reshape(-1,self.pes.ndim*self.rp.nbeads,self.pes.ndim*self.rp.nbeads)
-		dq=self.rp.dq.reshape(-1,self.pes.ndim*self.rp.nbeads)
-		dpc= np.einsum('ijk,ik->ij',hess,dq)
-		dpc=dpc.reshape(-1,self.pes.ndim,self.rp.nbeads)
-		if(centmove):
-			self.rp.dp-=dpc*self.motion.pdt	
-		else:
-			self.rp.dp[...,1:]-=dpc[...,1:]*self.motion.pdt
+    The integrator has a fortran mode, which can be easily used to speed up the code.
+    The test cases to compare python/fortran code are provided in PISC/test_files/test_fort_integrators.py
+    """
 
-	def b(self):
-		if self.rp.nmats is None:
-			self.rp.p-=self.rp.dpot*self.motion.pdt
-		else:
-			self.rp.p[...,self.rp.nmats:]-=self.rp.dpot[...,self.rp.nmats:]*self.motion.pdt
+    def O(self,pmats):
+        """ Propagation of momenta due to the thermostat """
+        self.therm.thalfstep(pmats,fort=self.fort)
 
-	def bv(self):
-		hess = hess_compress(self.rp.ddpot,self.rp)
-		#self.rp.ddpot.swapaxes(2,3).reshape(-1,self.rp.ndim*self.rp.nbeads,self.rp.ndim*self.rp.nbeads)
-		dq=self.rp.dq.reshape(-1,self.pes.ndim*self.rp.nbeads)
-		dpc= np.einsum('ijk,ik->ij',hess,dq)
-		dpc=dpc.reshape(-1,self.pes.ndim,self.rp.nbeads)
-		self.rp.dp-=dpc*self.motion.pdt
-		if self.rp.nmats is None:	
-			self.rp.dp-=dpc*self.motion.pdt
-		else:
-			self.rp.p[...,self.rp.nmats:]-=dpc[...,self.rp.nmats:]*self.motion.pdt
+    def A(self,k,update_hess=False):
+        """ Propagation of coordinate """
+        if(self.fort):
+            integrator.a_f(self.rp.q_f,self.rp.p_f,self.motion.qdt[k],self.rp.dynm3_f)
+        else:
+            self.rp.q+=self.motion.qdt[k]*self.rp.p/self.rp.dynm3
+        self.force_update(fortran=self.fort,update_hess=update_hess)
 
-	def M1(self):
-		""" Evolution of Mpp corresponding to the physical potential"""
-		#self.rp.Mpp-=(self.pes.ddpot)*self.motion.pdt*self.rp.Mqp
-		hess_mul(self.pes.ddpot,self.rp.Mqp,self.rp.Mpp,self.rp,self.motion.pdt)		
-	
-	def m1(self):
-		""" Evolution of Mpp corresponding to the spring potential"""
-		#self.rp.Mpp-=(self.rp.ddpot)*self.motion.pdt*self.rp.Mqp	
-		hess_mul(self.rp.ddpot,self.rp.Mqp,self.rp.Mpp,self.rp,self.motion.pdt)		
+    def B(self,k,centmove=True):
+        """ Propagation of momenta """
+        if(self.fort):
+            integrator.b_f(self.rp.p_f,self.pes.dpot_f,self.motion.pdt[k],centmove,self.rp.nbeads)
+        else:   
+            if centmove:
+                self.rp.p-=self.pes.dpot*self.motion.pdt[k]
+            else:
+                self.rp.p[...,1:]-=self.pes.dpot[...,1:]*self.motion.pdt[k]
 
-	def M2(self):
-		""" Evolution of Mpq corresponding to the physical potential"""
-		#self.rp.Mpq-=(self.pes.ddpot)*self.motion.pdt*self.rp.Mqq
-		hess_mul(self.pes.ddpot,self.rp.Mqq,self.rp.Mpq,self.rp,self.motion.pdt)		
+    def b(self,k):  
+        """ Propagation of momenta due to spring potential """
+        if(self.fort):
+            integrator.b_f(self.rp.p_f,self.rp.dpot.T,self.motion.pdt[k],True,self.rp.nbeads)
+        else:
+            if self.rp.nmats is None:
+                self.rp.p-=self.rp.dpot*self.motion.pdt[k]
+            else:
+                self.rp.p[...,self.rp.nmats:]-=self.pes.dpot[...,self.rp.nmats:]*self.motion.pdt[k] 
+        #Note: Beware when running MF Matsubara simulation - it is untested as of yet.
+    
+    def Av(self,k):
+        """ Propagation of coordinate in 'variation' mode """
+        self.rp.dq+=self.rp.dp*self.motion.qdt[k]/self.rp.dynm3
+    
+    def Bv(self,k,centmove=True):
+        """ Propagation of momenta in 'variation' mode """
+        # Fortran mode not enabled here
+        hess = self.pes.ddpot.swapaxes(2,3).reshape(-1,self.pes.ndim*self.rp.nbeads,self.rp.ndim*self.rp.nbeads)
+        dq=self.rp.dq.reshape(-1,self.pes.ndim*self.rp.nbeads)
+        dpc= np.einsum('ijk,ik->ij',hess,dq) #Check once again!
+        dpc=dpc.reshape(-1,self.pes.ndim,self.rp.nbeads)
+        if(centmove):
+            self.rp.dp-=dpc*self.motion.pdt[k]
+        else:
+            self.rp.dp[...,1:]-=dpc[...,1:]*self.motion.pdt[k]
 
-	def m2(self):
-		""" Evolution of Mpq corresponding to the spring potential"""
-		#self.rp.Mpq-=(self.rp.ddpot)*self.motion.pdt*self.rp.Mqq
-		hess_mul(self.rp.ddpot,self.rp.Mqq,self.rp.Mpq,self.rp,self.motion.pdt)		
+    def bv(self,k):
+        """ Propagation of momenta in 'variation' mode due to spring potential """
+        # Fortran mode not enabled here
+        hess = self.rp.ddpot.swapaxes(2,3).reshape(-1,self.rp.ndim*self.rp.nbeads,self.rp.ndim*self.rp.nbeads)
+        dq=self.rp.dq.reshape(-1,self.pes.ndim*self.rp.nbeads)
+        dpc= np.einsum('ijk,ik->ij',hess,dq) #Check once again!
+        dpc=dpc.reshape(-1,self.pes.ndim,self.rp.nbeads)
+        self.rp.dp-=dpc*self.motion.pdt[k]
+        if self.rp.nmats is None:   
+            self.rp.dp-=dpc*self.motion.pdt[k]
+        else:
+            self.rp.p[...,self.rp.nmats:]-=dpc[...,self.rp.nmats:]*self.motion.pdt[k]
+    
+    def M1(self,k):
+        """ Propagation of the Mqp matrix elements (depends on the PES Hessian) """
+        hess_mul(self.pes.ddpot,self.rp.Mqp,self.rp.Mpp,self.rp,self.motion.pdt[k],fort=self.fort)     
+            
+    def m1(self,k):
+        """ Propagation of the Mqp matrix elements (depends on the ring-polymer Hessian) """
+        hess_mul(self.rp.ddpot,self.rp.Mqp,self.rp.Mpp,self.rp,self.motion.pdt[k],fort=self.fort)      
+        
+    def M2(self,k):
+        """ Propagation of the Mqq matrix elements (depends on the PES Hessian) """
+        hess_mul(self.pes.ddpot,self.rp.Mqq,self.rp.Mpq,self.rp,self.motion.pdt[k],fort=self.fort)
 
-	def M3(self):
-		""" Evolution of Mqp corresponding to the physical potential"""
-		self.rp.Mqp+=self.motion.qdt*self.rp.Mpp/self.rp.dynm3[:,:,None,:,None]
-	
-	def M4(self):
-		""" Evolution of Mqq corresponding to the physical potential"""
-		self.rp.Mqq+=self.motion.qdt*self.rp.Mpq/self.rp.dynm3[:,:,None,:,None]
-		
-	def pq_step(self,centmove=True):
-		self.B(centmove)
-		self.b()
-		self.A()
-		self.b()
-		self.B(centmove)
-		
-	def pq_step_RSP(self,centmove=True):
-		self.B(centmove)
-		self.rp.RSP_step()
-		self.force_update()
-		self.B(centmove)
+    def m2(self,k):
+        """ Propagation of the Mqq matrix elements (depends on the ring-polymer Hessian) """
+        hess_mul(self.rp.ddpot,self.rp.Mqq,self.rp.Mpq,self.rp,self.motion.pdt[k],fort=self.fort)
 
-	def pq_step_nosprings(self,centmove=True):
-		self.B(centmove)
-		self.A()	
-		self.B(centmove)
-	
-	def var_step(self,centmove=True):
-		self.B(centmove)
-		self.Bv(centmove)
-		self.b()
-		self.bv()
-		
-		self.A()
-		self.Av()
-		
-		self.b()
-		self.bv()
-		self.B(centmove)
-		self.Bv(centmove)
-	
-#	def var_step_nosprings (think about var_step_RSP)
+    def M3(self,k):
+        """ Propagation of the Mqp matrix elements (independent of the Hessian) """
+        if(self.fort):
+            integrator.m_upd_f(self.rp.Mqp_f,self.rp.Mpp_f,self.rp.dynm3_f,self.motion.qdt[k])
+        else:
+            self.rp.Mqp+=self.motion.qdt[k]*self.rp.Mpp/self.rp.dynm3[:,:,:,None,None]
+        
+    def M4(self,k):
+        """ Propagation of the Mqq matrix elements (independent of the Hessian) """
+        if(self.fort):
+            integrator.m_upd_f(self.rp.Mqq_f,self.rp.Mpq_f,self.rp.dynm3_f,self.motion.qdt[k])
+        else:
+            self.rp.Mqq+=self.motion.qdt[k]*self.rp.Mpq/self.rp.dynm3[:,:,:,None,None]
+    
+    def pq_kstep(self,k,centmove=True):
+        """ Propagation of the coordinates and momenta for one 'k' step (k varies from 0 to order-1) """
+        self.B(k,centmove)
+        self.b(k)
+        self.A(k)
 
-	def Monodromy_step_nosprings(self):	
-		self.B()
-		self.M1()
-		self.M2()
-		self.M3()
-		self.M4()
-		self.A()
-		self.B()
-		self.M1()
-		self.M2()
-		
-	def Monodromy_step(self):
-		self.B()
-		self.b()
-		self.M1()
-		self.m1()
-		self.M2()
-		self.m2()
-		self.M3()
-		self.M4()
-		self.A()
-		self.B()
-		self.b()
-		self.M1()
-		self.m1()
-		self.M2()
-		self.m2()
-		#self.M3()
-		#self.M4()	
- 
-class Symplectic_order_IV(Integrator):
-	"""
-	 Mark L. Brewer, Jeremy S. Hulme, and David E. Manolopoulos, 
-	"Semiclassical dynamics in up to 15 coupled vibrational degrees of freedom", 
-	 J. Chem. Phys. 106, 4832-4839 (1997)
-	"""
+    def pq_kstep_nosprings(self,k):
+        """ Propagation of the coordinates and momenta for one 'k' step when there are no springs """
+        self.B(k)
+        self.A(k)
 
-	def O(self,pmats):
-		""" Propagation of momenta due to the thermostat """
-		self.therm.thalfstep(pmats)
+    def var_kstep(self,k,centmove=True):
+        """ Propagation of the coordinates and momenta for one 'k' step in 'variation' mode """
+        self.B(k,centmove)
+        self.Bv(k,centmove)
+        self.b(k)
+        self.bv(k)
+        self.A(k,update_hess=True)
+        self.Av(k)
 
-	def A(self,k):
-		""" Propagation of coordinate """
-		self.rp.q+=self.motion.qdt[k]*self.rp.p/self.rp.dynm3
-		self.force_update()
-	
-	def B(self,k,centmove=True):
-		""" Propagation of momenta """
-		if centmove:
-			self.rp.p-=self.pes.dpot*self.motion.pdt[k]
-		else:
-			self.rp.p[...,1:]-=self.pes.dpot[...,1:]*self.motion.pdt[k]
+    def Monodromy_kstep(self,k):
+        """ Propagation of the coordinates, momenta and monodromy matrix elements for one 'k' step """
+        self.B(k)
+        self.b(k)
+        self.M1(k)
+        self.m1(k)
+        self.M2(k)
+        self.m2(k)
+        self.M3(k)
+        self.M4(k)
+        self.A(k,update_hess=True)
 
-	def b(self,k):	
-		""" Propagation of momenta due to spring potential """
-		if self.rp.nmats is None:
-			self.rp.p-=self.rp.dpot*self.motion.pdt[k]
-		else:
-			self.rp.p[...,self.rp.nmats:]-=self.pes.dpot[...,self.rp.nmats:]*self.motion.pdt[k]
-	
-	def Av(self,k):
-		self.rp.dq+=self.rp.dp*self.motion.qdt[k]/self.rp.dynm3
-	
-	def Bv(self,k,centmove=True):
-		hess = self.pes.ddpot.swapaxes(2,3).reshape(-1,self.pes.ndim*self.rp.nbeads,self.rp.ndim*self.rp.nbeads)
-		dq=self.rp.dq.reshape(-1,self.pes.ndim*self.rp.nbeads)
-		dpc= np.einsum('ijk,ik->ij',hess,dq) #Check once again!
-		dpc=dpc.reshape(-1,self.pes.ndim,self.rp.nbeads)
-		if(centmove):
-			self.rp.dp-=dpc*self.motion.pdt[k]
-		else:
-			self.rp.dp[...,1:]-=dpc[...,1:]*self.motion.pdt[k]
+    def Monodromy_kstep_nosprings(self,k):
+        """ Propagation of the coordinates, momenta and monodromy matrix elements for one 'k' step 
+        when there are no springs """
+        self.B(k)
+        self.M1(k)
+        self.M2(k)
+        self.M3(k)
+        self.M4(k)
+        self.A(k,update_hess=True)
 
-	def bv(self,k):
-		hess = self.rp.ddpot.swapaxes(2,3).reshape(-1,self.rp.ndim*self.rp.nbeads,self.rp.ndim*self.rp.nbeads)
-		dq=self.rp.dq.reshape(-1,self.pes.ndim*self.rp.nbeads)
-		dpc= np.einsum('ijk,ik->ij',hess,dq) #Check once again!
-		dpc=dpc.reshape(-1,self.pes.ndim,self.rp.nbeads)
-		self.rp.dp-=dpc*self.motion.pdt[k]
-		if self.rp.nmats is None:	
-			self.rp.dp-=dpc*self.motion.pdt[k]
-		else:
-			self.rp.p[...,self.rp.nmats:]-=dpc[...,self.rp.nmats:]*self.motion.pdt[k]
-	
-	def M1(self,k):
-		#self.rp.Mpp -=(self.pes.ddpot)*self.motion.pdt[k]*self.rp.Mqp
-	
-		#print('Mpp before',self.rp.Mpp)	
-		#hess = hess_compress(self.pes.ddpot,self.rp)
-		#Mqp = hess_compress(self.rp.Mqp,self.rp)
-		#Mpp = hess_compress(self.rp.Mpp,self.rp)
-		#c2 = np.matmul(hess,Mqp)*self.motion.pdt[k]
-		#Mpp-=c2
-		#print('Mpp after',self.rp.Mpp,'\n')
-	
-		hess_mul(self.pes.ddpot,self.rp.Mqp,self.rp.Mpp,self.rp,self.motion.pdt[k])		
-			
-	def m1(self,k):
-		#self.rp.Mpp-=(self.rp.ddpot)*self.motion.pdt[k]*self.rp.Mqp
-		
-		#hess = hess_compress(self.rp.ddpot,self.rp)
-		#Mqp = hess_compress(self.rp.Mqp,self.rp)
-		#Mpp = hess_compress(self.rp.Mpp,self.rp)
-		#c2 = np.matmul(hess,Mqp)*self.motion.pdt[k]
-		#Mpp-=c2
+    def pq_step(self,centmove=True):
+        """ Propagation of the coordinates and momenta for one full step """
+        for k in range(self.motion.order):
+            self.pq_kstep(k,centmove=True)
+    
+    def pq_step_RSP(self,centmove=True):
+        """ Propagation of the coordinates and momenta for one full step using 'Reference-System Propagation' """
+        if(self.motion.order==2):
+            self.B(0,centmove)
+            self.rp.RSP_step()
+            self.force_update()
+            self.B(1,centmove)
+        else:
+            raise ValueError("RSP step only implemented for second order integrator")
+    
+    def pq_step_nosprings(self):
+        """ Propagation of the coordinates and momenta for one full step when there are no springs """
+        for k in range(self.motion.order):
+            self.pq_kstep_nosprings(k)
 
-		hess_mul(self.rp.ddpot,self.rp.Mqp,self.rp.Mpp,self.rp,self.motion.pdt[k])		
-		
-	def M2(self,k):
-		#self.rp.Mpq-=(self.pes.ddpot)*self.motion.pdt[k]*self.rp.Mqq
-		
-		#hess = hess_compress(self.pes.ddpot,self.rp)
-		#Mqq = hess_compress(self.rp.Mqq,self.rp)
-		#Mpq = hess_compress(self.rp.Mpq,self.rp)
-		#c2 = np.matmul(hess,Mqq)*self.motion.pdt[k]
-		#Mpq-=c2
+    def var_step(self):
+        """ Propagation of the coordinates and momenta for one full step in 'variation' mode """
+        for k in range(self.motion.order):
+            self.var_kstep(k,centmove=True)
 
-		hess_mul(self.pes.ddpot,self.rp.Mqq,self.rp.Mpq,self.rp,self.motion.pdt[k])		
+    def Monodromy_step(self):
+        """ Propagation of the coordinates, momenta and monodromy matrix elements for one full step """
+        for k in range(self.motion.order):
+            self.Monodromy_kstep(k)
 
-	def m2(self,k):
-		#self.rp.Mpq-=(self.rp.ddpot)*self.motion.pdt[k]*self.rp.Mqq
-		
-		#hess = hess_compress(self.rp.ddpot,self.rp)
-		#Mqq = hess_compress(self.rp.Mqq,self.rp)
-		#Mpq = hess_compress(self.rp.Mpq,self.rp)
-		#c2 = np.matmul(hess,Mqq)*self.motion.pdt[k]
-		#Mpq-=c2
-
-		hess_mul(self.rp.ddpot,self.rp.Mqq,self.rp.Mpq,self.rp,self.motion.pdt[k])		
-
-	def M3(self,k):
-		self.rp.Mqp+=self.motion.qdt[k]*self.rp.Mpp/self.rp.dynm3[:,:,None,:,None]
-		
-	def M4(self,k):
-		self.rp.Mqq+=self.motion.qdt[k]*self.rp.Mpq/self.rp.dynm3[:,:,None,:,None]
-	
-	def pq_kstep(self,k,centmove=True):
-		self.B(k,centmove)
-		self.b(k)
-		self.A(k)
-
-	def pq_kstep_nosprings(self,k):
-		self.B(k)
-		self.A(k)
-
-	def var_kstep(self,k,centmove=True):
-		self.B(k,centmove)
-		self.Bv(k,centmove)
-		self.b(k)
-		self.bv(k)
-		self.A(k)
-		self.Av(k)
-
-	def Monodromy_kstep(self,k):
-		self.B(k)
-		self.b(k)
-		self.M1(k)
-		self.m1(k)
-		self.M2(k)
-		self.m2(k)
-		self.M3(k)
-		self.M4(k)
-		self.A(k)
-
-	def Monodromy_kstep_nosprings(self,k):
-		self.B(k)
-		self.M1(k)
-		self.M2(k)
-		self.M3(k)
-		self.M4(k)
-		self.A(k)
-
-	def pq_step(self,centmove=True):	
-		for k in range(4):
-			self.pq_kstep(k,centmove=True)
-	
-	def pq_step_nosprings(self):	
-		for k in range(4):
-			self.pq_kstep_nosprings(k)
-
-	def var_step(self):
-		for k in range(4):
-			self.var_kstep(k,centmove=True)
-
-	def Monodromy_step(self):	
-		for k in range(4):
-			self.Monodromy_kstep(k)
-
-	def Monodromy_step_nosprings(self):	
-		for k in range(4):
-			self.Monodromy_kstep_nosprings(k)
-		
+    def Monodromy_step_nosprings(self): 
+        """ Propagation of the coordinates, momenta and monodromy matrix elements for one full step
+        when there are no springs """
+        for k in range(self.motion.order):
+            self.Monodromy_kstep_nosprings(k)
+    
 class Runge_Kutta_order_VIII(Integrator):
-	def int_func(self,y,t):		
-		N = self.rp.nsys*self.rp.nbeads*self.rp.ndim
-		self.rp.q = y[:N].reshape(self.rp.nsys,self.rp.ndim,self.rp.nbeads)
-		self.rp.p = y[N:2*N].reshape(self.rp.nsys,self.rp.ndim,self.rp.nbeads)
-		self.force_update()
+    """ Primitive code used to propagate the monodromy matrix elements using scipy.integrate.odeint """
+    def int_func(self,y,t):     
+        N = self.rp.nsys*self.rp.nbeads*self.rp.ndim
+        self.rp.q = y[:N].reshape(self.rp.nsys,self.rp.ndim,self.rp.nbeads)
+        self.rp.p = y[N:2*N].reshape(self.rp.nsys,self.rp.ndim,self.rp.nbeads)
+        self.force_update()
        
-		n_mmat = self.rp.nsys*self.rp.ndim*self.rp.ndim*self.rp.nbeads*self.rp.nbeads
-		self.rp.Mpp = y[2*N:2*N+n_mmat].reshape(self.rp.nsys,self.rp.ndim,self.rp.ndim,self.rp.nbeads,self.rp.nbeads)
-		self.rp.Mpq = y[2*N+n_mmat:2*N+2*n_mmat].reshape(self.rp.nsys,self.rp.ndim,self.rp.ndim,self.rp.nbeads,self.rp.nbeads)
-		self.rp.Mqp = y[2*N+2*n_mmat:2*N+3*n_mmat].reshape(self.rp.nsys,self.rp.ndim,self.rp.ndim,self.rp.nbeads,self.rp.nbeads)
-		self.rp.Mqq = y[2*N+3*n_mmat:2*N+4*n_mmat].reshape(self.rp.nsys,self.rp.ndim,self.rp.ndim,self.rp.nbeads,self.rp.nbeads)
-		d_mpp = -(self.pes.ddpot+self.rp.ddpot)*self.rp.Mqp
-		d_mpq = -(self.pes.ddpot+self.rp.ddpot)*self.rp.Mqq
-		d_mqp = self.rp.Mpp/self.rp.dynm3[:,:,None,:,None]
-		d_mqq = self.rp.Mpq/self.rp.dynm3[:,:,None,:,None]
-       	
-		dydt = np.concatenate(((self.rp.p/self.rp.dynm3).flatten(),-(self.pes.dpot+self.rp.dpot).flatten(),d_mpp.flatten(),d_mpq.flatten(),d_mqp.flatten(), d_mqq.flatten()  ))
-		return dydt
+        n_mmat = self.rp.nsys*self.rp.ndim*self.rp.ndim*self.rp.nbeads*self.rp.nbeads
+        self.rp.Mpp = y[2*N:2*N+n_mmat].reshape(self.rp.nsys,self.rp.ndim,self.rp.ndim,self.rp.nbeads,self.rp.nbeads)
+        self.rp.Mpq = y[2*N+n_mmat:2*N+2*n_mmat].reshape(self.rp.nsys,self.rp.ndim,self.rp.ndim,self.rp.nbeads,self.rp.nbeads)
+        self.rp.Mqp = y[2*N+2*n_mmat:2*N+3*n_mmat].reshape(self.rp.nsys,self.rp.ndim,self.rp.ndim,self.rp.nbeads,self.rp.nbeads)
+        self.rp.Mqq = y[2*N+3*n_mmat:2*N+4*n_mmat].reshape(self.rp.nsys,self.rp.ndim,self.rp.ndim,self.rp.nbeads,self.rp.nbeads)
+        d_mpp = -(self.pes.ddpot+self.rp.ddpot)*self.rp.Mqp
+        d_mpq = -(self.pes.ddpot+self.rp.ddpot)*self.rp.Mqq
+        d_mqp = self.rp.Mpp/self.rp.dynm3[:,:,None,:,None]
+        d_mqq = self.rp.Mpq/self.rp.dynm3[:,:,None,:,None]
+        
+        dydt = np.concatenate(((self.rp.p/self.rp.dynm3).flatten(),-(self.pes.dpot+self.rp.dpot).flatten(),d_mpp.flatten(),d_mpq.flatten(),d_mqp.flatten(), d_mqq.flatten()  ))
+        return dydt
    
-	def integrate(self,tarr,mxstep=1000000):
-		y0=np.concatenate((self.rp.q.flatten(), self.rp.p.flatten(),self.rp.Mpp.flatten(),self.rp.Mpq.flatten(),self.rp.Mqp.flatten(),self.rp.Mqq.flatten()))
-		sol = scipy.integrate.odeint(self.int_func,y0,tarr,mxstep=mxstep)
-		return sol
+    def integrate(self,tarr,mxstep=1000000):
+        y0=np.concatenate((self.rp.q.flatten(), self.rp.p.flatten(),self.rp.Mpp.flatten(),self.rp.Mpq.flatten(),self.rp.Mqp.flatten(),self.rp.Mqq.flatten()))
+        sol = scipy.integrate.odeint(self.int_func,y0,tarr,mxstep=mxstep)
+        return sol
 
-	def centroid_Mqq(self,sol):
-		N = self.rp.nsys*self.rp.nbeads*self.rp.ndim
-		n_mmat = self.rp.nsys*self.rp.ndim*self.rp.ndim*self.rp.nbeads*self.rp.nbeads
+    def centroid_Mqq(self,sol):
+        N = self.rp.nsys*self.rp.nbeads*self.rp.ndim
+        n_mmat = self.rp.nsys*self.rp.ndim*self.rp.ndim*self.rp.nbeads*self.rp.nbeads
 
-		Mqq = sol[:,2*N+3*n_mmat:2*N+4*n_mmat].reshape(len(sol),self.rp.nsys,self.rp.ndim,self.rp.ndim,self.rp.nbeads,self.rp.nbeads)
-		return Mqq[...,0,0]
+        Mqq = sol[:,2*N+3*n_mmat:2*N+4*n_mmat].reshape(len(sol),self.rp.nsys,self.rp.ndim,self.rp.ndim,self.rp.nbeads,self.rp.nbeads)
+        return Mqq[...,0,0]
 
-	def ret_q(self,sol):
-		N = self.rp.nsys*self.rp.nbeads*self.rp.ndim
-		q_arr = sol[:,:N].reshape(len(sol),self.rp.nsys,self.rp.ndim,self.rp.nbeads)
-		return q_arr	
+    def ret_q(self,sol):
+        N = self.rp.nsys*self.rp.nbeads*self.rp.ndim
+        q_arr = sol[:,:N].reshape(len(sol),self.rp.nsys,self.rp.ndim,self.rp.nbeads)
+        return q_arr    
