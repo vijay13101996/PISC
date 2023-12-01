@@ -51,7 +51,7 @@ if(0):
 	print('Vyy=',diff(V,y,y))
 
 
-if(1): ###Tanimura's system bath potential
+if(0): ###Tanimura's system bath potential
 	D = sympy.Symbol('self.D')	
 	alpha = sympy.Symbol('self.alpha')	
 	m = sympy.Symbol('self.m')	
@@ -109,21 +109,21 @@ if(0):### Double-double well potential
 
 
 
-if(0):### Quartic Bistable potential
-	alpha = sympy.Symbol('self.alpha')
-	lamda = sympy.Symbol('self.lamda')
-	g = sympy.Symbol('self.g')
-	D = sympy.Symbol('self.D')
-	z = sympy.Symbol('self.z')
-	k = sympy.Symbol('self.k')
-	eta = sympy.Symbol('self.eta')
+if(1):### Quartic Bistable potential
+	alpha = sympy.Symbol('alpha')#'self.alpha')
+	lamda = sympy.Symbol('lamda')#'self.lamda')
+	g = sympy.Symbol('g')#self.g')
+	D = sympy.Symbol('D')#self.D')
+	z = sympy.Symbol('z')#self.z')
+	k = sympy.Symbol('k')#self.k')
+	eta = sympy.Symbol('eta')#self.eta')
 
 	eay = exp(-alpha*y)
 	quartx = (x**2 - lamda**2/(8*g))
 	Vb = lamda**4/(64*g)
 	vy = D*(1-eay)**2
 	vx = g*quartx**2
-	vxy = eta*(vx-k*Vb)*(exp(-z*alpha*y) - 1)
+	vxy = (vx-Vb)*(exp(-z*alpha*y) - 1)
 
 	V = vx + vy + vxy
 

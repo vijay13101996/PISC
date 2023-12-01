@@ -1,6 +1,6 @@
 import numpy as np
 import PISC
-from PISC.engine.integrators import Symplectic_order_II
+from PISC.engine.integrators import Symplectic
 from PISC.engine.beads import RingPolymer
 from PISC.engine.motion import Motion
 from PISC.engine.thermostat import PILE_L
@@ -14,6 +14,10 @@ from PISC.utils.readwrite import (
 )
 import time
 
+"""
+This function is used to thermalize a ring polymer ensemble using the PILE_L thermostat.
+(More information about the thermostat is provided under thermostat.py)
+"""
 
 def thermalize_rp(
     pathname,
@@ -33,15 +37,25 @@ def thermalize_rp(
     pile_lambda=100.0,
     folder_name="Datafiles",
     store_thermalization=True,
+    pes_fort=False,
+    propa_fort=False,
+    transf_fort=False
 ):
+    # Fortran version of the PILE_L thermostat may be slower than the Python version. 
+    # This depends on the workstations but and needs to be decided on a case-by-case basis.
+    # If it is indeed slower, hardcode the following line to fort=False
+    #fort=False
     if qlist is None:
         qcart = np.zeros((N, dim, nbeads))
         pcart = np.zeros((N, dim, nbeads))
+        # These two lines are specific to the 2D double well. They are used to 
+        # initialize the ring polymers in the two wells of the double well potential.
         qcart[
             : N // 2, 0, :
-        ] -= 2.5  # These two lines are specific to the 2D double well.
+        ] -= 2.5  
         qcart[N // 2 :, 0, :] += 2.5
     else:
+        # Initialise the ring polymers at points uniformly sampled from the Boltzmann distribution
         if dim == 1:
             expbeta = np.exp(-ens.beta * pes.potential(qlist))[:, 0]
         else:
@@ -61,20 +75,17 @@ def thermalize_rp(
     rp = RingPolymer(qcart=qcart, pcart=pcart, m=m)
 
     motion = Motion(dt=dt_therm, symporder=2)
-    rp.bind(ens, motion, rng)
-
     therm = PILE_L(tau0=tau0, pile_lambda=pile_lambda)
-    therm.bind(rp, motion, rng, ens)
-
-    propa = Symplectic_order_II()
-    propa.bind(ens, motion, rp, pes, rng, therm)
-
+    propa = Symplectic()
     sim = RP_Simulation()
-    sim.bind(ens, motion, rng, rp, pes, propa, therm)
+    sim.bind(ens, motion, rng, rp, pes, propa, therm, 
+             transf_fort=transf_fort, pes_fort=pes_fort, propa_fort=propa_fort)
     start_time = time.time()
 
     nthermsteps = int(time_therm / motion.dt)
     pmats = np.array([True for i in range(rp.nbeads)])
+    
+    """ The commented code below is for debugging purposes. """
 
     # tarr = []
     # kinarr = []
