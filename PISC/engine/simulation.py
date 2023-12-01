@@ -11,7 +11,8 @@ class Simulation(object):
         self.t = 0.0
         self.nstep = 0
 
-    def bind(self,ens,motion,rng,rp,pes,propa,therm,fort=False):
+    def bind(self,ens,motion,rng,rp,pes,propa,therm,
+             pes_fort=False,propa_fort=False,transf_fort=False):
         self.ens = ens
         self.motion = motion
         self.rng = rng
@@ -19,16 +20,21 @@ class Simulation(object):
         self.pes = pes
         self.propa = propa
         self.therm = therm
+ 
         # Bind the components
-        self.rp.bind(self.ens, self.motion, self.rng,fort=fort)
-        self.pes.bind(self.ens, self.rp, fort=fort)
+
+        # Declare fortran 'views' of variables if either of the fortran flags are true
+        self.rp.bind(self.ens, self.motion, self.rng, fort=pes_fort or transf_fort or propa_fort)
+        self.pes.bind(self.ens, self.rp, pes_fort=pes_fort, transf_fort=transf_fort)
         self.pes.update(update_hess=True)
         self.therm.bind(self.rp,self.motion,self.rng,self.ens)  
         self.propa.bind(self.ens, self.motion, self.rp,
-                        self.pes, self.rng, therm,fort=fort)
+                        self.pes, self.rng, therm,fort=propa_fort)
         self.dt = self.motion.dt
         self.order = self.motion.order
-        self.fort = fort
+        self.pes_fort = pes_fort
+        self.propa_fort = propa_fort
+        self.transf_fort = transf_fort
 
 class RP_Simulation(Simulation):
     """
@@ -36,9 +42,11 @@ class RP_Simulation(Simulation):
     """
     def __init__(self):
         super(RP_Simulation,self).__init__()
-    
-    def bind(self,ens,motion,rng,rp,pes,propa,therm,fort=False):
-        super(RP_Simulation,self).bind(ens,motion,rng,rp,pes,propa,therm,fort)
+
+    def bind(self,ens,motion,rng,rp,pes,propa,therm,
+             pes_fort=False, propa_fort=False, transf_fort=False):
+        super(RP_Simulation,self).bind(ens,motion,rng,rp,pes,propa,therm,
+            pes_fort=pes_fort, propa_fort=propa_fort, transf_fort=transf_fort)
         
     def NVE_pqstep(self):
         """ Constant energy step to propagate position and momentum """

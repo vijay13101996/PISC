@@ -37,7 +37,9 @@ def thermalize_rp(
     pile_lambda=100.0,
     folder_name="Datafiles",
     store_thermalization=True,
-    fort=False
+    pes_fort=False,
+    propa_fort=False,
+    transf_fort=False
 ):
     # Fortran version of the PILE_L thermostat may be slower than the Python version. 
     # This depends on the workstations but and needs to be decided on a case-by-case basis.
@@ -73,16 +75,11 @@ def thermalize_rp(
     rp = RingPolymer(qcart=qcart, pcart=pcart, m=m)
 
     motion = Motion(dt=dt_therm, symporder=2)
-    rp.bind(ens, motion, rng)
-
     therm = PILE_L(tau0=tau0, pile_lambda=pile_lambda)
-    therm.bind(rp, motion, rng, ens)
-
-    propa = Symplectic(fort=fort)
-    propa.bind(ens, motion, rp, pes, rng, therm)
-
+    propa = Symplectic()
     sim = RP_Simulation()
-    sim.bind(ens, motion, rng, rp, pes, propa, therm, fort=fort)
+    sim.bind(ens, motion, rng, rp, pes, propa, therm, 
+             transf_fort=transf_fort, pes_fort=pes_fort, propa_fort=propa_fort)
     start_time = time.time()
 
     nthermsteps = int(time_therm / motion.dt)

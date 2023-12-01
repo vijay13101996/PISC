@@ -29,8 +29,8 @@ class quartic_bistable(PES):
     
             self.param_list = [alpha,D,lamda,g,z]
 
-        def bind(self,ens,rp,fort=False):
-            super(quartic_bistable,self).bind(ens,rp,fort)
+        def bind(self,ens,rp,pes_fort=False,transf_fort=False):
+            super(quartic_bistable,self).bind(ens,rp,pes_fort,transf_fort=transf_fort)
  
         def potential(self,q):
             x = q[:,0] 

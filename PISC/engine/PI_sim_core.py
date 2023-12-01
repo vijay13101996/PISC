@@ -82,7 +82,8 @@ class SimUniverse(object):
         self.dim = dim
 
     def set_simparams(
-        self, N, dt_ens=1e-2, dt=5e-3, extparam=None, coordinate_list=None, fort=False):
+        self, N, dt_ens=1e-2, dt=5e-3, extparam=None, coordinate_list=None, 
+        pes_fort=False, propa_fort=False,transf_fort=False):
         """
         Set simulation parameters
         N               : Number of trajectories
@@ -90,16 +91,21 @@ class SimUniverse(object):
         dt              : Time step for the 'production' step
         extparam        : External parameter (e.g. E)
         coordinate_list : List of coordinates to be used for the 2D simulations
-        fort            : Boolean to specify whether the Fortran code is used or not
+        pes_fort        : Boolean to specify whether the Fortran code is used for the PES
+        propa_fort      : Boolean to specify whether the Fortran code is used for the propagator
+        transf_fort      : Boolean to specify whether the Fortran code is used for the Cartesian/
+                          Matsubara mode transformation
         
-        Currently setting fort=True will call the respective fortran subroutines for
-        1. B, b, A, O and M steps of the propagator,
-        2. potential, dpotential and ddpotential functions of the PES 
-        3. thalfstep function of the thermostat
-        4. Transformation functions cart2mats_hess and mats2cart_hess (only the
+        The respective fortran subroutines for
+        1. B, b, A, O and M steps of the propagator are called when propa_fort=True
+            a. For the O step, the thalfstep function in thermostat.py is called from fortran; 
+                the random number generator is passed from python to the fortran code
+            b. In the M step, the matrix multiplication of the stability matrix with the hessian 
+                is done in fortran
+        2. potential, dpotential and ddpotential functions of the PES are called when pes_fort=True
+        3. Transformation functions cart2mats_hess and mats2cart_hess (only the
            hessian part of the transformation is implemented in Fortran, transforming
-           q and p is rather quick in Python with scipy's fft function).
-        5. Matrix multiplying the Hessian with the monodromy matrix elements.
+           q and p is rather quick in Python with scipy's fft function) are called when transf_fort=True
 
         This is potentially all the avenues to speed up the code.
         """
@@ -112,7 +118,9 @@ class SimUniverse(object):
         if coordinate_list is not None:
             self.coord_list = coordinate_list
 
-        self.fort =  fort
+        self.pes_fort = pes_fort
+        self.propa_fort = propa_fort
+        self.transf_fort = transf_fort
 
     def set_methodparams(self, nbeads=1, gamma=1):
         """
@@ -179,7 +187,9 @@ class SimUniverse(object):
                 self.qlist,
                 self.tau0,
                 self.pile_lambda,
-                fort=self.fort,
+                propa_fort=self.propa_fort,
+                pes_fort=self.pes_fort,
+                transf_fort=self.transf_fort,
                 folder_name=self.folder_name,
             )
             qcart = read_arr(
@@ -196,6 +206,7 @@ class SimUniverse(object):
             )
             return qcart, pcart
         elif self.enskey == "mc":
+            # Fortran mode to be enabled here
             generate_rp(
                 self.pathname,
                 self.m,
@@ -598,10 +609,11 @@ class SimUniverse(object):
 
         therm = PILE_L(tau0=self.tau0, pile_lambda=self.pile_lambda) 
         motion = Motion(dt=self.dt, symporder=self.symplectic_order)
-        propa = Symplectic(fort=self.fort)
+        propa = Symplectic()
 
         sim = RP_Simulation()
-        sim.bind(ens, motion, rng, rp, self.pes, propa, therm, self.fort)
+        sim.bind(ens, motion, rng, rp, self.pes, propa, therm, 
+                 pes_fort = self.pes_fort, propa_fort = self.propa_fort, transf_fort = self.transf_fort)
 
         if self.corrkey == "OTOC":
             tarr, Carr = self.run_OTOC(sim)

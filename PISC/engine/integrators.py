@@ -28,7 +28,7 @@ class Integrator(object):
     def force_update(self,update_hess=False,fortran=False):
         """ Update the force and Hessian """
         self.rp.mats2cart()
-        self.pes.update(update_hess=update_hess,fortran=fortran)
+        self.pes.update(update_hess=update_hess)
 
 class Symplectic(Integrator):
     """
@@ -47,6 +47,7 @@ class Symplectic(Integrator):
     def O(self,pmats):
         """ Propagation of momenta due to the thermostat """
         self.therm.thalfstep(pmats,fort=self.fort)
+
 
     def A(self,k,update_hess=False):
         """ Propagation of coordinate """

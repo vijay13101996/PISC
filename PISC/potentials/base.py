@@ -20,7 +20,7 @@ class PES(object):
         self.ddpot_cart = None
         self.ddpot = None
 
-    def bind(self,ens,rp,fort=False):
+    def bind(self,ens,rp,pes_fort=False,transf_fort=False):
         # Bind the ensemble and ring polymer objects to the PES
         self.ens = ens
         self.rp = rp
@@ -45,8 +45,10 @@ class PES(object):
             for d2 in range(self.ndim):
                 self.ddpotmat[:,d1,:,d2] = np.eye(self.rp.nmodes,self.rp.nmodes)
         
-        if(fort):
-            self._bind_fort()
+        self._bind_fort()
+
+        self.pes_fort = pes_fort
+        self.transf_fort = transf_fort
 
     def _bind_fort(self):
         # Declare fortran variables as a 'view' of the python variables by transposing them  
@@ -88,7 +90,7 @@ class PES(object):
         return np.transpose(ddpot,axes=[2,0,3,1])
 
     def compute_potential(self,fortran=False):
-        # Update the potential energy (from the PES) for the current bead positions
+        """ Update the potential energy (from the PES) for the current bead positions """
         if(fortran):
             self.potential_f(self.rp.qcart_f,self.pot_f)
         else:
@@ -96,7 +98,7 @@ class PES(object):
         return self.pot
     
     def compute_force(self,fortran=False):
-        # Update the force (from the PES) for the current bead positions
+        """ Update the force (from the PES) for the current bead positions """
         if(fortran):
             self.dpotential_f(self.rp.qcart_f,self.dpot_cart_f)
         else:
@@ -104,7 +106,7 @@ class PES(object):
         return self.dpot_cart
 
     def compute_hessian(self,fortran=False):
-        # Update the hessian (from the PES) for the current bead positions
+        """ Update the hessian (from the PES) for the current bead positions """
         if(fortran):
             self.ddpotential_f(self.rp.qcart_f,self.ddpot_cart_f)
         else:   
@@ -117,46 +119,54 @@ class PES(object):
         return self.ddpot_cart
 
     def compute_mats_potential(self):
-        # Update the Matsubara potential energy (from the PES) when the 
-        # Matsubara potential is given in analytical form
+        """
+        Update the Matsubara potential energy (from the PES) when the 
+        Matsubara potential is given in analytical form
+        """
         self.pot[:] = self.potential(self.rp.mats_beads())
         return self.pot
 
     def compute_mats_force(self):
-        # Update the Matsubara force (from the PES) when the
-        # Matsubara potential is given in analytical form
+        """
+        Update the Matsubara force (from the PES) when the
+        Matsubara potential is given in analytical form
+        """
         self.dpot_cart[:] = self.dpotential(self.rp.mats_beads())
         return self.dpot_cart
 
     def compute_mats_hessian(self):
-        # Update the Matsubara hessian (from the PES) when the
-        # Matsubara potential is given in analytical form
-        # (Valid only for 1D systems in the current implementation)
+        """  
+        Update the Matsubara hessian (from the PES) when the
+        Matsubara potential is given in analytical form
+        (Valid only for 1D systems in the current implementation)
+        """
         self.ddpot_cart[:] = self.ddpotmat*self.ddpotential(self.rp.mats_beads())[:,:,:,None,np.newaxis]
         return self.dpot_cart
 
     def centrifugal_term(self):
-        # Compute the centrifugal term for the Matsubara potential energy 
-        # Used to sample constant phase Matsubara trajectories
+        """
+        Compute the centrifugal term for the Matsubara potential energy 
+        Used to sample constant phase Matsubara trajectories
+        """
         # This is currently untested
         Rsq = np.sum(self.rp.matsfreqs**2*pairwise_swap(self.rp.q[...,:self.rp.nmats],self.rp.nmats)**2,axis=2)[:,None]
         const = self.ens.theta**2/self.rp.m
         dpot = (-const/Rsq**2)*pairwise_swap(self.rp.matsfreqs[...,:self.rp.nmats],self.rp.nmats)**2*self.rp.q[...,:self.rp.nmats]
         return dpot 
 
-    def update(self,update_hess=False,fortran=False):
+    def update(self,update_hess=False):
         #Currently fortran update step is implemented only for 'rp' mode.
         #Update hess is set to be True only for monodromy and variation mode
         if(self.rp.mode=='rp'):
-            self.compute_potential(fortran)
-            self.compute_force(fortran)
+            self.compute_potential(self.pes_fort)
+            self.compute_force(self.pes_fort)
             self.dpot[:] = self.nmtrans.cart2mats(self.dpot_cart)
             if(update_hess):
-                self.compute_hessian(fortran)
-                if(fortran):
-                    self.nmtrans.cart2mats_hessian(self.ddpot_cart_f,self.ddpot_f,fortran=fortran)
+                self.compute_hessian(self.pes_fort)
+                if(self.transf_fort):
+                    self.nmtrans.cart2mats_hessian(self.ddpot_cart_f,self.ddpot_f,fortran=True)
                 else:
-                    self.ddpot[:] = self.nmtrans.cart2mats_hessian(self.ddpot_cart,fortran=fortran)    
+                    self.ddpot[:] = self.nmtrans.cart2mats_hessian(self.ddpot_cart,fortran=False)
         elif(self.rp.mode=='rp/mats'):
             # !!! The change in the axis ordering for Mxx's and Hessian is not implemented yet !!!
             self.compute_mats_potential()

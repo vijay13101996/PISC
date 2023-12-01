@@ -36,7 +36,7 @@ if(1): ### 2D Double well
     time_total = 1.0# dt
     nbeads = 32
 
-    potkey = 'testfort_double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
+    potkey = 'testpy_double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
     Tkey = 'T_{}Tc'.format(times)
 
 if(0): ### Oblique harmonic oscillator
@@ -125,17 +125,23 @@ qlist = np.array(qlist)
     
 ### ------------------------------------------------------------------------------
 
-fort=True
+pes_fort=False#True
+propa_fort=False#True
+transf_fort=False#True
 
 Sim_class = SimUniverse(method,path,sysname,potkey,corrkey,enskey,Tkey)
 Sim_class.set_sysparams(pes,T,m,dim)
-Sim_class.set_simparams(N,dt_therm,dt,fort=fort)
+Sim_class.set_simparams(N,dt_therm,dt,pes_fort=pes_fort,propa_fort=propa_fort,transf_fort=transf_fort)
 Sim_class.set_methodparams(nbeads=nbeads)
 Sim_class.set_ensparams(tau0=1.0,pile_lambda=100.0,qlist=qlist)
 Sim_class.set_runtime(time_therm,time_total)
 
-if(fort):
+if(propa_fort):
     print('Integrators are implemented in FORTRAN')
+if(transf_fort):
+    print('Transformations are implemented in FORTRAN')
+if(pes_fort):
+    print('PES is implemented in FORTRAN')
 
 start_time=time.time()
 func = partial(Sim_class.run_seed)

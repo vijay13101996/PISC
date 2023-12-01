@@ -17,8 +17,8 @@ class Harmonic(PES):
             
             # The parameter list is used to pass parameters to the fortran functions 
 
-        def bind(self,ens,rp,fort=False):
-            super(Harmonic,self).bind(ens,rp,fort=fort)
+        def bind(self,ens,rp,pes_fort=False,transf_fort=False):
+            super(Harmonic,self).bind(ens,rp,pes_fort=pes_fort,transf_fort=transf_fort)
  
         def potential(self,q):
             x = q[:,0] 

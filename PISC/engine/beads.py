@@ -8,10 +8,6 @@ from turtle import setundobuffer
 import numpy as np
 from PISC.utils import nmtrans, misc
 
-### Work left:
-# 1. Display error messages on input errors.
-# 2. Comment out the code.
-
 
 class RingPolymer(object):
     """
@@ -21,15 +17,34 @@ class RingPolymer(object):
     nsys   : Number of parallel ring-polymer units
     nmats  : Number of Matsubara modes (Differs from nbeads for Matsubara simulations)
 
-    q/qcart 		: Ring-polymer bead positions in Cartesian/Matsubara coordinates
-    p/pcart 		: Ring-polymer bead momenta in Cartesian/Matsubara coordinates
+    q/qcart         : Ring-polymer bead positions in Cartesian/Matsubara coordinates
+    p/pcart         : Ring-polymer bead momenta in Cartesian/Matsubara coordinates
                           Dimensions [nsys,ndim,nmodes]
 
     Mpp,Mpq,Mqp,Mqq : Monodromy matrix elements of the ring-polymer beads in Matsubara coordinates
-                      Dimensions [nsys,ndim,ndim,nmodes,nmodes]
+                      Dimensions [nsys,ndim,nmodes,ndim,nmodes]
 
-    m3	 : Vectorized ring-polymer bead masses
+    m3   : Vectorized ring-polymer bead masses
     sqm3 : Square root of m3
+
+    omegan : Prefactor for the ring-polymer normal mode frequencies
+    freqs  : Ring-polymer normal mode frequencies
+    freqs2 : Square of ring-polymer normal mode frequencies
+    dynfreqs : Ring-polymer normal mode frequencies with mass scaling
+    dynfreq2 : Square of ring-polymer normal mode frequencies with mass scaling
+
+    nmscale : Normal-mode scaling factor
+    nm_matrix : Normal-mode transformation matrix
+
+    pot : Potential energy of the ring-polymer spring
+    dpot/dpot_cart   : First derivative of the spring potential energy in Matsubara/Cartesian coordinates
+    ddpot/ddpot_cart : Second derivative of the spring potential energy in Matsubara/Cartesian coordinates
+
+    dq/dqcart : Tangent variables (positions) in Matsubara/Cartesian coordinates
+    dp/dpcart : Tangent variables (momenta) in Matsubara/Cartesian coordinates
+
+    *_f : Fortran contiguous arrays for all variables (for use with Fortran subroutines)  
+
     """
 
     def __init__(
@@ -85,6 +100,11 @@ class RingPolymer(object):
             self.nbeads = nbeads
             self.nsys = len(self.qcart)
 
+        """
+        Create variables dq,dp, dqcart, dpcart default set to None
+        If not None, they can be passed in cartesian/Matsubara coordinates.
+        Like with q/p, qcart/pcart, these variables need to be interconverted.
+        """
         if dqcart is not None:
             self.dqcart = dqcart
             if dpcart is not None:
@@ -102,12 +122,8 @@ class RingPolymer(object):
                 self.dp = 0.0
         else:
             self.dq = None
-            self.dp = None
-
-        # Create variables dq,dp, dqcart, dpcart default set to None
-        # If not None, they can be passed in cartesian/Matsubara coordinates.
-        # Like with q/p, qcart/pcart, these variables need to be interconverted.
-
+            self.dp = None 
+        
         self.m = m
         self.mode = mode
         if Mpp is None:
