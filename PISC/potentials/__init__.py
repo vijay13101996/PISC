@@ -11,6 +11,7 @@ from PISC.potentials.Heller_Davis import  heller_davis
 from PISC.potentials.Henon_Heiles import  henon_heiles
 from PISC.potentials.Matsubara_M3_Quartic import  Matsubara_Quartic
 from PISC.potentials.Morse_1D import  morse
+from PISC.potentials.Morse_fit import  morse_fit
 from PISC.potentials.Quartic_bistable import  quartic_bistable
 from PISC.potentials.Quartic import quartic
 from PISC.potentials.trunc_harmonic import  trunc_harmonic
