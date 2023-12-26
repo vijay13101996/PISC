@@ -9,41 +9,17 @@ from PISC.utils.plottools import plot_1D
 
 ngrid = 501
 m = 1.0
-lamda = 2.0
+     
+L = 10
+lb = -L
+ub = L
+dx = (ub-lb)/(ngrid-1)
 
-if(0): #Highly anharmonic
-    L = 10
-    lb = -L
-    ub = L
-    dx = (ub-lb)/(ngrid-1)
-    
-    m = 1.0
-    lamda = 2.0
-    g = 0.11
-    pes = double_well(lamda,g)
-      
-if(1): #Low anharmonicity 
-    L = 10
-    lb = -L
-    ub = L
-    dx = (ub-lb)/(ngrid-1)
-    
-    g = 0.02
-    pes = double_well(lamda,g)
+pes = mildly_anharmonic(m,0.0,0.0)
 
-potkey = 'Double Well'
-
-Vb = lamda**4/(64*g)
-Tc = 0.5*lamda/np.pi
-lamdas = np.sqrt(2)*lamda
-Xie = np.around(Vb/lamdas,2)
-
-print('Tc, Vb', 0.5*lamda/np.pi, Vb)
-
-times = 1.#415#1.5
-T_au = times*Tc#0.75
-beta = 1.0/T_au 
-print('T in au, beta',T_au, beta) 
+potkey = 'Harmonic'
+beta = 10.0
+print('beta', beta) 
 
 DVR = DVR1D(ngrid,lb,ub,m,pes.potential)
 vals,vecs = DVR.Diagonalize() 
@@ -120,12 +96,12 @@ fig = plt.figure()
 ax = plt.gca()
 
 ax.set_ylim([0,20])#([0,5])
-ax.set_xlim([-10,10])#[-5,5.])
+ax.set_xlim([-7,7])#[-5,5.])
 
 for i in range(28): # 4,28 for high,low anharmonicity
     ax.axhline(y=vals[i],color="0.7",ls='--')
 
-s = 20
+s = 8
 ax.plot(qgrid,potgrid)
 #ax.plot(qgrid, pes.ddpotential(qgrid))
 ax.plot(qgrid,s*Pq,color='r',label=r'$Quantum$')
@@ -136,17 +112,16 @@ ax.plot(qgrid,s*Peff_LH,color='k',label=r'$V_{eff} \; LH$')
 #ax.plot(qgrid,Peff_FH,color='c',linestyle = '--',label='Veff FH')
 ax.plot(qgrid,s*Peff_FK,color='b',linestyle='-.',label=r'$V_{eff} \; FK$')
 
-ax.scatter(qgrid[LHind],s*Peff_LH[LHind],color='k',s=20)
-ax.scatter(qgrid[Qind], s*Pq[Qind],color='r',s=20)  
+ax.scatter(qgrid[LHind],s*Peff_LH[LHind],color='k',s=15,zorder=4)
+ax.scatter(qgrid[Qind], s*Pq[Qind],color='r',s=15,zorder=5)  
 #ax.scatter(qgrid[FKind], s*Peff_FK[FKind],color='b')
 #ax.scatter(qgrid[Cind], s*Pcl[Cind],color='g')
 
-plt.title(r'$\Xi_e = {}, T={}Tc, \beta V_b = {}$'.format(Xie,times, np.around(Vb/T_au,2)),fontsize=10)
+plt.title(r'$\beta \hbar \omega = {}$'.format(beta),fontsize=10)
 ax.legend(loc='upper center')
 
-
 fig.set_size_inches(3, 3)
-fig.savefig('DW_harm_Tvvl.png',dpi=400,bbox_inches='tight',pad_inches=0.0)
+fig.savefig('Harm_Tl.png',dpi=400,bbox_inches='tight',pad_inches=0.0)
 plt.show()
 
 
