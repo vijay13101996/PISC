@@ -12,17 +12,14 @@ from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr,
 import time
 import pickle
 
-def main(filename,pathname,sysname,lamda,g,times,m,N,nbeads,dt,rngSeed,time_therm,time_relax,qgrid,nsample):
-    dim = 1
-    Tc = lamda*(0.5/np.pi)
-    T = times*Tc    
+def main(filename,pathname,sysname,pes,potkey,T,Tkey,m,N,nbeads,dt,rngSeed,time_therm,time_relax,qgrid,nsample):
+    dim = 2
     beta = 1/T
    
     # Set up the simulation
     rng = np.random.default_rng(rngSeed)
     ens = Ensemble(beta=beta,ndim=dim)
     motion = Motion(dt = dt,symporder=2) 
-    pes = double_well(lamda,g)
     therm = PILE_L(tau0=1.0,pile_lambda=10.0) 
     propa = Symplectic()
     sim = RP_Simulation()
@@ -36,8 +33,8 @@ def main(filename,pathname,sysname,lamda,g,times,m,N,nbeads,dt,rngSeed,time_ther
     pmats[0] = False
 
     # Force grid and Hessian grid
-    fgrid = np.zeros_like(qgrid)
-    hessgrid = np.zeros_like(qgrid)
+    fgrid = np.zeros_like(qgrid) # qgrid is assumed to be a list of tuples
+    hessgrid = np.zeros((len(qgrid), dim, dim))
  
     start_time = time.time()
     for k in range(len(qgrid)):
@@ -56,28 +53,35 @@ def main(filename,pathname,sysname,lamda,g,times,m,N,nbeads,dt,rngSeed,time_ther
         rp = RingPolymer(q=q,p=p,m=m,nmats=1,sgamma=1)
 
         # Bind the simulation object with the various components
-        sim.bind(ens,motion,rng,rp,pes,propa,therm,pes_fort=False)  
+        sim.bind(ens,motion,rng,rp,pes,propa,therm,pes_fort=True,propa_fort=True,transf_fort=True)
         
         # Thermalize the system ensuring that the centroid mode is frozen
         sim.step(ndt=nsteps_therm,mode="nvt",var='pq',RSP=True,pc=False,centmove=False,update_hess=True)
 
-        print('k, q[k]',k, rp.q[0,0,0])
+        print('k, q[k]',k, rp.q[0,:,0])
         
         # Compute the force and Hessian at the centroid mode as an average of 'nsample' samples
         for i in range(nsample):
             sim.step(ndt=nsteps_relax,mode="nvt",var='pq',RSP=True,pc=False,centmove=False,update_hess=True)
-            fgrid[k]+=np.mean(pes.dpot[...,0])  # Centroid force
+            fgrid[k]+=np.mean(pes.dpot[...,0],axis=0)  # Centroid force
             #print('force',pes.dpot[...,0], np.mean(pes.dpot[...,0]))
             #print('rp.q, rp.p',rp.q, rp.p)
             #print('hessian', np.mean(pes.ddpot[:,0,0,0,0]))
-            hessgrid[k]+=np.mean(pes.ddpot[:,0,0,0,0]) #- (np.mean(pes.dpot[...,0])**2) # Centroid Hessian
+            hessian = pes.ddpot[:,:,0,:,0] 
+            hessgrid[k]+= np.mean(hessian,axis=0) #- (np.mean(pes.dpot[...,0])**2) # Centroid Hessian
         #print('time',time.time()-start_time)
 
     fgrid/=nsample
     hessgrid/=nsample
 
-    fname = 'CMD_PMF_{}_inv_harmonic_T_{}Tc_N_{}_nbeads_{}_dt_{}_thermtime_{}_relaxtime_{}_nsample_{}_seed_{}'.format(sysname,times,N,nbeads,dt,time_therm,time_relax,nsample,rngSeed)
+    # Diagonalise the Hessian and store the negative eigenvalue
+    vals, vecs = np.linalg.eigh(hessgrid)
+    vals = np.min(vals,axis=1)
+    lamda = np.sqrt(-vals/m)
+    #print('lamda',lamda)
+    
+    fname = 'CMD_PMF_{}_{}_{}_N_{}_nbeads_{}_dt_{}_thermtime_{}_relaxtime_{}_nsample_{}_seed_{}'.format(sysname,potkey,Tkey,N,nbeads,dt,time_therm,time_relax,nsample,rngSeed)
     store_1D_plotdata(qgrid,fgrid,fname,"{}/Datafiles".format(pathname))
 
-    fname = 'CMD_Hess_{}_inv_harmonic_T_{}Tc_N_{}_nbeads_{}_dt_{}_thermtime_{}_relaxtime_{}_nsample_{}_seed_{}'.format(sysname,times,N,nbeads,dt,time_therm,time_relax,nsample,rngSeed)
-    store_1D_plotdata(qgrid,hessgrid,fname,"{}/Datafiles".format(pathname))
+    fname = 'CMD_Hess_{}_{}_{}_N_{}_nbeads_{}_dt_{}_thermtime_{}_relaxtime_{}_nsample_{}_seed_{}'.format(sysname,potkey,Tkey,N,nbeads,dt,time_therm,time_relax,nsample,rngSeed)
+    store_1D_plotdata(qgrid,vals,fname,"{}/Datafiles".format(pathname))

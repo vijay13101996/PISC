@@ -7,10 +7,11 @@ class double_well(PES):
 		self.lamda = lamda
 		self.g = g
 		
-	def bind(self,ens,rp):
-		super(double_well,self).bind(ens,rp)
+	def bind(self,ens,rp,pes_fort=False,transf_fort=False):
+		super(double_well,self).bind(ens,rp,pes_fort=pes_fort,transf_fort=transf_fort)
 	
 	def potential(self,q):
+		q = q[:,0,:]
 		return -(self.lamda**2/4.0)*q**2 + self.g*q**4 + self.lamda**4/(64*self.g)	
 
 	def dpotential(self,q):

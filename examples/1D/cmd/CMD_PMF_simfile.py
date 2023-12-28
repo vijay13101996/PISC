@@ -4,53 +4,58 @@ import time
 import pickle
 import scipy
 from scipy import interpolate
-import h5py
 import CMD_PMF
 from PISC.utils.mptools import chunks, batching        
 from functools import partial
 import os
 
-def get_var_value(path):
-	filename = "{}/CMD_PMF_simulation_count.dat".format(path)
-	with open(filename, "a+") as f:
-		f.seek(0)
-		val = int(f.read() or 0) + 1
-		f.seek(0)
-		f.truncate()
-		f.write(str(val))
-		return val
+"""
+To do:
+    1. Benchmark the PMF with the classical potential.
+    2. Evaluate the time taken for the 8,16,32 beads simulations.
+    3. Setup simulations on papageno.
+    4. Read through Stuart's emails once again.
+    5. Start work for the 2D case right away. 
+"""
 
-potkey = 'inv_harmonic'
-sysname = 'Selene'
-path = os.path.dirname(os.path.abspath(__file__))
 
-lamda = 0.8
-g = 1/50.0
-times = 1
-m = 0.5
-N = 1000
-dt = 0.01
-time_therm = 20.0
-time_relax = 5.0
-nsample = 5
+def main(nbeads=16,times = 1.0):
+    potkey = 'inv_harmonic'
+    sysname = 'Selene'
+    path = os.path.dirname(os.path.abspath(__file__))
 
-def begin_simulation(nbeads,rngSeed):
-	counter = get_var_value(path)
-	print("This Simulation has been run {} times.".format(counter))
+    lamda = 2.0
+    g = 0.08
+    m = 0.5
 
-	qgrid = np.linspace(0.0,8.0,101)
-	with h5py.File('{}/CMD_PMF_{}_{}.hdf5'.format(path,sysname,potkey), 'a') as f:
-		try:
-			group = f.create_group('Run#{}'.format(counter))		
-		except:
-			pass
-				
-	CMD_PMF.main('{}/CMD_PMF_{}_{}.hdf5'.format(path,sysname,potkey),path,sysname,counter,lamda,g,times,m,N,nbeads,dt,rngSeed,time_therm,time_relax,qgrid,nsample)
+    N = 1000
+    dt = 0.01
+    time_therm = 50.0
+    time_relax = 10.0
+    nsample = 5
 
-# 12 cores for 32 beads, 10 cores for 16 beads, 4 cores for 8 beads and 2 cores for 4 beads.
+    print('nbeads',nbeads)
+    print('Temperature',times,'Tc')
 
-nbeads = 32
-func = partial(begin_simulation, nbeads)
-seeds = range(0,100)
-seed_split = chunks(seeds,12)
-batching(func,seed_split,max_time=1e6)
+    def begin_simulation(nbeads,rngSeed):
+        qgrid = [0.0]#np.linspace(-8.0,8.0,101) 
+        CMD_PMF.main('{}/CMD_PMF_{}_{}.txt'.format(path,sysname,potkey),path,sysname,lamda,g,times,m,N,nbeads,dt,rngSeed,time_therm,time_relax,qgrid,nsample)
+
+    # 12 cores for 32 beads, 10 cores for 16 beads, 4 cores for 8 beads and 2 cores for 4 beads.
+
+    func = partial(begin_simulation, nbeads)
+    seeds = range(0,10)
+    seed_split = chunks(seeds,10)
+    batching(func,seed_split,max_time=1e6)
+
+if __name__ == '__main__':
+    import argparse 
+    parser = argparse.ArgumentParser(description='Run Simulations to get CMD PMF and Hessian in one dimension')
+    parser.add_argument('-nbeads',type=int,help='Number of beads',default=16)
+    parser.add_argument('-times',type=float,help='Temperature in units of Tc',default=1.0)
+    args = parser.parse_args()
+    main(args.nbeads,args.times)
+
+
+
+

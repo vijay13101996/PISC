@@ -137,11 +137,11 @@ class Symplectic(Integrator):
         else:
             self.rp.Mqq+=self.motion.qdt[k]*self.rp.Mpq/self.rp.dynm3[:,:,:,None,None]
     
-    def pq_kstep(self,k,centmove=True):
+    def pq_kstep(self,k,centmove=True,update_hess=False):
         """ Propagation of the coordinates and momenta for one 'k' step (k varies from 0 to order-1) """
         self.B(k,centmove)
         self.b(k)
-        self.A(k)
+        self.A(k,update_hess=update_hess)
 
     def pq_kstep_nosprings(self,k):
         """ Propagation of the coordinates and momenta for one 'k' step when there are no springs """
@@ -179,17 +179,17 @@ class Symplectic(Integrator):
         self.M4(k)
         self.A(k,update_hess=True)
 
-    def pq_step(self,centmove=True):
+    def pq_step(self,centmove=True,update_hess=False):
         """ Propagation of the coordinates and momenta for one full step """
         for k in range(self.motion.order):
-            self.pq_kstep(k,centmove=True)
+            self.pq_kstep(k,centmove=True,update_hess=update_hess)
     
-    def pq_step_RSP(self,centmove=True):
+    def pq_step_RSP(self,centmove=True,update_hess=False):
         """ Propagation of the coordinates and momenta for one full step using 'Reference-System Propagation' """
         if(self.motion.order==2):
             self.B(0,centmove)
             self.rp.RSP_step()
-            self.force_update()
+            self.force_update(update_hess=update_hess)
             self.B(1,centmove)
         else:
             raise ValueError("RSP step only implemented for second order integrator")
