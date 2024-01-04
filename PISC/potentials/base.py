@@ -98,4 +98,9 @@ class PES(object):
 			self.dpot = self.dpotential()
 			self.ddpot = self.ddpotential()
 			self.dpot_cart = self.nmtrans.mats2cart(self.dpot)
-			self.ddpot_cart = self.nmtrans.mats2cart_hessian(self.ddpot)	
+			self.ddpot_cart = self.nmtrans.mats2cart_hessian(self.ddpot)
+        
+        #def plot(self, xmin = -8, xmax = 8, show = True, label = None, marker = '-', color = 'k'):
+            #x = np.linspace(xmin, xmax, 100)
+            #V = [self.potential(xi) for xi in x]
+            

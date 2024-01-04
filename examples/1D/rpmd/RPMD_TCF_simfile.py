@@ -25,7 +25,7 @@ N = 1000
 dt_therm = 0.05
 dt = 0.01
 time_therm = 50.0
-time_total = 5.0
+time_total = 20.0
 
 nbeads = 32
 
@@ -36,7 +36,7 @@ Tkey = 'T_{}'.format(T)#'{}Tc'.format(times)
 corrkey = 'qq_TCF'
 enskey = 'thermal'
 	
-path = os.path.dirname(os.path.abspath(__file__))
+path = '/home/ss3120/PISC/examples/1D/rpmd'#os.path.dirname(os.path.abspath(__file__))
 
 Sim_class = SimUniverse(method,path,sysname,potkey,corrkey,enskey,Tkey)
 Sim_class.set_sysparams(pes,T,m,dim)
@@ -47,7 +47,7 @@ Sim_class.set_runtime(time_therm,time_total)
 
 start_time=time.time()
 func = partial(Sim_class.run_seed)
-seeds = range(1000)
+seeds = range(100)
 seed_split = chunks(seeds,10)
 
 param_dict = {'Temperature':Tkey,'CType':corrkey,'Ensemble':enskey,'m':m,\
