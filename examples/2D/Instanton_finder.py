@@ -8,7 +8,7 @@ from PISC.engine.instools import find_minima, find_saddle, find_instanton, find_
 import time
 from mpl_toolkits.mplot3d import Axes3D
 from PISC.utils.nmtrans import FFT
-
+import os
 ### Potential parameters
 m=0.5
 
@@ -22,13 +22,13 @@ if(1):
 	D = 3*Vb
 	alpha = 0.382
 
-	z = 1.0
+	z = 0.0
 
 	pes = quartic_bistable(alpha,D,lamda,g,z)
 
 	# Simulation parameters
 	Tc = lamda*0.5/np.pi
-	times = 0.5#0.95
+	times = 0.95
 	T_au = times*Tc
 	
 	potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
@@ -70,7 +70,6 @@ if(0): #Four well potential
 	ngrid = 200
 	ngridx = ngrid
 	ngridy = ngrid
-
 
 beta = 1.0/T_au 
 

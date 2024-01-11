@@ -11,6 +11,7 @@ class harmonic(PES):
 		super(harmonic,self).bind(ens,rp)
 
 	def potential(self,q):
+		q = q[:,0,:]
 		return (self.m*self.omega**2/2.0)*q**2
 
 	def dpotential(self,q):

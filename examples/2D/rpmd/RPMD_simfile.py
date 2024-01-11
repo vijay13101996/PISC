@@ -125,9 +125,9 @@ qlist = np.array(qlist)
     
 ### ------------------------------------------------------------------------------
 
-pes_fort=False#True
-propa_fort=False#True
-transf_fort=False#True
+pes_fort=True
+propa_fort=True
+transf_fort=True
 
 Sim_class = SimUniverse(method,path,sysname,potkey,corrkey,enskey,Tkey)
 Sim_class.set_sysparams(pes,T,m,dim)

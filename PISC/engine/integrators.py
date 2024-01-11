@@ -85,7 +85,7 @@ class Symplectic(Integrator):
     def Bv(self,k,centmove=True):
         """ Propagation of momenta in 'variation' mode """
         # Fortran mode not enabled here
-        hess = self.pes.ddpot.swapaxes(2,3).reshape(-1,self.pes.ndim*self.rp.nbeads,self.rp.ndim*self.rp.nbeads)
+        hess = self.pes.ddpot.reshape(-1,self.pes.ndim*self.rp.nbeads,self.rp.ndim*self.rp.nbeads)
         dq=self.rp.dq.reshape(-1,self.pes.ndim*self.rp.nbeads)
         dpc= np.einsum('ijk,ik->ij',hess,dq) #Check once again!
         dpc=dpc.reshape(-1,self.pes.ndim,self.rp.nbeads)
@@ -97,7 +97,7 @@ class Symplectic(Integrator):
     def bv(self,k):
         """ Propagation of momenta in 'variation' mode due to spring potential """
         # Fortran mode not enabled here
-        hess = self.rp.ddpot.swapaxes(2,3).reshape(-1,self.rp.ndim*self.rp.nbeads,self.rp.ndim*self.rp.nbeads)
+        hess = self.rp.ddpot.reshape(-1,self.rp.ndim*self.rp.nbeads,self.rp.ndim*self.rp.nbeads)
         dq=self.rp.dq.reshape(-1,self.pes.ndim*self.rp.nbeads)
         dpc= np.einsum('ijk,ik->ij',hess,dq) #Check once again!
         dpc=dpc.reshape(-1,self.pes.ndim,self.rp.nbeads)

@@ -53,7 +53,7 @@ class RP_Simulation(Simulation):
         self.propa.pq_step(update_hess=update_hess)
         self.rp.mats2cart()
 
-    def NVE_pqstep_RSP(self):
+    def NVE_pqstep_RSP(self,update_hess=False):
         """ Constant energy step to propagate position and momentum using RSP algorithm """
         self.propa.pq_step_RSP(update_hess=update_hess)
         self.rp.mats2cart() 

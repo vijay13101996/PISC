@@ -10,7 +10,10 @@ from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr,
 import time
 from copy import deepcopy
 
-def generate_rp(pathname,m,dim,N,nbeads,ens,pes,rng,time_relax,dt_relax,potkey,rngSeed,E,qlist,plist=None,filt_func=None,folder_name='Datafiles',fort=False):
+def generate_rp(pathname,m,dim,N,nbeads,ens,pes,rng,time_relax,dt_relax,potkey,rngSeed,E,qlist,plist=None,filt_func=None,folder_name='Datafiles',
+    pes_fort=False,
+    propa_fort=False,
+    transf_fort=False):
 	index_arr = rng.choice(len(qlist),N)  # Choose N points at random from the qlist
 	qcart = np.zeros((N,dim,nbeads))
 	pcart = np.zeros((N,dim,nbeads))
@@ -47,7 +50,7 @@ def generate_rp(pathname,m,dim,N,nbeads,ens,pes,rng,time_relax,dt_relax,potkey,r
 	propa.bind(ens, motion, rp, pes, rng, therm)
 
 	sim = RP_Simulation()
-	sim.bind(ens,motion,rng,rp,pes,propa,therm,fort=fort)
+	sim.bind(ens,motion,rng,rp,pes,propa,therm, pes_fort=pes_fort, propa_fort=propa_fort, transf_fort=transf_fort)
 	start_time = time.time()
 
 	nthermsteps = int(time_relax/motion.dt)
