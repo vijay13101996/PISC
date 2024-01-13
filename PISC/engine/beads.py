@@ -71,6 +71,7 @@ class RingPolymer(object):
         freqs=None,
         mode="rp",
         nmats=None,
+        qdev_eps=1e-4,
     ):
         if qcart is None:
             if p is not None:
@@ -123,7 +124,17 @@ class RingPolymer(object):
         else:
             self.dq = None
             self.dp = None 
-        
+
+        """
+        Create variables qe,qme, qecart,qmecart default set to None
+        Also define initial deviation 
+        """
+        self.qdev = qdev_eps
+        self.qe = None
+        self.qecart = None
+        self.qme = None
+        self.qmecart = None
+
         self.m = m
         self.mode = mode
         if Mpp is None:
@@ -198,6 +209,16 @@ class RingPolymer(object):
         elif self.dq is not None:
             self.dqcart = self.nmtrans.mats2cart(self.dq)
             self.dpcart = self.nmtrans.mats2cart(self.dp)
+
+        if self.qe is not None:
+            self.qecart = self.nmtrans.mats2cart(self.qe)
+        elif self.qecart is not None:
+            self.qe = self.nmtrans.cart2mats(self.qecart)
+
+        if self.qme is not None:
+            self.qmecart = self.nmtrans.mats2cart(self.qme)
+        elif self.qmecart is not None:
+            self.qme = self.nmtrans.cart2mats(self.qmecart)
 
         self.m3 = np.ones_like(self.q) * self.m
         self.sqm3 = np.sqrt(self.m3)
@@ -415,6 +436,10 @@ class RingPolymer(object):
             if self.dq is not None:
                 self.dqcart[:] = self.nmtrans.mats2cart(self.dq)
                 self.dpcart[:] = self.nmtrans.mats2cart(self.dp)
+            if self.qe is not None:
+                self.qecart[:] = self.nmtrans.mats2cart(self.qe)
+            if self.qme is not None:
+                self.qmecart[:] = self.nmtrans.mats2cart(self.qme)
         
         # If dq,dp are not None, convert them too
 
@@ -432,6 +457,10 @@ class RingPolymer(object):
             if self.dqcart is not None:
                 self.dq[:] = self.nmtrans.cart2mats(self.dqcart,fortran=fortran)
                 self.dp[:] = self.nmtrans.cart2mats(self.dpcart,fortran=fortran)
+            if self.qe is not None:
+                self.qe[:] = self.nmtrans.cart2mats(self.qecart,fortran=fortran)
+            if self.qme is not None:
+                self.qme[:] = self.nmtrans.cart2mats(self.qmecart,fortran=fortran)
             
         # If dqcart,dpcart are not None, convert them too
 

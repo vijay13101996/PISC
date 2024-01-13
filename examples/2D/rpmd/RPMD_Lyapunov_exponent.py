@@ -11,7 +11,7 @@ from PISC.engine.ensemble import Ensemble
 from PISC.engine.motion import Motion
 from PISC.engine.thermostat import PILE_L
 from PISC.engine.simulation import RP_Simulation
-from PISC.engine.integrators import Symplectic_order_II, Symplectic_order_IV
+from PISC.engine.integrators import Symplectic
 from PISC.engine.beads import RingPolymer
 from PISC.utils.nmtrans import FFT
 import os
@@ -133,7 +133,7 @@ if(0):
 		rng = np.random.default_rng(rngSeed)
 		ens = Ensemble(beta=1/T,ndim=dim)
 		motion = Motion(dt=dt,symporder=2)#4
-		propa = Symplectic_order_II()#IV
+		propa = Symplectic()
 		rp=RingPolymer(qcart=qcart,m=m)
 		rp.bind(ens,motion,rng)
 		therm = PILE_L(tau0=1.0,pile_lambda=100.0)#only important due to initalization 
@@ -179,7 +179,7 @@ for times in T_arr:
 	sim=RP_Simulation()
 	ens = Ensemble(beta=1/T,ndim=dim)
 	motion = Motion(dt=dt,symporder=2)#4
-	propa = Symplectic_order_II()#IV
+	propa = Symplectic()#IV
 	rp=RingPolymer(pcart=pcart,qcart=qcart,dp=dp,dq=dq,m=m)
 	rp.bind(ens,motion,rng)
 	therm = PILE_L(tau0=1.0,pile_lambda=100.0)#only important due to initalization 
