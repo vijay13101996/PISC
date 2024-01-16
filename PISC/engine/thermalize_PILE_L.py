@@ -120,3 +120,5 @@ def thermalize_rp(
             ),
             "{}/{}".format(pathname, folder_name),
         )
+
+    return qcart, pcart

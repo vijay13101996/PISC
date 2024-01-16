@@ -1,6 +1,6 @@
 import numpy as np
 import PISC
-from PISC.engine.integrators import Symplectic_order_II, Symplectic_order_IV
+from PISC.engine.integrators import Symplectic
 from PISC.engine.beads import RingPolymer
 from PISC.engine.ensemble import Ensemble
 from PISC.engine.motion import Motion
@@ -52,7 +52,7 @@ def find_minima(m,D,alpha,lamda,g,z):
 	pes = quartic_bistable(alpha,D,lamda,g,z)
 	therm = PILE_L(tau0=0.1,pile_lambda=100.0) 
 
-	propa = Symplectic_order_II()
+	propa = Symplectic()
 		
 	sim = RP_Simulation()
 

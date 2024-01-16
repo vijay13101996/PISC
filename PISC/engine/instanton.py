@@ -48,7 +48,7 @@ class inst(object):
 	
 	def flatten_hess(self,hess):
 		# Rearranges the Hessian matrix to be consistent with the ordering [x1,x2,...xN,y1,y2,...yN]
-		arr = hess.swapaxes(2,3).reshape(len(hess)*self.ndim*self.nbeads,len(hess)*self.ndim*self.nbeads)
+		arr = hess.reshape(len(hess)*self.ndim*self.nbeads,len(hess)*self.ndim*self.nbeads)
 		return arr		
 	
 	def diag_hess(self):

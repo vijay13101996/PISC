@@ -8,33 +8,61 @@ import CMD_PMF
 import os
 from PISC.utils.readwrite import read_1D_plotdata
 
-lamda = 0.8
-g = 1/50.0
-times = 0.9
+
 m = 0.5
+    
+lamda = 2.0
+g = 0.08
+Vb = lamda**4/(64*g)
+
+alpha = 0.382
+D = 3*Vb
+
+z = 1.0
+ 
+potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
+
+nbeads=32
+
+times = 0.9
+Tc = lamda*(0.5/np.pi)
+T = times*Tc    
+Tkey = 'T_{}Tc'.format(times)
+
 N = 1000
-nbeads = 32
 dt = 0.01
-rngSeed = 2
 time_therm = 50.0
 time_relax = 10.0
 nsample = 5
-    
-qgrid = np.linspace(0.0,8.0,11)
-potkey = 'inv_harmonic'
 
 path = os.path.dirname(os.path.abspath(__file__))
 datapath = '{}/Datafiles'.format(path)
 
 if(1):
-    keyword1 = 'CMD_Hess'
-    keyword2 = 'nbeads_{}'.format(nbeads)
+    for times in [0.7,0.71,0.725,0.75,0.8,0.85,0.9,0.95]:
+        keywords = ['CMD_Hess','nbeads_{}'.format(nbeads), 'T_{}Tc'.format(times), potkey]
+        flist = []
 
-    flist = []
+        for fname in os.listdir(datapath):
+            if all(key in fname for key in keywords):
+                flist.append(fname)
+                #print(fname)
 
-    #for fname in os.listdir(datapath):
-    #    if keyword1 in fname and keyword2 in fname:
-    #        flist.append(fname)
+        data = read_1D_plotdata('{}/{}'.format(datapath,flist[0]))
+
+        for f in flist[1:]:
+            data+= read_1D_plotdata('{}/{}'.format(datapath,f))
+        
+        data/=len(flist)
+        lamda= np.sqrt(-data[2]/m)
+
+        print('times, hess, lamda', times, data[2],lamda)
+        #plt.scatter(data[:,1],data[:,1])
+        plt.scatter(times,lamda)
+    plt.show()
+
+    exit()
+
 
     for times in [0.6,0.7,0.8]:#,0.9,1.0]:#,5.0]:
         f = 'CMD_Hess_Selene_inv_harmonic_T_{}Tc_N_{}_nbeads_{}_dt_{}_thermtime_{}_relaxtime_{}_nsample_{}_seed_{}.txt'.format(times,N,nbeads,dt,time_therm,time_relax,nsample,rngSeed)

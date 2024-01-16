@@ -48,14 +48,14 @@ class RP_Simulation(Simulation):
         super(RP_Simulation,self).bind(ens,motion,rng,rp,pes,propa,therm,
             pes_fort=pes_fort, propa_fort=propa_fort, transf_fort=transf_fort)
         
-    def NVE_pqstep(self):
+    def NVE_pqstep(self,update_hess=False):
         """ Constant energy step to propagate position and momentum """
-        self.propa.pq_step()
+        self.propa.pq_step(update_hess=update_hess)
         self.rp.mats2cart()
 
-    def NVE_pqstep_RSP(self):
+    def NVE_pqstep_RSP(self,update_hess=False):
         """ Constant energy step to propagate position and momentum using RSP algorithm """
-        self.propa.pq_step_RSP()
+        self.propa.pq_step_RSP(update_hess=update_hess)
         self.rp.mats2cart() 
             
     def NVE_Monodromystep(self):
@@ -68,17 +68,17 @@ class RP_Simulation(Simulation):
         self.propa.var_step()
         self.rp.mats2cart()
     
-    def NVT_pqstep(self,pc,centmove=True):
+    def NVT_pqstep(self,pc,centmove=True,update_hess=False):
         """ Constant temperature step to propagate position and momentum """
         self.propa.O(pc)
-        self.propa.pq_step(centmove)
+        self.propa.pq_step(centmove,update_hess=update_hess)
         self.propa.O(pc)
         self.rp.mats2cart()
 
-    def NVT_pqstep_RSP(self,pc,centmove=True):
+    def NVT_pqstep_RSP(self,pc,centmove=True,update_hess=False):
         """ Constant temperature step to propagate position and momentum using RSP algorithm """
         self.propa.O(pc)
-        self.propa.pq_step_RSP(centmove)
+        self.propa.pq_step_RSP(centmove,update_hess=update_hess)
         self.propa.O(pc)
         self.rp.mats2cart()
 
@@ -99,16 +99,16 @@ class RP_Simulation(Simulation):
         self.propa.O(pc)
         self.rp.mats2cart()
 
-    def step(self, ndt=1, mode="nvt",var='pq',RSP=False,pc=None,centmove=True):
+    def step(self, ndt=1, mode="nvt",var='pq',RSP=False,pc=None,centmove=True,update_hess=False):
         """ Propagate the dynamics of the system for ndt steps """
         if mode == "nve":
             if(var=='pq'):
                 if RSP is False:
                     for i in range(ndt):
-                        self.NVE_pqstep()
+                        self.NVE_pqstep(update_hess=update_hess)
                 else:
                     for i in range(ndt):
-                        self.NVE_pqstep_RSP()
+                        self.NVE_pqstep_RSP(update_hess=update_hess)
             elif(var=='monodromy'):
                 for i in range(ndt):
                     self.NVE_Monodromystep()
@@ -119,10 +119,10 @@ class RP_Simulation(Simulation):
             if(var=='pq'):
                 if RSP is False:
                     for i in range(ndt):
-                        self.NVT_pqstep(pc,centmove)
+                        self.NVT_pqstep(pc,centmove,update_hess=update_hess)
                 else:
                     for i in range(ndt):
-                        self.NVT_pqstep_RSP(pc,centmove)
+                        self.NVT_pqstep_RSP(pc,centmove,update_hess=update_hess)
             elif(var=='monodromy'):
                 for i in range(ndt):
                     self.NVT_Monodromystep(pc)
