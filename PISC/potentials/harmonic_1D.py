@@ -7,8 +7,8 @@ class harmonic(PES):
 		self.omega = omega
 		self.m = m
 		
-	def bind(self,ens,rp):
-		super(harmonic,self).bind(ens,rp)
+	def bind(self,ens,rp,pes_fort=False,transf_fort=False):
+		super(harmonic,self).bind(ens,rp,pes_fort=pes_fort,transf_fort=transf_fort)
 
 	def potential(self,q):
 		q = q[:,0,:]

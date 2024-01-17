@@ -23,17 +23,13 @@ def main(filename,pathname,sysname,lamda,g,times,m,N,nbeads,dt,rngSeed,time_ther
     ens = Ensemble(beta=beta,ndim=dim)
     motion = Motion(dt = dt,symporder=2) 
     pes = double_well(lamda,g)
-    therm = PILE_L(tau0=1.0,pile_lambda=10.0) 
+    therm = PILE_L(tau0=1.0,pile_lambda=1.0) 
     propa = Symplectic()
     sim = RP_Simulation()
 
     # Set up the simulation parameters
     nsteps_therm = int(time_therm/dt)
     nsteps_relax = int(time_relax/dt)
-
-    # Freeze the centroid mode to compute the PMF
-    pmats = np.array([True for i in range(nbeads)])
-    pmats[0] = False
 
     # Force grid and Hessian grid
     fgrid = np.zeros_like(qgrid)
@@ -56,12 +52,13 @@ def main(filename,pathname,sysname,lamda,g,times,m,N,nbeads,dt,rngSeed,time_ther
         rp = RingPolymer(q=q,p=p,m=m,nmats=1,sgamma=1)
 
         # Bind the simulation object with the various components
-        sim.bind(ens,motion,rng,rp,pes,propa,therm,pes_fort=False)  
+        sim.bind(ens,motion,rng,rp,pes,propa,therm,pes_fort=False,propa_fort=True,transf_fort=True)  
         
         # Thermalize the system ensuring that the centroid mode is frozen
         sim.step(ndt=nsteps_therm,mode="nvt",var='pq',RSP=True,pc=False,centmove=False,update_hess=True)
 
-        print('k, q[k]',k, rp.q[0,0,0])
+        if(rngSeed==0):
+            print('k, q[k]',k, rp.q[0,0,0])
         
         # Compute the force and Hessian at the centroid mode as an average of 'nsample' samples
         for i in range(nsample):
@@ -76,8 +73,11 @@ def main(filename,pathname,sysname,lamda,g,times,m,N,nbeads,dt,rngSeed,time_ther
     fgrid/=nsample
     hessgrid/=nsample
 
-    fname = 'CMD_PMF_{}_inv_harmonic_T_{}Tc_N_{}_nbeads_{}_dt_{}_thermtime_{}_relaxtime_{}_nsample_{}_seed_{}'.format(sysname,times,N,nbeads,dt,time_therm,time_relax,nsample,rngSeed)
+    print('grid',qgrid)
+
+    fname = 'CMD_PMF_LONGER_{}_inv_harmonic_T_{}Tc_N_{}_nbeads_{}_dt_{}_thermtime_{}_relaxtime_{}_nsample_{}_seed_{}'.format(sysname,times,N,nbeads,dt,time_therm,time_relax,nsample,rngSeed)
     store_1D_plotdata(qgrid,fgrid,fname,"{}/Datafiles".format(pathname))
 
-    fname = 'CMD_Hess_{}_inv_harmonic_T_{}Tc_N_{}_nbeads_{}_dt_{}_thermtime_{}_relaxtime_{}_nsample_{}_seed_{}'.format(sysname,times,N,nbeads,dt,time_therm,time_relax,nsample,rngSeed)
+    print('grid 2',qgrid)
+    fname = 'CMD_Hess_LONGER_{}_inv_harmonic_T_{}Tc_N_{}_nbeads_{}_dt_{}_thermtime_{}_relaxtime_{}_nsample_{}_seed_{}'.format(sysname,times,N,nbeads,dt,time_therm,time_relax,nsample,rngSeed)
     store_1D_plotdata(qgrid,hessgrid,fname,"{}/Datafiles".format(pathname))

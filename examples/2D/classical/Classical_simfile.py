@@ -37,10 +37,10 @@ time_total = 5.0#5.0
 
 method = 'Classical'
 potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
-sysname = 'Selene'		
+sysname = 'Papageno'		
 Tkey = 'T_{}Tc'.format(times)
 corrkey = 'OTOC'
-enskey = 'thermal'
+enskey = 'const_q'#'thermal'
 	
 path = os.path.dirname(os.path.abspath(__file__))
 ### -----------------------------------------------------------------------------
@@ -77,8 +77,8 @@ Sim_class.set_runtime(time_therm,time_total)
 
 start_time=time.time()
 func = partial(Sim_class.run_seed)
-seeds = range(100,1000)
-seed_split = chunks(seeds,10)
+seeds = range(100)
+seed_split = chunks(seeds,20)
 
 param_dict = {'Temperature':Tkey,'CType':corrkey,'m':m,\
 	'therm_time':time_therm,'time_total':time_total,'dt':dt,'dt_therm':dt_therm}

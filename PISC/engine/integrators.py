@@ -49,12 +49,15 @@ class Symplectic(Integrator):
         self.therm.thalfstep(pmats,fort=self.fort)
 
 
-    def A(self,k,update_hess=False):
+    def A(self,k,centmove=True,update_hess=False):
         """ Propagation of coordinate """
         if(self.fort):
             integrator.a_f(self.rp.q_f,self.rp.p_f,self.motion.qdt[k],self.rp.dynm3_f)
         else:
-            self.rp.q+=self.motion.qdt[k]*self.rp.p/self.rp.dynm3
+            if centmove:
+                self.rp.q+=self.motion.qdt[k]*self.rp.p/self.rp.dynm3
+            else:
+                self.rp.q[...,1:]+=self.motion.qdt[k]*self.rp.p[...,1:]/self.rp.dynm3[...,1:]
         self.force_update(fortran=self.fort,update_hess=update_hess)
 
     def B(self,k,centmove=True):
@@ -141,7 +144,7 @@ class Symplectic(Integrator):
         """ Propagation of the coordinates and momenta for one 'k' step (k varies from 0 to order-1) """
         self.B(k,centmove)
         self.b(k)
-        self.A(k,update_hess=update_hess)
+        self.A(k,centmove,update_hess=update_hess)
 
     def pq_kstep_nosprings(self,k):
         """ Propagation of the coordinates and momenta for one 'k' step when there are no springs """
@@ -182,7 +185,7 @@ class Symplectic(Integrator):
     def pq_step(self,centmove=True,update_hess=False):
         """ Propagation of the coordinates and momenta for one full step """
         for k in range(self.motion.order):
-            self.pq_kstep(k,centmove=True,update_hess=update_hess)
+            self.pq_kstep(k,centmove=centmove,update_hess=update_hess)
     
     def pq_step_RSP(self,centmove=True,update_hess=False):
         """ Propagation of the coordinates and momenta for one full step using 'Reference-System Propagation' """
