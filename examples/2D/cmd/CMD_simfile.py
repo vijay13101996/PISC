@@ -7,32 +7,26 @@ from PISC.utils.mptools import chunks, batching
 from PISC.potentials.double_well_potential import double_well
 import os 
 
-dim=2
+dim=1
+lamda = 1.5#0.8
+g = lamda**2/32#1/50.0
 
-alpha = 0.255
-D = 10.0 
-
-lamda = 1.5
-g = 0.035
-
-z = 0.5
- 
-pes = quartic_bistable(alpha,D,lamda,g,z)
+pes = double_well(lamda,g)
 
 Tc = 0.5*lamda/np.pi
-times = 0.7
+times = 1
 T = times*Tc
 
 m = 0.5
 N = 1000
 dt_therm = 0.01
 dt = 0.005
-time_therm = 40.0
+time_therm = 20.0
 time_total = 10.0
 
-potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
+potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
 sysname = 'Selene'		
-Tkey = '{}Tc'.format(times)
+Tkey = 'T_{}Tc'.format(times)
 corrkey = 'OTOC'
 	
 path = os.path.dirname(os.path.abspath(__file__))

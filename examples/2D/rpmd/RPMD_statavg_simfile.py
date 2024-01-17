@@ -5,55 +5,44 @@ import pickle
 import multiprocessing as mp
 from functools import partial
 from PISC.utils.mptools import chunks, batching
-from PISC.potentials.double_well_potential import double_well
-from PISC.potentials.Quartic import quartic
+from PISC.potentials import quartic_bistable, Harmonic_oblique
 from PISC.engine.PI_sim_core import SimUniverse
 import os
 
-def gauss_q(q,p,sigma=2.0,mu=0.0):
-	return np.sum(np.exp(-(q-mu)**2/(2*sigma**2))/(sigma*(np.sqrt(2*np.pi))), axis=1) 
-
-def q(q,p):
-	return q[:,0,:]
-
-def p2(q,p):
-	return p[:,0,:]**2/2
-
-dim=1
+dim=2
+m = 0.5
 
 lamda = 2.0
 g = 0.08
 Vb = lamda**4/(64*g)
-minima = lamda/np.sqrt(8*g)
-print('Vb, minima', Vb,minima)
 
-pes = double_well(lamda,g)
+alpha = 0.382
+D = 3*Vb
+
+z = 2.0
+ 
+pes = quartic_bistable(alpha,D,lamda,g,z)
+
+potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
 
 Tc = 0.5*lamda/np.pi
 times = 0.95
 T = times*Tc
+Tkey = 'T_{}Tc'.format(times)
 
-m = 0.5
 N = 1000
 dt_therm = 0.05
 dt = 0.002
 time_therm = 50.0
 time_total = 5.0
-
-nbeads = 16
-sigma = 0.21
-mu = minima
+nbeads = 1
 
 method = 'RPMD'
-potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
 sysname = 'Papageno'		
 Tkey = 'T_{}Tc'.format(times)#'{}Tc'.format(times)
 corrkey = 'stat_avg'
 enskey = 'const_q'#'thermal'
 
-sigmakey = 'sigma_{}'.format(sigma)
-mukey = 'mu_{}'.format(mu)
-kwlist=[sigmakey,mukey]
 path = os.path.dirname(os.path.abspath(__file__))
 
 def main():
@@ -65,7 +54,7 @@ def main():
 	Sim_class.set_runtime(time_therm,time_total)
 
 	start_time=time.time()
-	func = partial(Sim_class.run_seed,op='Hess')#partial(gauss_q,sigma=sigma,mu=mu))
+	func = partial(Sim_class.run_seed,op='Hess')
 	seeds = range(1)
 	seed_split = chunks(seeds,20)
 

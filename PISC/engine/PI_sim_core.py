@@ -13,7 +13,9 @@ from PISC.utils.readwrite import (
 )
 from PISC.utils.tcf_fft import gen_tcf, gen_2pt_tcf, gen_R2_tcf, gen_R3_tcf
 from PISC.engine.thermalize_PILE_L import thermalize_rp
+from PISC.engine.gen_stable_manifold import generate_stable_manifold_rp
 from PISC.engine.gen_mc_ensemble import generate_rp
+from PISC.engine.gen_const_qp_ensemble import thermalize_rp_const_qp
 from PISC.utils.time_order import reorder_time
 
 debug = False
@@ -148,6 +150,10 @@ class SimUniverse(object):
         qlist=None,
         plist=None,
         filt_func=None,
+        Am=0.0,
+        lamda=1.0,
+        Q0 = 0.0,
+        P0 = 0.0
     ):
         """
         Set ensemble parameters
@@ -157,6 +163,10 @@ class SimUniverse(object):
         qlist       : List of positions to initialize the RP ensemble
         plist       : List of momenta to initialize the RP ensemble
         filt_func   : Filter function to be used for 'filtering' ensemble
+        lamda       : Parameter that defines the stable manifold (around a saddle point)
+        Am          : Position along the stable manifold where the initial conditions are generated
+        Q0          : Centroid position (for const_qp ensemble)
+        P0          : Centroid momentum (for const_qp ensemble)
         """
         self.tau0 = tau0
         self.pile_lambda = pile_lambda
@@ -164,6 +174,10 @@ class SimUniverse(object):
         self.qlist = qlist
         self.plist = plist
         self.filt_func = filt_func
+        self.lamda = lamda
+        self.Am = Am
+        self.Q0 = Q0
+        self.P0 = P0
 
     def gen_ensemble(self, ens, rng, rngSeed):
         """
@@ -205,6 +219,46 @@ class SimUniverse(object):
                 "{}/{}".format(self.pathname, self.folder_name),
             )
             return qcart, pcart
+
+        elif self.enskey == "stable_manifold":
+            generate_stable_manifold_rp(
+                self.pathname,
+                self.m,
+                self.dim,
+                self.N,
+                self.nbeads,
+                ens,
+                self.pes,
+                rng,
+                self.time_ens,
+                self.dt_ens,
+                self.potkey,
+                rngSeed,
+                Am=self.Am,
+                lamda=self.lamda,
+                qlist=self.qlist,
+                tau0=self.tau0,
+                pile_lambda=self.pile_lambda,
+                folder_name=self.folder_name,
+                store_thermalization=True,
+                propa_fort=self.propa_fort,
+                pes_fort=self.pes_fort,
+                transf_fort=self.transf_fort,
+            )
+            qcart = read_arr(
+                "Stable_manifold_rp_qcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}".format(
+                    self.N, self.nbeads, ens.beta, self.potkey, rngSeed
+                ),
+                "{}/{}".format(self.pathname, self.folder_name),
+            )
+            pcart = read_arr(
+                "Stable_manifold_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}".format(
+                    self.N, self.nbeads, ens.beta, self.potkey, rngSeed
+                ),
+                "{}/{}".format(self.pathname, self.folder_name),
+            )
+            return qcart, pcart
+
         elif self.enskey == "mc":
             # Fortran mode to be enabled here
             generate_rp(
@@ -240,6 +294,49 @@ class SimUniverse(object):
             )
             return qcart, pcart
 
+        elif  "const" in self.enskey:
+            qp = False
+            if "qp" in self.enskey:
+                qp = True
+            qpkey = "qp" if qp else "q"
+            thermalize_rp_const_qp(
+                self.pathname,
+                self.m,
+                self.dim,
+                self.N,
+                self.nbeads,
+                ens,
+                self.pes,
+                rng,
+                self.time_ens,
+                self.dt_ens,
+                self.potkey,
+                rngSeed,
+                tau0=self.tau0,
+                pile_lambda=self.pile_lambda,
+                folder_name="Datafiles",
+                store_thermalization=True,
+                pes_fort=False,
+                propa_fort=False,
+                transf_fort=False,
+                qp=qp,
+                Q0 = self.Q0,
+                P0 = self.P0
+            )
+            qcart = read_arr(
+                    "Const_{}_rp_qcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}".format(
+                        qpkey, self.N, self.nbeads, ens.beta, self.potkey, rngSeed
+                    ),
+                    "{}/{}".format(self.pathname, self.folder_name),
+                )
+            pcart = read_arr(
+                    "Const_{}_rp_pcart_N_{}_nbeads_{}_beta_{}_{}_seed_{}".format(
+                        qpkey, self.N, self.nbeads, ens.beta, self.potkey, rngSeed
+                    ),
+                    "{}/{}".format(self.pathname, self.folder_name),
+                )
+            return qcart, pcart
+
     def run_OTOC(self, sim, single=False):
         """ 
         Run simulation to compute out-of-time-order correlation function
@@ -248,19 +345,35 @@ class SimUniverse(object):
 
         Note: By default we assume A = x and B = p_x, so that 
         C_sc(t) = < |Mqq(t)|^2 > 
+
+        sim   : Simulation object
+        single: Boolean to specify whether we compute the single commutator or the double commutator
+
         """
         tarr = []
-        Mqqarr = []
+        Marr = [] # List to record the monodromy variables
         if self.method == "CMD":
             stride = self.gamma
             dt = self.dt / self.gamma
-            nsteps = int(2 * self.time_run / dt)
+            nsteps = int(self.time_run / dt) 
+            sim.therm = PILE_L(tau0=self.tau0, pile_lambda=1.0) 
+            sim.motion = Motion(dt=dt, symporder=sim.motion.order) # reinitialise motion object with new dt
+            sim.bind(sim.ens, sim.motion, sim.rng, sim.rp, sim.pes, sim.propa, sim.therm)
             for i in range(nsteps):
                 sim.step(mode="nvt", var="monodromy", pc=False)
                 if i % stride == 0:
-                    Mqq = np.mean(abs(sim.rp.Mqq[:, 0, 0, 0, 0] ** 2))
+                    if (self.corrkey=='OTOC_qq' or self.corrkey=='OTOC'):
+                        M = np.mean(abs(sim.rp.Mqq[:, 0, 0, 0, 0] ** 2))
+                    elif (self.corrkey=='OTOC_ApAp'):
+                        Mpp = sim.rp.Mpp[:, 0, 0, 0, 0]
+                        Mpq = sim.rp.Mpq[:, 0, 0, 0, 0]
+                        Mqp = sim.rp.Mqp[:, 0, 0, 0, 0]
+                        Mqq = sim.rp.Mqq[:, 0, 0, 0, 0]
+                        M = Mpp + Mqq + self.rp.dynm3*lamda*Mqp + Mpq/(self.rp.dynm3*lamda)
+                        M = np.mean(abs(M**2))
                     tarr.append(sim.t)
-                    Mqqarr.append(Mqq)
+                    Marr.append(M)
+
         else:
             dt = self.dt
             nsteps = int(self.time_run / dt)
@@ -270,12 +383,26 @@ class SimUniverse(object):
                     Mqq = np.mean(
                         sim.rp.Mqp[:, 0, 0, 0, 0]
                     )  # Change notations when required!
-                else:
-                    Mqq = np.mean(abs(sim.rp.Mqq[:, 0, 0, 0, 0] ** 2))
-                tarr.append(sim.t)
-                Mqqarr.append(Mqq)
+                    tarr.append(sim.t)
+                    Marr.append(Mqq)
+                else: 
+                    if (self.corrkey=='OTOC_qq' or self.corrkey=='OTOC'):
+                        M = np.mean(abs(sim.rp.Mqq[:, 0, 0, 0, 0] ** 2))
+                    elif (self.corrkey=='OTOC_ApAp'):
+                        Mpp = sim.rp.Mpp[:, 0, 0, 0, 0]
+                        Mpq = sim.rp.Mpq[:, 0, 0, 0, 0]
+                        Mqp = sim.rp.Mqp[:, 0, 0, 0, 0]
+                        Mqq = sim.rp.Mqq[:, 0, 0, 0, 0]
+                        #Note: Vectorized mass should be used here when the masses
+                        #are different for different beads. It is suppressed here for
+                        #making the code quicker.
+                        pref = sim.rp.dynm3[0,0,0]*self.extparam['lamda']
+                        M = 0.5*(Mpp + Mqq + Mpq + pref*Mqp + Mpq/pref)
+                        M = np.mean(abs(M**2))
+                    tarr.append(sim.t)
+                    Marr.append(M)
 
-        return tarr, Mqqarr
+        return tarr, Marr
 
     def run_R2(self, sim, A="p", B="p", C="q", seed_number=None):
         r"""Run simulation to compute second order (sym and asym) response functions
@@ -545,16 +672,18 @@ class SimUniverse(object):
         parr = []
         if self.method == "CMD":
             stride = self.gamma
-            dt = self.dt / self.gamma
-            nsteps = int(self.time_run / dt)
+            dt = self.dt / self.gamma # Smaller time steps required because higher normal modes move faster
+            nsteps = int(2*self.time_run / dt) + 1
+            sim.motion = Motion(dt=dt, symporder=sim.motion.order) # reinitialise motion object with new dt
+            sim.bind(sim.ens, sim.motion, sim.rng, sim.rp, sim.pes, sim.propa, sim.therm)
             for i in range(nsteps):
-                sim.step(mode="nvt", var="pq", pc=False)
                 if i % stride == 0:
                     q = sim.rp.q[:, :, 0].copy()
                     p = sim.rp.p[:, :, 0].copy()
                     tarr.append(sim.t)
                     qarr.append(q)
                     parr.append(p)
+                sim.step(mode="nvt", var="pq", pc=False)
         else:
             dt = self.dt
             nsteps = int(2 * self.time_run / dt) + 1
@@ -603,6 +732,7 @@ class SimUniverse(object):
                 pcart=pcart,
                 m=self.m,
                 mode="rp",
+                scaling="cmd",
                 nmats=1,
                 sgamma=self.gamma,
             )
@@ -615,15 +745,29 @@ class SimUniverse(object):
         sim.bind(ens, motion, rng, rp, self.pes, propa, therm, 
                  pes_fort = self.pes_fort, propa_fort = self.propa_fort, transf_fort = self.transf_fort)
 
-        if self.corrkey == "OTOC":
+        if "OTOC" in self.corrkey:
             tarr, Carr = self.run_OTOC(sim)
         elif "TCF" in self.corrkey:
             tarr, Carr = self.run_TCF(sim)
         elif self.corrkey == "stat_avg":
-            # The assumption here is that 'op' is scalar-valued function (i.e. returns a scalar for every bead)
-            avg = np.mean(np.mean(op(sim.rp.qcart, sim.rp.pcart), axis=1))
-            self.store_scalar(avg, rngSeed)
-            return
+            if op is 'Hess':
+                pes_ddpot_cart = sim.pes.compute_hessian()
+                Hess_cart = pes_ddpot_cart + sim.rp.ddpot_cart
+                Hess = Hess_cart.reshape(-1,self.dim*sim.rp.nbeads, self.dim*sim.rp.nbeads)
+                vals = np.sort( np.linalg.eigvalsh(Hess), axis=1)[:,0]
+                self.store_scalar(np.mean(vals), rngSeed, suffix='Hessian')
+            
+                Hess_norm = sim.pes.nmtrans.cart2mats_hessian(pes_ddpot_cart) + sim.rp.ddpot
+                Hess_norm = Hess_norm[:,:,0,:,0]
+                vals_cent = np.sort( np.linalg.eigvalsh(Hess_norm), axis=1)[:,0]
+                self.store_scalar(np.mean(vals_cent), rngSeed, suffix='centroid_Hessian')
+                print('Hessian computed',np.sqrt(-vals.mean()/sim.rp.m),np.sqrt(-vals_cent.mean()/sim.rp.m))
+                return
+            else:
+                # The assumption here is that 'op' is scalar-valued function (i.e. returns a scalar for every bead)
+                avg = np.mean(np.mean(op(sim.rp.qcart, sim.rp.pcart), axis=1))
+                self.store_scalar(avg, rngSeed)
+                return
         elif self.corrkey == "singcomm":
             tarr, Carr = self.run_OTOC(sim, single=True)
         elif self.corrkey == "R2":
@@ -691,7 +835,12 @@ class SimUniverse(object):
         if self.ext_kwlist is None and suffix is None:
             fname = "".join([fext, methext, seedext])
         elif self.ext_kwlist is None:
-            fname = "".join([fext, methext, suffix + "_", seedext])
+            if seedext == "":
+                fname = "".join([fext, methext, suffix])
+            else:
+                fname = "".join([fext, methext, suffix + "_", seedext])
+        elif suffix is None:
+            fname = "".join([fext, methext, "_".join(self.ext_kwlist) + "_", seedext])
         else:
             namelst = [fext, methext, suffix + "_"]
             namelst.append("_".join(self.ext_kwlist) + "_")
@@ -728,9 +877,9 @@ class SimUniverse(object):
             "{}/{}".format(self.pathname, self.folder_name),
         )
 
-    def store_scalar(self, scalar, rngSeed):
+    def store_scalar(self, scalar, rngSeed, suffix=None):
         # Scalar values are stored in the same filename
-        fname = self.assign_fname(rngSeed)
+        fname = self.assign_fname(rngSeed, suffix)
         f = open("{}/{}/{}.txt".format(self.pathname, self.folder_name, fname), "a")
         f.write(str(rngSeed) + "  " + str(scalar) + "\n")
         f.close()

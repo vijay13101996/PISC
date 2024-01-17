@@ -113,9 +113,6 @@ Hess_arr = []
 T_arr = np.around(np.arange(0.7,0.951,0.05),2)
 #T_arr = np.append(T_arr,[0.97,0.99])
 
-qcart = read_arr('Instanton_{}_{}_nbeads_{}'.format(potkey,'T_0.9Tc',32),'{}/Datafiles'.format(path)) #instanton	
-data = 	read_1D_plotdata('{}/Datafiles/Yair_090Tc_n32.txt'.format(path)) #instanton
-
 #plt.scatter(qcart[:,0],qcart[:,1])
 #plt.scatter(data[:,0],data[:,1])
 #plt.show()
@@ -189,7 +186,7 @@ for times in T_arr:
 	vals,vecs = np.linalg.eigh(Hess)
 	Hess_arr.append(-vals[0])
 	w1 = 2*np.pi*times*Tc
-	print('Hessval',-1.0*vals[:3],4-w1**2 ,'\n Hess',Hess[:3,:3])	
+	#print('Hessval',-1.0*vals[:3],4-w1**2 ,'\n Hess',Hess[:3,:3])	
 
 	q0 = q_nm[:,:,0]
 	rg = np.mean(np.sum((qcart-q0[:,:,None])**2,axis=1),axis=1)

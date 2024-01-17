@@ -48,13 +48,16 @@ class Symplectic(Integrator):
         """ Propagation of momenta due to the thermostat """
         self.therm.thalfstep(pmats,fort=self.fort)
 
-    def A(self,k,update_hess=False):
+
+    def A(self,k,centmove=True,update_hess=False):
         """ Propagation of coordinate """
         if(self.fort):
             integrator.a_f(self.rp.q_f,self.rp.p_f,self.motion.qdt[k],self.rp.dynm3_f)
-
         else:
-            self.rp.q+=self.motion.qdt[k]*self.rp.p/self.rp.dynm3
+            if centmove:
+                self.rp.q+=self.motion.qdt[k]*self.rp.p/self.rp.dynm3
+            else:
+                self.rp.q[...,1:]+=self.motion.qdt[k]*self.rp.p[...,1:]/self.rp.dynm3[...,1:]
         self.force_update(fortran=self.fort,update_hess=update_hess)
 
     def B(self,k,centmove=True):
@@ -85,7 +88,7 @@ class Symplectic(Integrator):
     def Bv(self,k,centmove=True):
         """ Propagation of momenta in 'variation' mode """
         # Fortran mode not enabled here
-        hess = self.pes.ddpot.swapaxes(2,3).reshape(-1,self.pes.ndim*self.rp.nbeads,self.rp.ndim*self.rp.nbeads)
+        hess = self.pes.ddpot.reshape(-1,self.pes.ndim*self.rp.nbeads,self.rp.ndim*self.rp.nbeads)
         dq=self.rp.dq.reshape(-1,self.pes.ndim*self.rp.nbeads)
         dpc= np.einsum('ijk,ik->ij',hess,dq) #Check once again!
         dpc=dpc.reshape(-1,self.pes.ndim,self.rp.nbeads)
@@ -97,7 +100,7 @@ class Symplectic(Integrator):
     def bv(self,k):
         """ Propagation of momenta in 'variation' mode due to spring potential """
         # Fortran mode not enabled here
-        hess = self.rp.ddpot.swapaxes(2,3).reshape(-1,self.rp.ndim*self.rp.nbeads,self.rp.ndim*self.rp.nbeads)
+        hess = self.rp.ddpot.reshape(-1,self.rp.ndim*self.rp.nbeads,self.rp.ndim*self.rp.nbeads)
         dq=self.rp.dq.reshape(-1,self.pes.ndim*self.rp.nbeads)
         dpc= np.einsum('ijk,ik->ij',hess,dq) #Check once again!
         dpc=dpc.reshape(-1,self.pes.ndim,self.rp.nbeads)
@@ -137,11 +140,11 @@ class Symplectic(Integrator):
         else:
             self.rp.Mqq+=self.motion.qdt[k]*self.rp.Mpq/self.rp.dynm3[:,:,:,None,None]
     
-    def pq_kstep(self,k,centmove=True):
+    def pq_kstep(self,k,centmove=True,update_hess=False):
         """ Propagation of the coordinates and momenta for one 'k' step (k varies from 0 to order-1) """
         self.B(k,centmove)
         self.b(k)
-        self.A(k)
+        self.A(k,centmove,update_hess=update_hess)
 
     def pq_kstep_nosprings(self,k):
         """ Propagation of the coordinates and momenta for one 'k' step when there are no springs """
@@ -179,17 +182,17 @@ class Symplectic(Integrator):
         self.M4(k)
         self.A(k,update_hess=True)
 
-    def pq_step(self,centmove=True):
+    def pq_step(self,centmove=True,update_hess=False):
         """ Propagation of the coordinates and momenta for one full step """
         for k in range(self.motion.order):
-            self.pq_kstep(k,centmove=True)
+            self.pq_kstep(k,centmove=centmove,update_hess=update_hess)
     
-    def pq_step_RSP(self,centmove=True):
+    def pq_step_RSP(self,centmove=True,update_hess=False):
         """ Propagation of the coordinates and momenta for one full step using 'Reference-System Propagation' """
         if(self.motion.order==2):
             self.B(0,centmove)
             self.rp.RSP_step()
-            self.force_update()
+            self.force_update(update_hess=update_hess)
             self.B(1,centmove)
         else:
             raise ValueError("RSP step only implemented for second order integrator")

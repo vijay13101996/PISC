@@ -6,10 +6,11 @@ class quartic(PES):
 		super(quartic).__init__()	
 		self.a = a
 		
-	def bind(self,ens,rp):
-		super(quartic,self).bind(ens,rp)
+	def bind(self,ens,rp,pes_fort=False,transf_fort=False):
+		super(quartic,self).bind(ens,rp,pes_fort=pes_fort,transf_fort=transf_fort)
 		
 	def potential(self,q):
+		q = q[:,0,:]
 		return 0.25*self.a*q**4 
 	
 	def dpotential(self,q):

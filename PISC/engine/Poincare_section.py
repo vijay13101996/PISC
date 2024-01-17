@@ -144,7 +144,7 @@ class Poincare_SOS(object):
             y = self.rp.q[:,1,0]/self.rp.nbeads**0.5
             py = self.rp.p[:,1,0]/self.rp.nbeads**0.5
             cent_E = np.sum(self.rp.p[:,:,0]**2/self.rp.nbeads,axis=1) + self.pes.potential(self.rp.q[:,:,0]/self.rp.nbeads**0.5)
-            #print('t, cent E',self.sim.t,cent_E.shape)     
+            #print('t, cent E',self.sim.t,cent_E[0])     
             curr = y-y0
             #Rg = np.sum((self.rp.qcart-self.rp.q[:,:,0])**2, axis=1)
             ind = np.where( (prev*curr<0.0) & (py<0.0))# & (cent_E>0.95*self.E))# & (cent_E>0.8*self.E))

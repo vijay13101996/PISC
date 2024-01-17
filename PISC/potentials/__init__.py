@@ -19,6 +19,9 @@ from PISC.potentials.trunc_harmonic import trunc_harmonic
 from PISC.potentials.asym_double_well_potential import asym_double_well
 from PISC.potentials.mildly_anharmonic import mildly_anharmonic
 from PISC.potentials.mildly_anharmonic_2D import mildly_anharmonic_2D
+from PISC.potentials.inv_harmonic import InvHarmonic
+from PISC.potentials.pot_adder import PotAdder
+from PISC.potentials.Coupled_quartic import coupled_quartic
 
 # from PISC.potentials.Tanimura_SB import Tanimura_SB
 
