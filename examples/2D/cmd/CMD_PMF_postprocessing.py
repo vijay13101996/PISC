@@ -78,7 +78,7 @@ if(1):
     fgrid/=count
     plt.plot(qgrid,fgrid)
     plt.show()
-    store_1D_plotdata(qgrid,fgrid,'CMD_PMF_T_1Tc_nbeads_{}'.format(nbeads),datapath)
+    #store_1D_plotdata(qgrid,fgrid,'CMD_PMF_T_1Tc_nbeads_{}'.format(nbeads),datapath)
 
 
 if(0):

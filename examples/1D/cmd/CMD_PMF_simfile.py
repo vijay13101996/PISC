@@ -21,7 +21,7 @@ To do:
 
 def main(nbeads=16,times = 1.0):
     potkey = 'inv_harmonic'
-    sysname = 'Selene'
+    sysname = 'Papageno'
     path = os.path.dirname(os.path.abspath(__file__))
 
     lamda = 2.0
@@ -37,16 +37,22 @@ def main(nbeads=16,times = 1.0):
     print('nbeads',nbeads)
     print('Temperature',times,'Tc')
 
+
     def begin_simulation(nbeads,rngSeed):
-        qgrid = [0.0]#np.linspace(-8.0,8.0,101) 
+        qgrid = np.linspace(-12.0,12.0,101) 
         CMD_PMF.main('{}/CMD_PMF_{}_{}.txt'.format(path,sysname,potkey),path,sysname,lamda,g,times,m,N,nbeads,dt,rngSeed,time_therm,time_relax,qgrid,nsample)
 
     # 12 cores for 32 beads, 10 cores for 16 beads, 4 cores for 8 beads and 2 cores for 4 beads.
 
     func = partial(begin_simulation, nbeads)
-    seeds = range(0,10)
-    seed_split = chunks(seeds,10)
+    seeds = range(20)
+    seed_split = chunks(seeds,20)
+    
+    start_time = time.time()
+
     batching(func,seed_split,max_time=1e6)
+
+    print('time', time.time()-start_time)
 
 if __name__ == '__main__':
     import argparse 

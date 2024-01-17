@@ -146,7 +146,7 @@ class PES(object):
     def centrifugal_term(self):
         """
         Compute the centrifugal term for the Matsubara potential energy 
-        Used to sample constant phase Matsubara trajectories
+        (Used to sample constant-phase Matsubara trajectories)
         """
         # This is currently untested
         Rsq = np.sum(self.rp.matsfreqs**2*pairwise_swap(self.rp.q[...,:self.rp.nmats],self.rp.nmats)**2,axis=2)[:,None]
@@ -156,7 +156,7 @@ class PES(object):
 
     def update(self,update_hess=False):
         #Currently fortran update step is implemented only for 'rp' mode.
-        #Update hess is set to be True only for monodromy and variation mode
+        #By default, update_hess is set to be True only for monodromy and variation mode
         if(self.rp.mode=='rp'):
             self.compute_potential(self.pes_fort)
             self.compute_force(self.pes_fort)
