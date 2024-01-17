@@ -132,8 +132,13 @@ class RingPolymer(object):
         self.qdev = qdev_eps
         self.qe = None
         self.qecart = None
+        self.pe = None
+        self.pecart = None
+
         self.qme = None
         self.qmecart = None
+        self.pme = None
+        self.pmecart = None        
 
         self.m = m
         self.mode = mode
@@ -212,13 +217,17 @@ class RingPolymer(object):
 
         if self.qe is not None:
             self.qecart = self.nmtrans.mats2cart(self.qe)
+            self.pecart = self.nmtrans.mats2cart(self.pe)
         elif self.qecart is not None:
             self.qe = self.nmtrans.cart2mats(self.qecart)
+            self.pe = self.nmtrans.cart2mats(self.pecart)
 
         if self.qme is not None:
             self.qmecart = self.nmtrans.mats2cart(self.qme)
+            self.pmecart = self.nmtrans.mats2cart(self.pme)
         elif self.qmecart is not None:
             self.qme = self.nmtrans.cart2mats(self.qmecart)
+            self.pme = self.nmtrans.cart2mats(self.pmecart)
 
         self.m3 = np.ones_like(self.q) * self.m
         self.sqm3 = np.sqrt(self.m3)
@@ -294,6 +303,20 @@ class RingPolymer(object):
         if self.dq is not None:
             self.dq_f = self.dq.T
             self.dp_f = self.dp.T
+
+        if self.qecart is not None:
+            self.qecart_f = self.qecart.T
+            self.pecart_f = self.pecart.T
+        if self.qe is not None:
+            self.qe_f = self.qe.T
+            self.pe_f = self.pe.T
+
+        if self.qmecart is not None:
+            self.qmecart_f = self.qmecart.T
+            self.pmecart_f = self.pmecart.T
+        if self.qme is not None:
+            self.qme_f = self.qme.T
+            self.pme_f = self.pme.T
 
         self.m3_f = self.m3.T
         self.sqm3_f = self.sqm3.T

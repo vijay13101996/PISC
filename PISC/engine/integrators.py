@@ -48,11 +48,11 @@ class Symplectic(Integrator):
         """ Propagation of momenta due to the thermostat """
         self.therm.thalfstep(pmats,fort=self.fort)
 
-
     def A(self,k,update_hess=False):
         """ Propagation of coordinate """
         if(self.fort):
             integrator.a_f(self.rp.q_f,self.rp.p_f,self.motion.qdt[k],self.rp.dynm3_f)
+
         else:
             self.rp.q+=self.motion.qdt[k]*self.rp.p/self.rp.dynm3
         self.force_update(fortran=self.fort,update_hess=update_hess)
