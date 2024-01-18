@@ -337,7 +337,7 @@ class SimUniverse(object):
                 )
             return qcart, pcart
 
-    def run_OTOC(self, sim, single=False):
+    def run_OTOC(self, sim, single=False, fd=False, dim1 = 0, nmode1 = 0, dim2 = 0, nmode2 = 0):
         """ 
         Run simulation to compute out-of-time-order correlation function
         C(t) = < [A(t),B(0)]^2 > (Quantum)
@@ -352,19 +352,42 @@ class SimUniverse(object):
         """
         tarr = []
         Marr = [] # List to record the monodromy variables
+        if fd:
+            sim.rp.qe = sim.rp.q 
+            sim.rp.pe = sim.rp.p
+            sim.rp.qme = sim.rp.q
+            sim.rp.pme = sim.rp.p
+
+            if (self.corrkey == 'OTOC' or 'qq' in self.corrkey or 'pq' in self.corrkey):
+                sim.rp.qe[:, dim1, nmode1] += sim.rp.qdev
+                sim.rp.qme[:, dim2, nmode2] -= sim.rp.qdev
+            elif ('pp' in self.corrkey or 'qp' in self.corrkey):
+                sim.rp.pe[:, dim1, nmode1] += sim.rp.pdev
+                sim.rp.pme[:, dim2, nmode2] -= sim.rp.pdev
+            
+            sim.rebind()
+
         if self.method == "CMD":
             stride = self.gamma
             dt = self.dt / self.gamma
             nsteps = int(self.time_run / dt) 
             sim.therm = PILE_L(tau0=self.tau0, pile_lambda=1.0) 
             sim.motion = Motion(dt=dt, symporder=sim.motion.order) # reinitialise motion object with new dt
-            sim.bind(sim.ens, sim.motion, sim.rng, sim.rp, sim.pes, sim.propa, sim.therm)
+            sim.rebind()
+            var = "fd_monodromy" if fd else "monodromy"
+            #!!!! It is unclear if finite difference propagation can be used when thermostat is on
             for i in range(nsteps):
-                sim.step(mode="nvt", var="monodromy", pc=False)
+                sim.step(mode="nvt", var=var, pc=False)
                 if i % stride == 0:
                     if (self.corrkey=='OTOC_qq' or self.corrkey=='OTOC'):
-                        M = np.mean(abs(sim.rp.Mqq[:, 0, 0, 0, 0] ** 2))
+                        if fd:
+                            M = (sim.rp.qe[:, dim1, nmode1] - sim.rp.qme[:, dim2, nmode2])/(2*sim.rp.qdev)
+                            M = np.mean(abs(M**2))
+                        else:
+                            M = np.mean(abs(sim.rp.Mqq[:, 0, 0, 0, 0] ** 2))
                     elif (self.corrkey=='OTOC_ApAp'):
+                        if fd:
+                            raise NotImplementedError
                         Mpp = sim.rp.Mpp[:, 0, 0, 0, 0]
                         Mpq = sim.rp.Mpq[:, 0, 0, 0, 0]
                         Mqp = sim.rp.Mqp[:, 0, 0, 0, 0]
@@ -377,18 +400,27 @@ class SimUniverse(object):
         else:
             dt = self.dt
             nsteps = int(self.time_run / dt)
+            var = "fd_monodromy" if fd else "monodromy"
             for i in range(nsteps):
-                sim.step(mode="nve", var="monodromy")
+                sim.step(mode="nve", var=var)
                 if single:
-                    Mqq = np.mean(
-                        sim.rp.Mqp[:, 0, 0, 0, 0]
-                    )  # Change notations when required!
+                    if fd:
+                        Mqq = (sim.rp.qe[:, dim1, nmode1] - sim.rp.qme[:, dim2, nmode2])/(2*sim.rp.qdev)
+                        Mqq = np.mean(Mqq)
+                    else:
+                        Mqq = np.mean(sim.rp.Mqp[:, 0, 0, 0, 0])  # Change notations when required!
                     tarr.append(sim.t)
                     Marr.append(Mqq)
                 else: 
                     if (self.corrkey=='OTOC_qq' or self.corrkey=='OTOC'):
-                        M = np.mean(abs(sim.rp.Mqq[:, 0, 0, 0, 0] ** 2))
+                        if fd:
+                            M = (sim.rp.qe[:, dim1, nmode1] - sim.rp.qme[:, dim2, nmode2])/(2*sim.rp.qdev)
+                            M = np.mean(abs(M**2))
+                        else:
+                            M = np.mean(abs(sim.rp.Mqq[:, 0, 0, 0, 0] ** 2))
                     elif (self.corrkey=='OTOC_ApAp'):
+                        if fd:
+                            raise NotImplementedError
                         Mpp = sim.rp.Mpp[:, 0, 0, 0, 0]
                         Mpq = sim.rp.Mpq[:, 0, 0, 0, 0]
                         Mqp = sim.rp.Mqp[:, 0, 0, 0, 0]
@@ -405,7 +437,7 @@ class SimUniverse(object):
         return tarr, Marr
 
     def run_R2(self, sim, A="p", B="p", C="q", seed_number=None):
-        r"""Run simulation to compute second order (sym and asym) response functions
+        """Run simulation to compute second order (sym and asym) response functions
         symR2  <C(t2)B(t1)A(t0)>
         asymR2 <C(t2)Mqq(t1,t0)>
         with Mqq(t1,t0)= \partial q(t1)/\partial q(t0)

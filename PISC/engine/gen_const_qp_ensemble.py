@@ -64,7 +64,8 @@ def thermalize_rp_const_qp(
     propa = Symplectic()
     sim = RP_Simulation()
     sim.bind(ens, motion, rng, rp, pes, propa, therm, 
-             transf_fort=transf_fort, pes_fort=pes_fort, propa_fort=propa_fort)
+             transf_fort=transf_fort, pes_fort=pes_fort, propa_fort=False)
+    # propa_fort is set to False because centmove=False is not implemented in FORTRAN for the A step
     start_time = time.time()
 
     nthermsteps = int(time_therm / motion.dt)

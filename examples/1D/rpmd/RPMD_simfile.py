@@ -111,8 +111,8 @@ def main(times=0.95,nbeads=16): #Double well potential
     path = os.path.dirname(os.path.abspath(__file__))
 
     pes_fort = False
-    propa_fort = True
-    transf_fort = True
+    propa_fort = False#True
+    transf_fort = False#True
 
     Sim_class = SimUniverse(method,path,sysname,potkey,corrkey,enskey,Tkey)
     Sim_class.set_sysparams(pes,T,m,dim)
@@ -123,7 +123,7 @@ def main(times=0.95,nbeads=16): #Double well potential
 
     start_time=time.time()
     func = partial(Sim_class.run_seed)
-    seeds = range(1000)
+    seeds = range(100)
     seed_split = chunks(seeds,20)
 
     param_dict = {'Temperature':Tkey,'CType':corrkey,'Ensemble':enskey,'m':m,\

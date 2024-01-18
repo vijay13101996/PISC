@@ -36,6 +36,12 @@ class Simulation(object):
         self.propa_fort = propa_fort
         self.transf_fort = transf_fort
 
+    def rebind(self):
+        """ Rebind the components when one (or a few) of them has changed """
+        self.bind(self.ens,self.motion,self.rng,self.rp,
+                  self.pes,self.propa,self.therm,
+                  self.pes_fort,self.propa_fort,self.transf_fort)
+
 class RP_Simulation(Simulation):
     """
     This is the base class for defining ring-polymer based path-integral simulations.
@@ -48,14 +54,14 @@ class RP_Simulation(Simulation):
         super(RP_Simulation,self).bind(ens,motion,rng,rp,pes,propa,therm,
             pes_fort=pes_fort, propa_fort=propa_fort, transf_fort=transf_fort)
         
-    def NVE_pqstep(self,update_hess=False):
+    def NVE_pqstep(self):#,update_hess=False):
         """ Constant energy step to propagate position and momentum """
-        self.propa.pq_step(update_hess=update_hess)
+        self.propa.pq_step()#update_hess=update_hess)
         self.rp.mats2cart()
 
-    def NVE_pqstep_RSP(self,update_hess=False):
+    def NVE_pqstep_RSP(self):#,update_hess=False):
         """ Constant energy step to propagate position and momentum using RSP algorithm """
-        self.propa.pq_step_RSP(update_hess=update_hess)
+        self.propa.pq_step_RSP()#update_hess=update_hess)
         self.rp.mats2cart() 
             
     def NVE_Monodromystep(self):
@@ -68,17 +74,17 @@ class RP_Simulation(Simulation):
         self.propa.var_step()
         self.rp.mats2cart()
     
-    def NVT_pqstep(self,pc,centmove=True,update_hess=False):
+    def NVT_pqstep(self,pc):#,centmove=True,update_hess=False):
         """ Constant temperature step to propagate position and momentum """
         self.propa.O(pc)
-        self.propa.pq_step(centmove,update_hess=update_hess)
+        self.propa.pq_step()#centmove,update_hess=update_hess)
         self.propa.O(pc)
         self.rp.mats2cart()
 
-    def NVT_pqstep_RSP(self,pc,centmove=True,update_hess=False):
+    def NVT_pqstep_RSP(self,pc):#,centmove=True,update_hess=False):
         """ Constant temperature step to propagate position and momentum using RSP algorithm """
         self.propa.O(pc)
-        self.propa.pq_step_RSP(centmove,update_hess=update_hess)
+        self.propa.pq_step_RSP()#centmove,update_hess=update_hess)
         self.propa.O(pc)
         self.rp.mats2cart()
 
@@ -99,31 +105,46 @@ class RP_Simulation(Simulation):
         self.propa.O(pc)
         self.rp.mats2cart()
 
-    def step(self, ndt=1, mode="nvt",var='pq',RSP=False,pc=None,centmove=True,update_hess=False):
+    def step(self, ndt=1, mode="nvt",var='pq',RSP=False,pc=None):#,centmove=True,update_hess=False):
         """ Propagate the dynamics of the system for ndt steps """
         if mode == "nve":
-            if(var=='pq'):
+            if(var=='pq' or var=='fd_monodromy'):
+                if var=='fd_monodromy':
+                    #Updating the finite difference variables for finite difference monodromy dynamics
+                    self.propa.fd = True
+                    self.propa.rebind()
                 if RSP is False:
                     for i in range(ndt):
-                        self.NVE_pqstep(update_hess=update_hess)
+                        self.NVE_pqstep()#update_hess=update_hess)
                 else:
                     for i in range(ndt):
-                        self.NVE_pqstep_RSP(update_hess=update_hess)
+                        self.NVE_pqstep_RSP()#update_hess=update_hess)
             elif(var=='monodromy'):
+                self.propa.update_hess = True #Updating the hessian is necessary for monodromy dynamics
+                self.propa.rebind()
                 for i in range(ndt):
                     self.NVE_Monodromystep()
             elif(var=='variation'):
+                self.propa.update_hess = True #Updating the hessian is necessary for tangent dynamics
+                self.propa.rebind() 
                 for i in range(ndt):
-                    self.NVE_varstep()
+                    self.NVE_varstep() 
         elif mode == "nvt":
-            if(var=='pq'):
+            if(var=='pq' or var=='fd_monodromy'):
+                if var=='fd_monodromy':
+                    #Updating the finite difference variables is necessary for finite difference monodromy dynamics
+                    self.propa.fd = True
+                    self.propa.rebind()
+                    pc = False # Continuity of the monodromy matrix will be broken if pc=True
                 if RSP is False:
                     for i in range(ndt):
-                        self.NVT_pqstep(pc,centmove,update_hess=update_hess)
+                        self.NVT_pqstep(pc)#,centmove,update_hess=update_hess)
                 else:
                     for i in range(ndt):
-                        self.NVT_pqstep_RSP(pc,centmove,update_hess=update_hess)
+                        self.NVT_pqstep_RSP(pc)#,centmove,update_hess=update_hess)
             elif(var=='monodromy'):
+                self.propa.update_hess = True #Updating the hessian is necessary for monodromy dynamics
+                self.propa.rebind()
                 for i in range(ndt):
                     self.NVT_Monodromystep(pc)
         elif mode == 'nvt_theta':
@@ -148,9 +169,9 @@ class Matsubara_Simulation(Simulation):
         self.propa.Monodromy_step_nosprings()
         self.rp.mats2cart()
         
-    def NVT_pqstep(self,pc,centmove=True):
+    def NVT_pqstep(self,pc):#,centmove=True):
         self.propa.O(pc)
-        self.propa.pq_step_nosprings(centmove)
+        self.propa.pq_step_nosprings()#centmove)
         self.propa.O(pc)
         self.rp.mats2cart()
 
@@ -166,6 +187,8 @@ class Matsubara_Simulation(Simulation):
                 for i in range(ndt):
                     self.NVE_pqstep()               
             elif(var=='monodromy'):
+                self.propa.update_hess=True #Updating the hessian is necessary for monodromy dynamics
+                self.propa.rebind() 
                 for i in range(ndt):
                     self.NVE_Monodromystep()
 
@@ -174,6 +197,8 @@ class Matsubara_Simulation(Simulation):
                 for i in range(ndt):
                     self.NVT_pqstep(pc,centmove)
             elif(var=='monodromy'):
+                self.propa.update_hess=True #Updating the hessian is necessary for monodromy dynamics
+                self.propa.rebind()
                 for i in range(ndt):
                     self.NVT_Monodromystep(pc)
         self.t += ndt*self.dt

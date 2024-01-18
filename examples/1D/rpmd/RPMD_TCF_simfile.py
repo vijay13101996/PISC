@@ -25,13 +25,13 @@ N = 1000
 dt_therm = 0.05
 dt = 0.01
 time_therm = 50.0
-time_total = 30.0
+time_total = 20.0
 
-nbeads = 1
+nbeads = 8
 
 method = 'RPMD'
-potkey = 'quartic_a_{}'.format(a) 
-sysname = 'Selene'		
+potkey = 'quartic_a_{}'.format(a)
+sysname = 'Papageno'		
 Tkey = 'T_{}'.format(T)#'{}Tc'.format(times)
 corrkey = 'qq_TCF'
 enskey = 'thermal'
@@ -47,8 +47,8 @@ Sim_class.set_runtime(time_therm,time_total)
 
 start_time=time.time()
 func = partial(Sim_class.run_seed)
-seeds = range(100,1000)
-seed_split = chunks(seeds,10)
+seeds = range(100)
+seed_split = chunks(seeds,20)
 
 param_dict = {'Temperature':Tkey,'CType':corrkey,'Ensemble':enskey,'m':m,\
 	'therm_time':time_therm,'time_total':time_total,'nbeads':nbeads,'dt':dt,'dt_therm':dt_therm}

@@ -72,6 +72,7 @@ class RingPolymer(object):
         mode="rp",
         nmats=None,
         qdev_eps=1e-4,
+        pdev_eps=1e-4,
     ):
         if qcart is None:
             if p is not None:
@@ -130,6 +131,8 @@ class RingPolymer(object):
         Also define initial deviation 
         """
         self.qdev = qdev_eps
+        self.pdev = pdev_eps
+
         self.qe = None
         self.qecart = None
         self.pe = None
@@ -499,44 +502,75 @@ class RingPolymer(object):
         return np.sum(ret, axis=2)
 
     @property
-    def kin(self):
+    def kin(self,p=None):
         """ Get the kinetic energy """
-        return np.sum(0.5 * (self.p / self.sqm3) ** 2)
+        if p is None:
+            return np.sum(0.5 * (self.p / self.sqm3) ** 2)
+        else:
+            return np.sum(0.5 * (p / self.sqm3) ** 2)
 
     @property
-    def dynkin(self):
+    def dynkin(self,p=None):
         """ Get the kinetic energy when masses are scaled """
-        return np.sum(0.5 * (self.p / self.sqdynm3) ** 2)
+        if p is None:
+            return np.sum(0.5 * (self.p / self.sqdynm3) ** 2)
+        else:
+            return np.sum(0.5 * (p / self.sqdynm3) ** 2)
 
     @property
-    def pot(self):
+    def pot(self,q=None):
         """ Get the potential energy """
-        return np.sum(0.5 * self.dynm3 * self.dynfreq2 * self.q**2)
+        if q is None:
+            return np.sum(0.5 * self.dynm3 * self.dynfreq2 * self.q**2)
+        else:
+            return np.sum(0.5 * self.dynm3 * self.dynfreq2 * q**2)
 
     @property
-    def pot_cart(self):
+    def pot_cart(self,qcart=None):
         """ Get the potential energy in Cartesian coordinates """
-        return np.sum(
-            0.5
-            * self.m3
-            * self.omegan**2
-            * (self.qcart - np.roll(self.qcart, 1, axis=-1)) ** 2
-        )
+        if qcart is None:
+            return np.sum(
+                0.5
+                * self.m3
+                * self.omegan**2
+                * (self.qcart - np.roll(self.qcart, 1, axis=-1)) ** 2
+            )
+        else:
+            return np.sum(
+                0.5
+                * self.m3
+                * self.omegan**2
+                * (qcart - np.roll(qcart, 1, axis=-1)) ** 2
+            )
 
     @property
-    def dpot(self):
+    def dpot(self,q=None):
         """ Get the potential energy gradient in Matsubara coordinates "" """
-        return self.dynm3 * self.dynfreq2 * self.q
+        if q is None:
+            return self.dynm3 * self.dynfreq2 * self.q
+        else:
+            return self.dynm3 * self.dynfreq2 * q
 
     @property
-    def dpot_cart(self):
+    def dpot_cart(self,qcart=None):
         """ Get the potential energy gradient in Cartesian coordinates """
-        return (
-            self.dynm3
-            * self.omegan**2
-            * (
-                2 * self.qcart
-                - np.roll(self.qcart, 1, axis=-1)
-                - np.roll(self.qcart, -1, axis=-1)
-            )
-            )
+        if qcart is None:
+            return (
+                self.dynm3
+                * self.omegan**2
+                * (
+                    2 * self.qcart
+                    - np.roll(self.qcart, 1, axis=-1)
+                    - np.roll(self.qcart, -1, axis=-1)
+                )
+                )
+        else:
+            return (
+                self.dynm3
+                * self.omegan**2
+                * (
+                    2 * q
+                    - np.roll(qcart, 1, axis=-1)
+                    - np.roll(qcart, -1, axis=-1)
+                )
+                )
