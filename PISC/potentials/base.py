@@ -20,14 +20,18 @@ class PES(object):
         self.ddpot_cart = None
         self.ddpot = None
 
-    def bind(self,ens,rp,pes_fort=False,transf_fort=False):
+    def bind(self,ens,rp,pes_fort=False,transf_fort=False,fd_update=False):
         # Bind the ensemble and ring polymer objects to the PES
         self.ens = ens
         self.rp = rp
+        self.pes_fort = pes_fort
+        self.transf_fort = transf_fort
+        self.fd_update = fd_update
+
         self.ndim = ens.ndim
         self.nsys = rp.nsys
         self.nmtrans = rp.nmtrans
-
+        
         # Allocate memory for the potential, force and hessian
         # The potential, force and hessian is stored along both 
         # ring polymer beads and normal modes coordinates
@@ -45,11 +49,31 @@ class PES(object):
             for d2 in range(self.ndim):
                 self.ddpotmat[:,d1,:,d2] = np.eye(self.rp.nmodes,self.rp.nmodes)
         
+        if fd_update:
+            # Allocate memory for the potential, force and hessian
+            # This is made optional because it creates a large memory overhead
+            self._bind_fd_vars()
+
         self._bind_fort()
 
-        self.pes_fort = pes_fort
-        self.transf_fort = transf_fort
+    def _bind_fd_vars(self):
+        self.fd_update = True
 
+        self.pote = np.zeros((self.nsys, self.rp.nbeads))
+        self.potme = np.zeros((self.nsys, self.rp.nbeads))
+
+        self.dpote_cart = np.zeros_like(self.rp.qcart)
+        self.dpote = np.zeros_like(self.rp.q)
+
+        self.dpotme_cart = np.zeros_like(self.rp.qcart)
+        self.dpotme = np.zeros_like(self.rp.q)
+
+        self.update()
+        self._bind_fort()
+
+    def rebind(self):
+        self.bind(self.ens,self.rp,self.pes_fort,self.transf_fort,self.fd_update)
+        
     def _bind_fort(self):
         # Declare fortran variables as a 'view' of the python variables by transposing them  
         self.pot_f = self.pot.T
@@ -60,6 +84,16 @@ class PES(object):
         self.ddpot_cart_f = self.ddpot_cart.T
         self.ddpot_f = self.ddpot.T
    
+        if self.fd_update:
+            self.pote_f = self.pote.T
+            self.potme_f = self.potme.T
+
+            self.dpote_cart_f = self.dpote_cart.T
+            self.dpote_f = self.dpote.T
+
+            self.dpotme_cart_f = self.dpotme_cart.T
+            self.dpotme_f = self.dpotme.T
+
     # The following functions need to be defined for each PES
     def potential(self,q):
         raise NotImplementedError("Potential function not defined")
@@ -93,16 +127,28 @@ class PES(object):
         """ Update the potential energy (from the PES) for the current bead positions """
         if(fortran):
             self.potential_f(self.rp.qcart_f,self.pot_f)
+            if self.fd_update:
+                self.potential_f(self.rp.qcarte_f,self.pote_f)
+                self.potential_f(self.rp.qcartme_f,self.potme_f)
         else:
             self.pot[:] = self.potential(self.rp.qcart)
+            if self.fd_update:
+                self.pote[:] = self.potential(self.rp.qecart)
+                self.potme[:] = self.potential(self.rp.qmecart)
         return self.pot
     
     def compute_force(self,fortran=False):
         """ Update the force (from the PES) for the current bead positions """
         if(fortran):
             self.dpotential_f(self.rp.qcart_f,self.dpot_cart_f)
+            if self.fd_update:
+                self.dpotential_f(self.rp.qecart_f,self.dpote_cart_f)
+                self.dpotential_f(self.rp.qmecart_f,self.dpotme_cart_f)
         else:
             self.dpot_cart[:] = self.dpotential(self.rp.qcart)
+            if self.fd_update:
+                self.dpote_cart[:] = self.dpotential(self.rp.qecart)
+                self.dpotme_cart[:] = self.dpotential(self.rp.qmecart)
         return self.dpot_cart
 
     def compute_hessian(self,fortran=False):
@@ -161,6 +207,9 @@ class PES(object):
             self.compute_potential(self.pes_fort)
             self.compute_force(self.pes_fort)
             self.dpot[:] = self.nmtrans.cart2mats(self.dpot_cart)
+            if self.fd_update:
+                self.dpote[:] = self.nmtrans.cart2mats(self.dpote_cart)
+                self.dpotme[:] = self.nmtrans.cart2mats(self.dpotme_cart)
             if(update_hess):
                 self.compute_hessian(self.pes_fort)
                 if(self.transf_fort):

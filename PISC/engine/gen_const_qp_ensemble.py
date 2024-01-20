@@ -81,7 +81,9 @@ def thermalize_rp_const_qp(
         sim.propa.force_update()
    
     # Thermalise ring polymer position at the constrained value
-    sim.step(ndt=nthermsteps, mode="nvt", var="pq", centmove=False, RSP=False, pc=False)
+    sim.propa.centmove = False
+    sim.propa.rebind()
+    sim.step(ndt=nthermsteps, mode="nvt", var="pq", RSP=False, pc=False)
 
     # Check if the thermalization is successful
     if qp:

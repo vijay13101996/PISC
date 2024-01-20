@@ -192,6 +192,8 @@ class RingPolymer(object):
         self.ens = ens
         self.motion = motion
         self.rng = rng
+        self.fort = fort
+
         self.ndim = ens.ndim
         self.dt = self.motion.dt
 
@@ -292,6 +294,10 @@ class RingPolymer(object):
 
         if fort is True:
             self._bind_fort()
+
+    def rebind(self):
+        """ Rebind the ring-polymer object to the ensemble, motion and rng objects """
+        self.bind(self.ens, self.motion, self.rng, self.fort)
 
     def _bind_fort(self):
         """ Create Fortran contiguous arrays for all variables """
@@ -501,76 +507,64 @@ class RingPolymer(object):
         )
         return np.sum(ret, axis=2)
 
+    def kin_func(self,p,m='phy'):
+        if m=='phy':
+            return 0.5 * (p / self.sqm3) ** 2
+        elif m=='dyn':
+            return 0.5 * (p / self.sqdynm3) ** 2
+    
     @property
-    def kin(self,p=None):
+    def kin(self):
         """ Get the kinetic energy """
-        if p is None:
-            return np.sum(0.5 * (self.p / self.sqm3) ** 2)
-        else:
-            return np.sum(0.5 * (p / self.sqm3) ** 2)
+        return self.kin_func(self.p,m='phy')
 
     @property
-    def dynkin(self,p=None):
+    def dynkin(self):
         """ Get the kinetic energy when masses are scaled """
-        if p is None:
-            return np.sum(0.5 * (self.p / self.sqdynm3) ** 2)
-        else:
-            return np.sum(0.5 * (p / self.sqdynm3) ** 2)
+        return self.kin_func(self.p,m='dyn')
+
+    def pot_func(self,q,m='phy'):
+        if m=='phy':
+            return 0.5 * self.m3 * self.freqs2 * q**2
+        elif m=='dyn':
+            return 0.5 * self.dynm3 * self.dynfreq2 * q**2
 
     @property
-    def pot(self,q=None):
+    def pot(self):
         """ Get the potential energy """
-        if q is None:
-            return np.sum(0.5 * self.dynm3 * self.dynfreq2 * self.q**2)
-        else:
-            return np.sum(0.5 * self.dynm3 * self.dynfreq2 * q**2)
+        return self.pot_func(self.q,m='dyn')
+
+    def pot_cart_func(self,qcart,m='phy'):
+        if m=='phy':
+            return 0.5 * self.m3 * self.omegan**2 * (qcart - np.roll(qcart, 1, axis=-1)) ** 2
+        elif m=='dyn':
+            return 0.5 * self.dynm3 * self.omegan**2 * (qcart - np.roll(qcart, 1, axis=-1)) ** 2
 
     @property
-    def pot_cart(self,qcart=None):
+    def pot_cart(self):
         """ Get the potential energy in Cartesian coordinates """
-        if qcart is None:
-            return np.sum(
-                0.5
-                * self.m3
-                * self.omegan**2
-                * (self.qcart - np.roll(self.qcart, 1, axis=-1)) ** 2
-            )
-        else:
-            return np.sum(
-                0.5
-                * self.m3
-                * self.omegan**2
-                * (qcart - np.roll(qcart, 1, axis=-1)) ** 2
-            )
+        return self.pot_cart_func(self.qcart,m='dyn')
 
-    @property
-    def dpot(self,q=None):
-        """ Get the potential energy gradient in Matsubara coordinates "" """
-        if q is None:
-            return self.dynm3 * self.dynfreq2 * self.q
-        else:
+    def dpot_func(self,q,m='phy'):
+        if m=='phy':
+            return self.m3 * self.freqs2 * q
+        elif m=='dyn':
             return self.dynm3 * self.dynfreq2 * q
+    
+    @property
+    def dpot(self):
+        """ Get the potential energy gradient in Matsubara coordinates "" """
+        return self.dpot_func(self.q,m='dyn')
+
+    def dpot_cart_func(self,qcart,m='phy'):
+        if m=='phy':
+            return self.m3 * self.omegan**2 * (
+                2 * qcart - np.roll(qcart, 1, axis=-1) - np.roll(qcart, -1, axis=-1))
+        elif m=='dyn':
+            return self.dynm3 * self.omegan**2 * (
+                2 * qcart - np.roll(qcart, 1, axis=-1) - np.roll(qcart, -1, axis=-1))
 
     @property
-    def dpot_cart(self,qcart=None):
+    def dpot_cart(self):
         """ Get the potential energy gradient in Cartesian coordinates """
-        if qcart is None:
-            return (
-                self.dynm3
-                * self.omegan**2
-                * (
-                    2 * self.qcart
-                    - np.roll(self.qcart, 1, axis=-1)
-                    - np.roll(self.qcart, -1, axis=-1)
-                )
-                )
-        else:
-            return (
-                self.dynm3
-                * self.omegan**2
-                * (
-                    2 * q
-                    - np.roll(qcart, 1, axis=-1)
-                    - np.roll(qcart, -1, axis=-1)
-                )
-                )
+        return self.dpot_cart_func(self.qcart,m='dyn')

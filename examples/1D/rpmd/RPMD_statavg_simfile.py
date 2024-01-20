@@ -10,15 +10,6 @@ from PISC.potentials.Quartic import quartic
 from PISC.engine.PI_sim_core import SimUniverse
 import os
 
-def gauss_q(q,p,sigma=2.0,mu=0.0):
-	return np.sum(np.exp(-(q-mu)**2/(2*sigma**2))/(sigma*(np.sqrt(2*np.pi))), axis=1) 
-
-def q(q,p):
-	return q[:,0,:]
-
-def p2(q,p):
-	return p[:,0,:]**2/2
-
 dim=1
 
 lamda = 2.0
@@ -41,8 +32,6 @@ time_therm = 50.0
 time_total = 5.0
 
 nbeads = 16
-sigma = 0.21
-mu = minima
 
 method = 'RPMD'
 potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
@@ -51,9 +40,6 @@ Tkey = 'T_{}Tc'.format(times)#'{}Tc'.format(times)
 corrkey = 'stat_avg'
 enskey = 'const_q'#'thermal'
 
-sigmakey = 'sigma_{}'.format(sigma)
-mukey = 'mu_{}'.format(mu)
-kwlist=[sigmakey,mukey]
 path = os.path.dirname(os.path.abspath(__file__))
 
 def main():
@@ -65,8 +51,8 @@ def main():
 	Sim_class.set_runtime(time_therm,time_total)
 
 	start_time=time.time()
-	func = partial(Sim_class.run_seed,op='Hess')#partial(gauss_q,sigma=sigma,mu=mu))
-	seeds = range(1)
+	func = partial(Sim_class.run_seed,op='Hess')
+	seeds = range(1000)
 	seed_split = chunks(seeds,20)
 
 	param_dict = {'Temperature':Tkey,'CType':corrkey,'Ensemble':enskey,'m':m,\

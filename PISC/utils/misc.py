@@ -96,11 +96,11 @@ def estimate_OTOC_slope(kwlist,datapath,tarr,Carr,tst,tend,allseeds=True,seedcou
     stderr = np.std(slope_arr)/np.sqrt(len(slope_arr))
     print('mean, std error', mean, stderr)
 
-def seed_collector(kwlist,datapath,tarr,Carr,allseeds=True,seedcount=None,logerr=True):
+def seed_collector(kwlist,datapath,tarr,Carr,allseeds=True,seedcount=None,logerr=True,exclude=[]):
     flist = []
     print('kwlist',kwlist)
     for fname in os.listdir(datapath):
-        if all(kw in fname for kw in kwlist):
+        if all(kw in fname for kw in kwlist) and not any(ex in fname for ex in exclude):
             #print('f',fname)
             flist.append(fname)
 

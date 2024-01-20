@@ -15,7 +15,7 @@ if(1): #Double well potential
     Vb = lamda**4/(64*g)
 
     Tc = lamda*(0.5/np.pi)
-    times = 0.95
+    times = 3.0
     T = times*Tc
     beta=1/T
     print('T',T)
@@ -125,16 +125,9 @@ corrkey = 'OTOC'#'R2'#'singcomm' #
 syskey = 'Papageno'#'Tosca2'
 
 if(1):#RPMD
-    nbeads = 8
+    nbeads = 1
     beadkey = 'nbeads_{}_'.format(nbeads)
     
-    Tkey = 'T_1.0'#'T_{}Tc'.format(5.0)
-    corrkey= 'qq_TCF'
-    potkey ='quartic_a_1.0'
-    dt=0.01
-    time_total = 20.0
-    tarr = np.arange(0.0,time_total,dt)
-    OTOCarr = np.zeros_like(tarr) +0j
     if(1): ##Collect files of thermal ensembles
         methodkey = 'RPMD'
         enskey = 'thermal' #'const_q' #
@@ -148,8 +141,8 @@ if(1):#RPMD
         else:
             plt.plot(tarr,np.log(abs(OTOCarr)))
         store_1D_plotdata(tarr,OTOCarr,'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,nbeads,dt),rpext)
-        plt.show()
-        exit()
+        #plt.show()
+        #exit()
         ext = rpext + 'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}'.format(enskey,'OTOC',potkey,Tkey,nbeads,dt)
         slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,2,3)#3.4,4.4)#1.8,3.8)#3.2,4.2)
         plt.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='m')

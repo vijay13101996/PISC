@@ -57,10 +57,9 @@ class Symplectic(Integrator):
 
     def O(self,pmats):
         """ Propagation of momenta due to the thermostat """
-        print('O',pmats)
         self.therm.thalfstep(pmats,fort=self.fort)
 
-    def A(self,k):#,centmove=True,update_hess=False,fd=False):
+    def A(self,k):
         """ Propagation of coordinate """
         if(self.fort):
             # centmove option to be implemented in FORTRAN
@@ -71,14 +70,14 @@ class Symplectic(Integrator):
         else:
             ind = 0
             if self.centmove == False:
-                ind = 1 
+                ind = 1
             self.rp.q[...,ind:]+=self.motion.qdt[k]*self.rp.p[...,ind:]/self.rp.dynm3[...,ind:]
             if self.fd:
                 self.rp.qe[...,ind:]+=self.motion.qdt[k]*self.rp.pe[...,ind:]/self.rp.dynm3[...,ind:]
                 self.rp.qme[...,ind:]+=self.motion.qdt[k]*self.rp.pme[...,ind:]/self.rp.dynm3[...,ind:]
         self.force_update()
 
-    def B(self,k):#,centmove=True,fd=False):
+    def B(self,k):
         """ Propagation of momenta """
         if(self.fort):
             integrator.b_f(self.rp.p_f,self.pes.dpot_f,self.motion.pdt[k],self.centmove,self.rp.nbeads)
@@ -94,34 +93,34 @@ class Symplectic(Integrator):
                 self.rp.pe[...,ind:]-=self.pes.dpote[...,ind:]*self.motion.pdt[k]
                 self.rp.pme[...,ind:]-=self.pes.dpotme[...,ind:]*self.motion.pdt[k]
 
-    def b(self,k):#,fd=False):  
+    def b(self,k): 
         """ Propagation of momenta due to spring potential """
         if(self.fort):
             integrator.b_f(self.rp.p_f,self.rp.dpot.T,self.motion.pdt[k],True,self.rp.nbeads)
             if self.fd:
-                integrator.b_f(self.rp.pe_f,self.rp.dpot(self.rp.qe).T,self.motion.pdt[k],True,self.rp.nbeads)
-                integrator.b_f(self.rp.pme_f,self.rp.dpot(self.rp.qme).T,self.motion.pdt[k],True,self.rp.nbeads)
+                integrator.b_f(self.rp.pe_f,self.rp.dpot_func(self.rp.qe).T,self.motion.pdt[k],True,self.rp.nbeads)
+                integrator.b_f(self.rp.pme_f,self.rp.dpot_func(self.rp.qme).T,self.motion.pdt[k],True,self.rp.nbeads)
         else:
             if self.rp.nmats is None:
                 nmats = 0
             else:
                 nmats = self.rp.nmats
-            self.rp.p[...,nmats:]-=self.pes.dpot[...,nmats:]*self.motion.pdt[k] 
+            self.rp.p[...,nmats:]-=self.rp.dpot[...,nmats:]*self.motion.pdt[k] 
             if self.fd:
-                self.rp.pe[...,nmats:]-=self.pes.dpote[...,nmats:]*self.motion.pdt[k]
-                self.rp.pme[...,nmats:]-=self.pes.dpotme[...,nmats:]*self.motion.pdt[k]
-        #Note: Beware when running MF Matsubara simulation - it is untested as of yet. 
+                self.rp.pe[...,nmats:]-=self.rp.dpot_func(self.rp.qe)[...,nmats:]*self.motion.pdt[k]
+                self.rp.pme[...,nmats:]-=self.rp.dpot_func(self.rp.qme)[...,nmats:]*self.motion.pdt[k]
+        #Note: Exercise caution using rp.dpot when running MF Matsubara simulation - it is untested as of yet. 
     
     def Av(self,k):
         """ Propagation of coordinate in 'variation' mode """
         self.rp.dq+=self.rp.dp*self.motion.qdt[k]/self.rp.dynm3
     
-    def Bv(self,k):#centmove=True):
+    def Bv(self,k):
         """ Propagation of momenta in 'variation' mode """
         # Fortran mode not enabled here
         hess = self.pes.ddpot.reshape(-1,self.pes.ndim*self.rp.nbeads,self.rp.ndim*self.rp.nbeads)
         dq=self.rp.dq.reshape(-1,self.pes.ndim*self.rp.nbeads)
-        dpc= np.einsum('ijk,ik->ij',hess,dq) #Check once again!
+        dpc= np.einsum('ijk,ik->ij',hess,dq) 
         dpc=dpc.reshape(-1,self.pes.ndim,self.rp.nbeads)
         ind = 0
         if self.centmove:
@@ -133,7 +132,7 @@ class Symplectic(Integrator):
         # Fortran mode not enabled here
         hess = self.rp.ddpot.reshape(-1,self.rp.ndim*self.rp.nbeads,self.rp.ndim*self.rp.nbeads)
         dq=self.rp.dq.reshape(-1,self.pes.ndim*self.rp.nbeads)
-        dpc= np.einsum('ijk,ik->ij',hess,dq) #Check once again!
+        dpc= np.einsum('ijk,ik->ij',hess,dq) 
         dpc=dpc.reshape(-1,self.pes.ndim,self.rp.nbeads)
         self.rp.dp-=dpc*self.motion.pdt[k]
         if self.rp.nmats is None:
@@ -172,24 +171,24 @@ class Symplectic(Integrator):
         else:
             self.rp.Mqq+=self.motion.qdt[k]*self.rp.Mpq/self.rp.dynm3[:,:,:,None,None]
     
-    def pq_kstep(self,k):#,centmove=True,update_hess=False):
+    def pq_kstep(self,k):
         """ Propagation of the coordinates and momenta for one 'k' step (k varies from 0 to order-1) """
-        self.B(k)#centmove)
+        self.B(k)
         self.b(k)
-        self.A(k)#,centmove,update_hess=update_hess)
+        self.A(k)
 
     def pq_kstep_nosprings(self,k):
         """ Propagation of the coordinates and momenta for one 'k' step when there are no springs """
         self.B(k)
         self.A(k)
 
-    def var_kstep(self,k):#,centmove=True):
+    def var_kstep(self,k):
         """ Propagation of the coordinates and momenta for one 'k' step in 'variation' mode """
-        self.B(k)#,centmove)
-        self.Bv(k)#,centmove)
+        self.B(k)
+        self.Bv(k)
         self.b(k)
         self.bv(k)
-        self.A(k)#,update_hess=True)
+        self.A(k)
         self.Av(k)
 
     def Monodromy_kstep(self,k):
@@ -202,7 +201,7 @@ class Symplectic(Integrator):
         self.m2(k)
         self.M3(k)
         self.M4(k)
-        self.A(k)#,update_hess=True)
+        self.A(k)
 
     def Monodromy_kstep_nosprings(self,k):
         """ Propagation of the coordinates, momenta and monodromy matrix elements for one 'k' step 
@@ -212,20 +211,20 @@ class Symplectic(Integrator):
         self.M2(k)
         self.M3(k)
         self.M4(k)
-        self.A(k)#,update_hess=True)
+        self.A(k)
 
-    def pq_step(self):#,centmove=True,update_hess=False):
+    def pq_step(self):
         """ Propagation of the coordinates and momenta for one full step """
         for k in range(self.motion.order):
-            self.pq_kstep(k)#,centmove=centmove,update_hess=update_hess)
+            self.pq_kstep(k)
     
-    def pq_step_RSP(self):#,centmove=True,update_hess=False):
+    def pq_step_RSP(self):
         """ Propagation of the coordinates and momenta for one full step using 'Reference-System Propagation' """
         if(self.motion.order==2):
-            self.B(0)#,centmove)
+            self.B(0)
             self.rp.RSP_step()
-            self.force_update()#update_hess=update_hess)
-            self.B(1)#,centmove)
+            self.force_update()
+            self.B(1)
         else:
             raise ValueError("RSP step only implemented for second order integrator")
     
@@ -237,7 +236,7 @@ class Symplectic(Integrator):
     def var_step(self):
         """ Propagation of the coordinates and momenta for one full step in 'variation' mode """
         for k in range(self.motion.order):
-            self.var_kstep(k)#,centmove=True)
+            self.var_kstep(k)
 
     def Monodromy_step(self):
         """ Propagation of the coordinates, momenta and monodromy matrix elements for one full step """

@@ -5,7 +5,7 @@ import pickle
 import multiprocessing as mp
 from functools import partial
 from PISC.utils.mptools import chunks, batching
-from PISC.potentials import double_well,quartic,morse, asym_double_well
+from PISC.potentials import double_well,quartic,morse, asym_double_well, harmonic1D
 from PISC.engine.PI_sim_core import SimUniverse
 import time
 import os 
@@ -96,7 +96,7 @@ def main(times=0.95,nbeads=16): #Double well potential
     m = 0.5
     N = 1000
     dt_therm = 0.05
-    dt = 0.002
+    dt = 0.005
     time_therm = 50.0
     time_total = 5.0
 
@@ -105,16 +105,16 @@ def main(times=0.95,nbeads=16): #Double well potential
 
     method = 'RPMD'
     sysname = 'Papageno'        
-    corrkey = 'OTOC'
+    corrkey = 'fd_OTOC'
     enskey = 'thermal'
 
     path = os.path.dirname(os.path.abspath(__file__))
 
     pes_fort = False
-    propa_fort = False#True
-    transf_fort = False#True
+    propa_fort = True
+    transf_fort = True
 
-    Sim_class = SimUniverse(method,path,sysname,potkey,corrkey,enskey,Tkey)
+    Sim_class = SimUniverse(method,path,sysname,potkey,corrkey,enskey,Tkey,ext_kwlist=['FORTRAN'])
     Sim_class.set_sysparams(pes,T,m,dim)
     Sim_class.set_simparams(N,dt_therm,dt,pes_fort=pes_fort,propa_fort=propa_fort,transf_fort=transf_fort)
     Sim_class.set_methodparams(nbeads=nbeads)

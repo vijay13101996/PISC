@@ -83,7 +83,6 @@ def thermalize_rp(
     start_time = time.time()
 
     nthermsteps = int(time_therm / motion.dt)
-    pmats = np.array([True for i in range(rp.nbeads)])
     
     """ The commented code below is for debugging purposes. """
 
@@ -99,6 +98,7 @@ def thermalize_rp(
     # tot = pot+kin
     # print('pot', np.around(pot[pot>10],2),pot[pot>10].shape,pot.shape)
 
+    #rp.pcart[:] = 0.0
     print(
         "End of thermalization. Seed: {} Classical Kinetic energy {:5.3f} Target value {:5.3f} ".format(
             rngSeed, rp.kin.sum() / rp.nsys, 0.5 * rp.ndim * rp.nbeads**2 / ens.beta

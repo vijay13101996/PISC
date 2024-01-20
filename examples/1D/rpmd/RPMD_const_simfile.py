@@ -28,18 +28,18 @@ T = times*Tc
 m = 0.5
 N = 1000
 dt_therm = 0.05
-dt = 0.002
+dt = 0.005
 time_therm = 50.0
 time_total = 5.0
 
-nbeads = 32
+nbeads = 32#1
 
 potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
 Tkey = 'T_{}Tc'.format(times)
 
 method = 'RPMD'
 sysname = 'Papageno'		
-corrkey = 'OTOC'
+corrkey = 'fd_OTOC'
 enskey = 'const_q'
 
 pes_fort=False
@@ -57,7 +57,7 @@ Sim_class.set_runtime(time_therm,time_total)
 
 start_time=time.time()
 func = partial(Sim_class.run_seed)
-seeds = range(100)
+seeds = range(100,1000)
 seed_split = chunks(seeds,20)
 
 param_dict = {'Temperature':Tkey,'CType':corrkey,'Ensemble':enskey,'m':m,\

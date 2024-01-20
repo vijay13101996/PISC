@@ -352,20 +352,25 @@ class SimUniverse(object):
         """
         tarr = []
         Marr = [] # List to record the monodromy variables
-        if fd:
-            sim.rp.qe = sim.rp.q 
-            sim.rp.pe = sim.rp.p
-            sim.rp.qme = sim.rp.q
-            sim.rp.pme = sim.rp.p
 
-            if (self.corrkey == 'OTOC' or 'qq' in self.corrkey or 'pq' in self.corrkey):
-                sim.rp.qe[:, dim1, nmode1] += sim.rp.qdev
+        if 'fd' in self.corrkey:
+            fd = True
+
+        if fd:
+            sim.rp.qe = sim.rp.q.copy() 
+            sim.rp.pe = sim.rp.p.copy()
+            sim.rp.qme = sim.rp.q.copy()
+            sim.rp.pme = sim.rp.p.copy()
+
+            if (self.corrkey == 'fd_OTOC' or 'qq' in self.corrkey or 'pq' in self.corrkey):
+                sim.rp.qe[:, dim2, nmode2] += sim.rp.qdev
                 sim.rp.qme[:, dim2, nmode2] -= sim.rp.qdev
             elif ('pp' in self.corrkey or 'qp' in self.corrkey):
-                sim.rp.pe[:, dim1, nmode1] += sim.rp.pdev
+                sim.rp.pe[:, dim2, nmode2] += sim.rp.pdev
                 sim.rp.pme[:, dim2, nmode2] -= sim.rp.pdev
-            
-            sim.rebind()
+
+            sim.rp.rebind()
+            sim.pes._bind_fd_vars()
 
         if self.method == "CMD":
             stride = self.gamma
@@ -379,9 +384,9 @@ class SimUniverse(object):
             for i in range(nsteps):
                 sim.step(mode="nvt", var=var, pc=False)
                 if i % stride == 0:
-                    if (self.corrkey=='OTOC_qq' or self.corrkey=='OTOC'):
+                    if ('qq' in self.corrkey or self.corrkey=='OTOC' or self.corrkey=='fd_OTOC'):
                         if fd:
-                            M = (sim.rp.qe[:, dim1, nmode1] - sim.rp.qme[:, dim2, nmode2])/(2*sim.rp.qdev)
+                            M = (sim.rp.qe[:, dim1, nmode1] - sim.rp.qme[:, dim1, nmode1])/(2*sim.rp.qdev)
                             M = np.mean(abs(M**2))
                         else:
                             M = np.mean(abs(sim.rp.Mqq[:, 0, 0, 0, 0] ** 2))
@@ -405,14 +410,14 @@ class SimUniverse(object):
                 sim.step(mode="nve", var=var)
                 if single:
                     if fd:
-                        Mqq = (sim.rp.qe[:, dim1, nmode1] - sim.rp.qme[:, dim2, nmode2])/(2*sim.rp.qdev)
-                        Mqq = np.mean(Mqq)
+                        M = (sim.rp.qe[:, dim1, nmode1] - sim.rp.qme[:, dim2, nmode2])/(2*sim.rp.qdev)
+                        M = np.mean(Mqq)
                     else:
-                        Mqq = np.mean(sim.rp.Mqp[:, 0, 0, 0, 0])  # Change notations when required!
+                        M = np.mean(sim.rp.Mqp[:, 0, 0, 0, 0])  # Change notations when required!
                     tarr.append(sim.t)
                     Marr.append(Mqq)
-                else: 
-                    if (self.corrkey=='OTOC_qq' or self.corrkey=='OTOC'):
+                else:
+                    if ('qq' in self.corrkey or self.corrkey=='OTOC' or self.corrkey=='fd_OTOC'): 
                         if fd:
                             M = (sim.rp.qe[:, dim1, nmode1] - sim.rp.qme[:, dim2, nmode2])/(2*sim.rp.qdev)
                             M = np.mean(abs(M**2))
@@ -702,6 +707,8 @@ class SimUniverse(object):
         tarr = []
         qarr = []
         parr = []
+        q0 = sim.rp.q[0,0,0]
+        p0 = sim.rp.p[0,0,0]
         if self.method == "CMD":
             stride = self.gamma
             dt = self.dt / self.gamma # Smaller time steps required because higher normal modes move faster
@@ -793,7 +800,13 @@ class SimUniverse(object):
                 Hess_norm = Hess_norm[:,:,0,:,0]
                 vals_cent = np.sort( np.linalg.eigvalsh(Hess_norm), axis=1)[:,0]
                 self.store_scalar(np.mean(vals_cent), rngSeed, suffix='centroid_Hessian')
-                print('Hessian computed',np.sqrt(-vals.mean()/sim.rp.m),np.sqrt(-vals_cent.mean()/sim.rp.m))
+                
+                Hess_mats = pes_ddpot_cart.reshape(-1,self.dim*sim.rp.nbeads, self.dim*sim.rp.nbeads)
+                vals_mats = np.sort( np.linalg.eigvalsh(Hess_mats), axis=1)[:,0]
+                self.store_scalar(np.mean(vals_mats), rngSeed, suffix='mats_Hessian')
+                print('Hessian computed',np.sqrt(-vals.mean()/sim.rp.m),
+                      np.sqrt(-vals_cent.mean()/sim.rp.m),np.sqrt(-vals_mats.mean()/sim.rp.m))
+
                 return
             else:
                 # The assumption here is that 'op' is scalar-valued function (i.e. returns a scalar for every bead)
