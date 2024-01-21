@@ -68,8 +68,8 @@ class PES(object):
         self.dpotme_cart = np.zeros_like(self.rp.qcart)
         self.dpotme = np.zeros_like(self.rp.q)
 
-        self.update()
         self._bind_fort()
+        self.update()
 
     def rebind(self):
         self.bind(self.ens,self.rp,self.pes_fort,self.transf_fort,self.fd_update)
@@ -128,8 +128,8 @@ class PES(object):
         if(fortran):
             self.potential_f(self.rp.qcart_f,self.pot_f)
             if self.fd_update:
-                self.potential_f(self.rp.qcarte_f,self.pote_f)
-                self.potential_f(self.rp.qcartme_f,self.potme_f)
+                self.potential_f(self.rp.qecart_f,self.pote_f)
+                self.potential_f(self.rp.qmecart_f,self.potme_f)
         else:
             self.pot[:] = self.potential(self.rp.qcart)
             if self.fd_update:
