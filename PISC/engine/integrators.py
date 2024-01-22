@@ -71,10 +71,10 @@ class Symplectic(Integrator):
             ind = 0
             if self.centmove == False:
                 ind = 1
-            self.rp.q[...,ind:]+=self.motion.qdt[k]*self.rp.p[...,ind:]/self.rp.dynm3[...,ind:]
+            self.rp.q[...,ind:,:]+=self.motion.qdt[k]*self.rp.p[...,ind:,:]/self.rp.dynm3[...,ind:,:]
             if self.fd:
-                self.rp.qe[...,ind:]+=self.motion.qdt[k]*self.rp.pe[...,ind:]/self.rp.dynm3[...,ind:]
-                self.rp.qme[...,ind:]+=self.motion.qdt[k]*self.rp.pme[...,ind:]/self.rp.dynm3[...,ind:]
+                self.rp.qe[...,ind:,:]+=self.motion.qdt[k]*self.rp.pe[...,ind:,:]/self.rp.dynm3[...,ind:,:]
+                self.rp.qme[...,ind:,:]+=self.motion.qdt[k]*self.rp.pme[...,ind:,:]/self.rp.dynm3[...,ind:,:]
         self.force_update()
 
     def B(self,k):
@@ -88,10 +88,10 @@ class Symplectic(Integrator):
             ind = 0
             if self.centmove == False:
                 ind = 1
-            self.rp.p[...,ind:]-=self.pes.dpot[...,ind:]*self.motion.pdt[k]
+            self.rp.p[...,ind:,:]-=self.pes.dpot[...,ind:,:]*self.motion.pdt[k]
             if self.fd:
-                self.rp.pe[...,ind:]-=self.pes.dpote[...,ind:]*self.motion.pdt[k]
-                self.rp.pme[...,ind:]-=self.pes.dpotme[...,ind:]*self.motion.pdt[k]
+                self.rp.pe[...,ind:,:]-=self.pes.dpote[...,ind:,:]*self.motion.pdt[k]
+                self.rp.pme[...,ind:,:]-=self.pes.dpotme[...,ind:,:]*self.motion.pdt[k]
 
     def b(self,k): 
         """ Propagation of momenta due to spring potential """
@@ -105,10 +105,12 @@ class Symplectic(Integrator):
                 nmats = 0
             else:
                 nmats = self.rp.nmats
-            self.rp.p[...,nmats:]-=self.rp.dpot[...,nmats:]*self.motion.pdt[k] 
+            if self.centmove == False:
+                ind = 1
+            self.rp.p[...,ind:,nmats:]-=self.rp.dpot[...,ind:,nmats:]*self.motion.pdt[k] 
             if self.fd:
-                self.rp.pe[...,nmats:]-=self.rp.dpot_func(self.rp.qe)[...,nmats:]*self.motion.pdt[k]
-                self.rp.pme[...,nmats:]-=self.rp.dpot_func(self.rp.qme)[...,nmats:]*self.motion.pdt[k]
+                self.rp.pe[...,ind:,nmats:]-=self.rp.dpot_func(self.rp.qe)[...,ind:,nmats:]*self.motion.pdt[k]
+                self.rp.pme[...,ind:,nmats:]-=self.rp.dpot_func(self.rp.qme)[...,ind:,nmats:]*self.motion.pdt[k]
         #Note: Exercise caution using rp.dpot when running MF Matsubara simulation - it is untested as of yet. 
     
     def Av(self,k):

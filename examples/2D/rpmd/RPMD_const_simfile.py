@@ -49,7 +49,7 @@ def main(times,nbeads,z):
 
     path = os.path.dirname(os.path.abspath(__file__))
 
-    Sim_class = SimUniverse(method,path,sysname,potkey,corrkey,enskey,Tkey)
+    Sim_class = SimUniverse(method,path,sysname,potkey,corrkey,enskey,Tkey,ext_kwlist=['1D_const'])
     Sim_class.set_sysparams(pes,T,m,dim)
     Sim_class.set_simparams(N,dt_therm,dt,pes_fort=pes_fort,propa_fort=propa_fort,transf_fort=transf_fort)
     Sim_class.set_methodparams(nbeads=nbeads)
