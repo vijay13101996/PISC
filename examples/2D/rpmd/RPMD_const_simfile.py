@@ -41,7 +41,7 @@ def main(times,nbeads,z):
     method = 'RPMD'
     sysname = 'Papageno'		
     corrkey = 'fd_OTOC'
-    enskey = 'const_q'
+    enskey = 'const_qp'
 
     pes_fort=True
     propa_fort=True
@@ -58,7 +58,7 @@ def main(times,nbeads,z):
 
     start_time=time.time()
     func = partial(Sim_class.run_seed)
-    seeds = range(100,500)
+    seeds = range(2000)
     seed_split = chunks(seeds,20)
 
     param_dict = {'Temperature':Tkey,'CType':corrkey,'Ensemble':enskey,'m':m,\

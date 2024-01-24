@@ -21,7 +21,7 @@ print('Vb, minima', Vb,minima)
 pes = double_well(lamda,g)
 
 Tc = 0.5*lamda/np.pi
-times = 0.95
+times = 0.9#5
 T = times*Tc
 
 m = 0.5
@@ -31,7 +31,7 @@ dt = 0.002
 time_therm = 50.0
 time_total = 5.0
 
-nbeads = 16
+nbeads = 32
 
 method = 'RPMD'
 potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)

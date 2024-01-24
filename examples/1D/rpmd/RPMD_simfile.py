@@ -96,7 +96,7 @@ def main(times=0.95,nbeads=16): #Double well potential
     m = 0.5
     N = 1000
     dt_therm = 0.05
-    dt = 0.005
+    dt = 0.002
     time_therm = 50.0
     time_total = 5.0
 
@@ -123,7 +123,7 @@ def main(times=0.95,nbeads=16): #Double well potential
 
     start_time=time.time()
     func = partial(Sim_class.run_seed)
-    seeds = range(100)
+    seeds = range(3000)
     seed_split = chunks(seeds,20)
 
     param_dict = {'Temperature':Tkey,'CType':corrkey,'Ensemble':enskey,'m':m,\
@@ -132,7 +132,7 @@ def main(times=0.95,nbeads=16): #Double well potential
     with open('{}/Datafiles/RPMD_input_log_{}.txt'.format(path,potkey),'a') as f:   
         f.write('\n'+str(param_dict))
 
-    print('T',times, 'Tc', Tc)
+    print('T',times, 'Tc', Tc, 'dt', dt)
     print('nbeads',nbeads)
     batching(func,seed_split,max_time=1e6)
     print('time', time.time()-start_time)
