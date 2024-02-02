@@ -21,7 +21,7 @@ print('Vb, minima', Vb,minima)
 pes = double_well(lamda,g)
 
 Tc = 0.5*lamda/np.pi
-times = 0.9
+times = 0.95
 T = times*Tc
 
 m = 0.5
@@ -52,7 +52,7 @@ def main():
 
 	start_time=time.time()
 	func = partial(Sim_class.run_seed,op='Hess')
-	seeds = range(1000)
+	seeds = range(1)
 	seed_split = chunks(seeds,20)
 
 	param_dict = {'Temperature':Tkey,'CType':corrkey,'Ensemble':enskey,'m':m,\

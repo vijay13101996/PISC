@@ -123,7 +123,7 @@ def main(times=0.95,nbeads=16): #Double well potential
 
     start_time=time.time()
     func = partial(Sim_class.run_seed)
-    seeds = range(3000)
+    seeds = range(1)
     seed_split = chunks(seeds,20)
 
     param_dict = {'Temperature':Tkey,'CType':corrkey,'Ensemble':enskey,'m':m,\

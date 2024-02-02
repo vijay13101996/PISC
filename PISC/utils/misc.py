@@ -46,7 +46,7 @@ def find_OTOC_slope(fname,tst,tend,witherror=False,return_cov=False):
     y_trunc = OTOC_arr[ist:iend]
     p,V = np.polyfit(x_trunc,y_trunc,1,cov=True)
     slope, ic = p
-    print('slope, ic, cov',slope,ic,V[0,0]**0.5,V[1,1]**0.5)
+    #print('slope, ic, cov',slope,ic,V[0,0]**0.5,V[1,1]**0.5)
     if(witherror):
         stdarr = np.real(data[:,2])
         yerr_trunc = stdarr[ist:iend]

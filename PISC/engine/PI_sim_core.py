@@ -17,6 +17,7 @@ from PISC.engine.gen_stable_manifold import generate_stable_manifold_rp
 from PISC.engine.gen_mc_ensemble import generate_rp
 from PISC.engine.gen_const_qp_ensemble import thermalize_rp_const_qp
 from PISC.utils.time_order import reorder_time
+from matplotlib import pyplot as plt
 
 debug = False
 
@@ -85,7 +86,7 @@ class SimUniverse(object):
 
     def set_simparams(
         self, N, dt_ens=1e-2, dt=5e-3, extparam=None, coordinate_list=None, 
-        pes_fort=False, propa_fort=False,transf_fort=False):
+        pes_fort=False, propa_fort=False,transf_fort=False, filt=False):
         """
         Set simulation parameters
         N               : Number of trajectories
@@ -123,6 +124,7 @@ class SimUniverse(object):
         self.pes_fort = pes_fort
         self.propa_fort = propa_fort
         self.transf_fort = transf_fort
+        self.filt = filt
 
     def set_methodparams(self, nbeads=1, gamma=1):
         """
@@ -406,6 +408,12 @@ class SimUniverse(object):
             dt = self.dt
             nsteps = int(self.time_run / dt)
             var = "fd_monodromy" if fd else "monodromy"
+            if(self.filt):
+                ind = np.where(abs(sim.rp.q[:, 0, 0]) < 1.0)[0]
+                print("Filtering is on", len(ind))
+            else:
+                ind = range(self.N)
+
             for i in range(nsteps):
                 sim.step(mode="nve", var=var)
                 if single:
@@ -419,10 +427,10 @@ class SimUniverse(object):
                 else:
                     if ('qq' in self.corrkey or self.corrkey=='OTOC' or self.corrkey=='fd_OTOC'): 
                         if fd:
-                            M = (sim.rp.qe[:, dim1, nmode1] - sim.rp.qme[:, dim2, nmode2])/(2*sim.rp.qdev)
+                            M = (sim.rp.qe[ind, dim1, nmode1] - sim.rp.qme[ind, dim2, nmode2])/(2*sim.rp.qdev)
                             M = np.mean(abs(M**2))
                         else:
-                            M = np.mean(abs(sim.rp.Mqq[:, 0, 0, 0, 0] ** 2))
+                            M = np.mean(abs(sim.rp.Mqq[ind, 0, 0, 0, 0] ** 2))
                     elif (self.corrkey=='OTOC_ApAp'):
                         if fd:
                             raise NotImplementedError
@@ -789,18 +797,27 @@ class SimUniverse(object):
         elif "TCF" in self.corrkey:
             tarr, Carr = self.run_TCF(sim)
         elif self.corrkey == "stat_avg":
-            if op is 'Hess':
-                pes_ddpot_cart = sim.pes.compute_hessian()
-                Hess_cart = pes_ddpot_cart + sim.rp.ddpot_cart
+            if op == 'Hess':
+                ind = np.where(sim.rp.p[:,0,0]**2 >= 0.0)[0]
+                print('len',len(ind))
+                pes_ddpot_cart = sim.pes.compute_hessian() #+ sim.rp.ddpot_cart
+                Hess_cart = pes_ddpot_cart[ind]
                 Hess = Hess_cart.reshape(-1,self.dim*sim.rp.nbeads, self.dim*sim.rp.nbeads)
                 vals = np.sort( np.linalg.eigvalsh(Hess), axis=1)[:,0]
                 self.store_scalar(np.mean(vals), rngSeed, suffix='Hessian')
             
-                Hess_norm = sim.pes.nmtrans.cart2mats_hessian(pes_ddpot_cart) + sim.rp.ddpot
-                Hess_norm = Hess_norm[:,:,0,:,0]
-                vals_cent = np.sort( np.linalg.eigvalsh(Hess_norm), axis=1)[:,0]
+                Hess_norm = sim.pes.nmtrans.cart2mats_hessian(pes_ddpot_cart) #+ sim.rp.ddpot 
+                cent_norm = Hess_norm[:,0,0,0,0] 
+                vals_cent = cent_norm[ind]
                 self.store_scalar(np.mean(vals_cent), rngSeed, suffix='centroid_Hessian')
                 
+                
+                #plt.hist(vals_cent, bins=100,alpha=0.5)
+                #plt.hist(vals, bins=100,alpha=0.5)
+                #plt.hist(sim.rp.q[:,1,0], bins=100,alpha=0.5)
+                #plt.show()
+                #exit()
+            
                 Hess_mats = pes_ddpot_cart.reshape(-1,self.dim*sim.rp.nbeads, self.dim*sim.rp.nbeads)
                 vals_mats = np.sort( np.linalg.eigvalsh(Hess_mats), axis=1)[:,0]
                 self.store_scalar(np.mean(vals_mats), rngSeed, suffix='mats_Hessian')

@@ -79,11 +79,12 @@ def thermalize_rp_const_qp(
         sim.rp.q[:, 0, 0] = Q0/nbeads**0.5 
         # The above line needs to be updated when the constraint position is not zero (or 1D)
         sim.propa.force_update()
-   
-    # Thermalise ring polymer position at the constrained value
-    sim.propa.centmove = False
-    sim.propa.rebind()
-    sim.step(ndt=nthermsteps, mode="nvt", var="pq", RSP=False, pc=False)
+    
+        # Thermalise ring polymer position at the constrained value
+        sim.propa.centmove = False
+        sim.propa.rebind()
+        sim.step(ndt=nthermsteps, mode="nvt", var="pq", RSP=False, pc=True)
+
 
     # Check if the thermalization is successful
     if qp:
@@ -93,7 +94,7 @@ def thermalize_rp_const_qp(
     else:
         assert(np.allclose(sim.rp.q[:,0,0], Q0/nbeads**0.5))
         print('All positions are equal to Q0') 
-
+    
     print(
         "End of thermalization. Seed: {} Classical Kinetic energy {:5.3f} Target value {:5.3f} ".format(
             rngSeed, rp.kin.sum() / rp.nsys, 0.5 * rp.ndim * rp.nbeads**2 / ens.beta

@@ -105,6 +105,7 @@ class Symplectic(Integrator):
                 nmats = 0
             else:
                 nmats = self.rp.nmats
+            ind = 0
             if self.centmove == False:
                 ind = 1
             self.rp.p[...,ind:,nmats:]-=self.rp.dpot[...,ind:,nmats:]*self.motion.pdt[k] 

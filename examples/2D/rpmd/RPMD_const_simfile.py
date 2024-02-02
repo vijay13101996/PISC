@@ -5,36 +5,44 @@ import pickle
 import multiprocessing as mp
 from functools import partial
 from PISC.utils.mptools import chunks, batching
-from PISC.potentials import quartic_bistable
+from PISC.potentials import quartic_bistable, DW_harm
 from PISC.engine.PI_sim_core import SimUniverse
 import time
 import os
 from argparse import ArgumentParser
 
 dim=2
+m = 0.5
+lamda = 2.0
+g = 0.08
+Vb = lamda**4/(64*g)
 
-def main(times,nbeads,z):
+def main(times,nbeads,z,pot):
 
-    # 2D Double well
-    lamda = 2.0
-    g = 0.08
-    Vb = lamda**4/(64*g)
+    if(pot=='dw_qb'):# 2D Double well
+        alpha = 0.382
+        D = 3*Vb
+         
+        pes = quartic_bistable(alpha,D,lamda,g,z)
 
-    alpha = 0.382
-    D = 3*Vb
-     
-    pes = quartic_bistable(alpha,D,lamda,g,z)
+        potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
+        print(potkey)
 
-    potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
+    if(pot=='dq_harm'):# 2D Double well with harmonic coupling
+        w = 2.0
+
+        pes = DW_harm(m, w, lamda, g, z)
+
+        potkey = 'DW_harm_2D_m_{}_w_{}_lamda_{}_g_{}_z_{}'.format(m,w,lamda,g,z)
+        print(potkey)
 
     Tc = 0.5*lamda/np.pi
     T = times*Tc
     Tkey = 'T_{}Tc'.format(times)
 
-    m = 0.5
     N = 1000
     dt_therm = 0.05
-    dt = 0.002
+    dt = 0.005
     time_therm = 50.0
     time_total = 5.0
 
@@ -43,7 +51,7 @@ def main(times,nbeads,z):
     corrkey = 'fd_OTOC'
     enskey = 'const_q'
 
-    pes_fort=True
+    pes_fort=False#True
     propa_fort=True
     transf_fort=False#True
 
@@ -58,7 +66,7 @@ def main(times,nbeads,z):
 
     start_time=time.time()
     func = partial(Sim_class.run_seed)
-    seeds = range(100,500)
+    seeds = range(2000)
     seed_split = chunks(seeds,20)
 
     param_dict = {'Temperature':Tkey,'CType':corrkey,'Ensemble':enskey,'m':m,\
@@ -75,6 +83,7 @@ if __name__ == '__main__':
     parser.add_argument('-t', '--times', type=float, default=3.0, help='Temperature in units of Tc')
     parser.add_argument('-nb', '--nbeads', type=int, default=1, help='Number of beads')
     parser.add_argument('-z', '--z', type=float, default=1.0, help='Coupling strength')
+    parser.add_argument('-p', '--pot', type=str, default='dw_qb', help='Potential')
     args = parser.parse_args()
 
-    main(args.times,args.nbeads,args.z)
+    main(args.times,args.nbeads,args.z,args.pot)
