@@ -5,7 +5,7 @@ import pickle
 import multiprocessing as mp
 from functools import partial
 from PISC.utils.mptools import chunks, batching
-from PISC.potentials import quartic_bistable, DW_harm
+from PISC.potentials import quartic_bistable, DW_harm, DW_Morse_harm
 from PISC.engine.PI_sim_core import SimUniverse
 import os
 
@@ -21,29 +21,31 @@ times = 3.0
 T = times*Tc
 Tkey = 'T_{}Tc'.format(times)
 
+z = 1.0
 
 if(1): #2D Double well
     alpha = 0.382
     D = 3*Vb
 
-    z = 0.5
-     
     pes = quartic_bistable(alpha,D,lamda,g,z)
 
     potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
+    print(potkey)
 
-if(1):# 2D Double well with harmonic coupling
-    w = 2.0
-    z = 1.0
+if(0):# 2D Double well with harmonic coupling
+    #w = 2.0
+    #pes = DW_harm(m, w, lamda, g, z, T=T)
+    #potkey = 'DW_harm_2D_T_{}Tc_m_{}_w_{}_lamda_{}_g_{}_z_{}'.format(times,m,w,lamda,g,z)
+    
+    alpha = 0.382
+    D = 3*Vb
+    pes = DW_Morse_harm(alpha,D,lamda,g,z)
+    potkey = 'DW_Morse_harm_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
+    print(potkey)
 
-    pes = DW_harm(m, w, lamda, g, z, T=T)
-
-    potkey = 'DW_harm_2D_T_{}Tc_m_{}_w_{}_lamda_{}_g_{}_z_{}'.format(times,m,w,lamda,g,z)
-
-
-N = 10000
+N = 1000
 dt_therm = 0.05
-dt = 0.002
+dt = 0.005
 time_therm = 50.0
 time_total = 5.0
 nbeads = 1
@@ -56,9 +58,6 @@ enskey = 'const_q'#'thermal'
 
 path = os.path.dirname(os.path.abspath(__file__))
 
-#### FIX ROGUE TRAJECTORIES MESSING UP THE STATISTICS
-
-
 def main():
 	Sim_class = SimUniverse(method,path,sysname,potkey,corrkey,enskey,Tkey)
 	Sim_class.set_sysparams(pes,T,m,dim)
@@ -69,7 +68,7 @@ def main():
 
 	start_time=time.time()
 	func = partial(Sim_class.run_seed,op='Hess')
-	seeds = range(1)
+	seeds = range(3000)
 	seed_split = chunks(seeds,20)
 
 	param_dict = {'Temperature':Tkey,'CType':corrkey,'Ensemble':enskey,'m':m,\

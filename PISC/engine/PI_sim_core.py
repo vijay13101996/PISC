@@ -798,21 +798,19 @@ class SimUniverse(object):
             tarr, Carr = self.run_TCF(sim)
         elif self.corrkey == "stat_avg":
             if op == 'Hess':
-                ind = np.where(sim.rp.p[:,0,0]**2 >= 0.0)[0]
-                print('len',len(ind))
                 pes_ddpot_cart = sim.pes.compute_hessian() #+ sim.rp.ddpot_cart
-                Hess_cart = pes_ddpot_cart[ind]
+                Hess_cart = pes_ddpot_cart
                 Hess = Hess_cart.reshape(-1,self.dim*sim.rp.nbeads, self.dim*sim.rp.nbeads)
                 vals = np.sort( np.linalg.eigvalsh(Hess), axis=1)[:,0]
                 self.store_scalar(np.mean(vals), rngSeed, suffix='Hessian')
             
                 Hess_norm = sim.pes.nmtrans.cart2mats_hessian(pes_ddpot_cart) #+ sim.rp.ddpot 
                 cent_norm = Hess_norm[:,0,0,0,0] 
-                vals_cent = cent_norm[ind]
+                vals_cent = cent_norm
                 self.store_scalar(np.mean(vals_cent), rngSeed, suffix='centroid_Hessian')
                 
                 
-                #plt.hist(vals_cent, bins=100,alpha=0.5)
+                #plt.hist(vals, bins=100)#,alpha=0.5)
                 #plt.hist(vals, bins=100,alpha=0.5)
                 #plt.hist(sim.rp.q[:,1,0], bins=100,alpha=0.5)
                 #plt.show()
