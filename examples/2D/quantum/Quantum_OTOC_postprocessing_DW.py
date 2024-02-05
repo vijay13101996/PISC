@@ -24,8 +24,8 @@ Tc = lamda*0.5/np.pi
 
 path = os.path.dirname(os.path.abspath(__file__))	
 
-basis_N = 70
-n_eigen = 40
+basis_N = 100
+n_eigen = 60
 
 reg='Kubo'
 t_arr = np.linspace(0.0,5.0,1000)
@@ -38,7 +38,7 @@ fig,ax = plt.subplots()
 times_arr = [0.7,0.8,0.95,1.0,1.2,1.4,1.8,2.2]#,2.6,3.0]
 z_arr = [0.0,2.0]
 times = 3.0#0.95
-for z in z_arr: #times in times_arr:
+for times in times_arr:
     print('z',z)
     print('times',times)
 
