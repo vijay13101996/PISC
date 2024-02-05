@@ -56,13 +56,16 @@ def main(filename,pathname,sysname,pes,potkey,T,Tkey,m,N,nbeads,dt,rngSeed,time_
         sim.bind(ens,motion,rng,rp,pes,propa,therm,pes_fort=True,propa_fort=True,transf_fort=True)
         
         # Thermalize the system ensuring that the centroid mode is frozen
-        sim.step(ndt=nsteps_therm,mode="nvt",var='pq',RSP=True,pc=False,centmove=False,update_hess=True)
+        sim.propa.centmove = False
+        sim.propa.update_hess = True
+        sim.propa.rebind()
+        sim.step(ndt=nsteps_therm, mode="nvt", var="pq", RSP=False, pc=False)
 
         print('k, q[k]',k, rp.q[0,:,0])
         
         # Compute the force and Hessian at the centroid mode as an average of 'nsample' samples
         for i in range(nsample):
-            sim.step(ndt=nsteps_relax,mode="nvt",var='pq',RSP=True,pc=False,centmove=False,update_hess=True)
+            sim.step(ndt=nsteps_relax,mode="nvt",var='pq',RSP=False,pc=False)
             fgrid[k]+=np.mean(pes.dpot[...,0],axis=0)  # Centroid force
             #print('force',pes.dpot[...,0], np.mean(pes.dpot[...,0]))
             #print('rp.q, rp.p',rp.q, rp.p)
@@ -80,8 +83,8 @@ def main(filename,pathname,sysname,pes,potkey,T,Tkey,m,N,nbeads,dt,rngSeed,time_
     lamda = np.sqrt(-vals/m)
     #print('lamda',lamda)
     
-    fname = 'CMD_PMF_{}_{}_{}_N_{}_nbeads_{}_dt_{}_thermtime_{}_relaxtime_{}_nsample_{}_seed_{}'.format(sysname,potkey,Tkey,N,nbeads,dt,time_therm,time_relax,nsample,rngSeed)
+    fname = 'CMD_PMF_ORIGIN_{}_{}_{}_N_{}_nbeads_{}_dt_{}_thermtime_{}_relaxtime_{}_nsample_{}_seed_{}'.format(sysname,potkey,Tkey,N,nbeads,dt,time_therm,time_relax,nsample,rngSeed)
     store_1D_plotdata(qgrid,fgrid,fname,"{}/Datafiles".format(pathname))
 
-    fname = 'CMD_Hess_{}_{}_{}_N_{}_nbeads_{}_dt_{}_thermtime_{}_relaxtime_{}_nsample_{}_seed_{}'.format(sysname,potkey,Tkey,N,nbeads,dt,time_therm,time_relax,nsample,rngSeed)
+    fname = 'CMD_Hess_ORIGIN_{}_{}_{}_N_{}_nbeads_{}_dt_{}_thermtime_{}_relaxtime_{}_nsample_{}_seed_{}'.format(sysname,potkey,Tkey,N,nbeads,dt,time_therm,time_relax,nsample,rngSeed)
     store_1D_plotdata(qgrid,vals,fname,"{}/Datafiles".format(pathname))

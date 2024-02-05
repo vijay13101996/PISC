@@ -800,7 +800,7 @@ class SimUniverse(object):
                 Hess_norm = Hess_norm[:,:,0,:,0]
                 vals_cent = np.sort( np.linalg.eigvalsh(Hess_norm), axis=1)[:,0]
                 self.store_scalar(np.mean(vals_cent), rngSeed, suffix='centroid_Hessian')
-                
+               
                 Hess_mats = pes_ddpot_cart.reshape(-1,self.dim*sim.rp.nbeads, self.dim*sim.rp.nbeads)
                 vals_mats = np.sort( np.linalg.eigvalsh(Hess_mats), axis=1)[:,0]
                 self.store_scalar(np.mean(vals_mats), rngSeed, suffix='mats_Hessian')

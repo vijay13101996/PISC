@@ -17,13 +17,13 @@ D = 3*Vb
 alpha = 0.382
 print('Vb',Vb, 'D', D)
 
-z = 1.0
+z = 2.0
 
 pes = quartic_bistable(alpha,D,lamda,g,z)
 
 #Only relevant for ring polymer and canonical simulations
 Tc = 0.5*lamda/np.pi
-times = 0.71
+times = 0.95
 T = times*Tc
 beta = 1/T
 
@@ -45,7 +45,7 @@ def find_instanton_DW(nbeads,m,pes,beta,potkey,Tkey,ax=None,plt=None,plot=False,
         while nb<=nbeads:
                 instanton = find_instanton(m,pes,qinit,beta,nb,dim=2,scale=1.0,stepsize=step,tol=tol,plot=False,ax=ax,plt=plt)
                 if(path is not None):
-                        store_arr(instanton,'Instanton2_{}_{}_nbeads_{}'.format(potkey, Tkey,nb),'{}/Datafiles/'.format(path))    
+                        store_arr(instanton,'Instanton_NEW_{}_{}_nbeads_{}'.format(potkey, Tkey,nb),'{}/Datafiles/'.format(path))    
                 print('Instanton config. with nbeads=', nb, 'computed') 
                 if(ax is not None and plot is True):
                         print('here')

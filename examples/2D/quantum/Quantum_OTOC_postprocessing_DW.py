@@ -1,5 +1,5 @@
 import numpy as np
-from PISC.potentials import quartic_bistable
+from PISC.potentials import quartic_bistable, DW_Morse_harm
 from Quantum_OTOC_plotfunctions import plot_wf, plot_bnm, plot_Cn, plot_thermal_OTOC, plot_thermal_TCF, cplot_kubo, cplot_stan
 from matplotlib import pyplot as plt
 import os 
@@ -8,8 +8,7 @@ import ast
 from PISC.utils.misc import find_OTOC_slope
 from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr, read_arr
 from PISC.utils.plottools import plot_1D
-
-start_time = time.time()
+import argparse
 
 m=0.5
 
@@ -19,26 +18,57 @@ g = 0.08
 Vb =lamda**4/(64*g)
 
 D = 3*Vb
-alpha = 0.382
-
-z = 1.0#2.3	
+alpha = 0.382	
 
 Tc = lamda*0.5/np.pi
-times = 0.85#1.0
-T_au = times*Tc 
-beta = 1.0/T_au 
-	
+
 path = os.path.dirname(os.path.abspath(__file__))	
-	
+
+basis_N = 70
+n_eigen = 40
+
+reg='Kubo'
+t_arr = np.linspace(0.0,5.0,1000)
+
+pot = 'dw_harm'
+z=2.0
+
 fig,ax = plt.subplots()
 
-print('ehere')
-alpha_list1 = [0.382]#[0.24,0.39,0.55,1.147]#,0.382,0.52,1.147]#,0.55]
-alpha_list2 = [0.382]#,0.45,0.52]#,0.53,0.54,0.55]#,0.6]
-alpha_list3 = [0.52]
-alpha_list4 = [1.147]
+times_arr = [0.7,0.8,0.95,1.0,1.2,1.4,1.8,2.2]#,2.6,3.0]
+z_arr = [0.0,2.0]
+times = 3.0#0.95
+for z in z_arr: #times in times_arr:
+    print('z',z)
+    print('times',times)
 
-if(1): # b_nm,C_n for different alpha
+    if(pot=='dw_qb'):
+        potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
+    elif(pot=='dw_harm'):
+        potkey = 'DW_Morse_harm_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
+
+    print('pot',potkey)
+    
+    
+    fname = 'Quantum_{}_OTOC_{}_T_{}Tc_neigen_{}_basis_{}'.format(reg,potkey,times,n_eigen,basis_N)
+    dataarr = read_1D_plotdata('{}/Datafiles/{}.txt'.format(path,fname))
+    
+    tarr = dataarr[:,0]
+    CT = dataarr[:,1]
+    ax.plot(tarr,np.log(CT),label=r'$z={},T={}T_c$'.format(z,times))
+
+    slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope('{}/Datafiles/{}'.format(path,fname),0.9,1.7)#0.95,1.5)
+    #ax.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k')
+    print('slope',slope)
+
+
+plt.legend()
+plt.show()
+
+
+
+
+if(0): # b_nm,C_n for different alpha
 	print('heree')
 	#for z in [1.0]:#0.0,0.5,1.0]:
 		#print('z',z) 

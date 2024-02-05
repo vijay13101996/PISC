@@ -76,7 +76,11 @@ def thermalize_rp_const_qp(
         # Thermalise ring polymer momentum if only the position is constrained
         sim.step(ndt=nthermsteps, mode="nvt", var="pq", RSP=True, pc=True)
         # Reset the position to the constraint value
-        sim.rp.q[:, :, 0] = Q0/nbeads**0.5 
+        if hasattr(Q0, '__len__'):
+            sim.rp.q[:, :, 0] = Q0[:,None]/nbeads**0.5
+        else:
+            sim.rp.q[:, :, 0] = Q0/nbeads**0.5
+        
         # The above line needs to be updated when the constraint position is not zero (or 1D)
         sim.propa.force_update()
    
@@ -91,7 +95,10 @@ def thermalize_rp_const_qp(
         assert(np.allclose(sim.rp.q[:,:,0], Q0/nbeads**0.5))
         print('All momenta are equal to P0 and all positions are equal to Q0')
     else:
-        assert(np.allclose(sim.rp.q[:,:,0], Q0/nbeads**0.5)) 
+        if hasattr(Q0, '__len__'):
+            assert(np.allclose(sim.rp.q[:,:,0], Q0[:,None]/nbeads**0.5))
+        else:
+            assert(np.allclose(sim.rp.q[:,:,0], Q0/nbeads**0.5))
         print('All positions are equal to Q0') 
 
     print(

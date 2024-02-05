@@ -34,18 +34,18 @@ def main(times,nbeads,z):
     m = 0.5
     N = 1000
     dt_therm = 0.05
-    dt = 0.002
+    dt = 0.005
     time_therm = 50.0
     time_total = 5.0
 
     method = 'RPMD'
     sysname = 'Papageno'		
     corrkey = 'fd_OTOC'
-    enskey = 'const_qp'
+    enskey = 'const_q'
 
     pes_fort=True
     propa_fort=True
-    transf_fort=False#True
+    transf_fort=True
 
     path = os.path.dirname(os.path.abspath(__file__))
 
@@ -58,7 +58,7 @@ def main(times,nbeads,z):
 
     start_time=time.time()
     func = partial(Sim_class.run_seed)
-    seeds = range(2000)
+    seeds = range(4000)
     seed_split = chunks(seeds,20)
 
     param_dict = {'Temperature':Tkey,'CType':corrkey,'Ensemble':enskey,'m':m,\

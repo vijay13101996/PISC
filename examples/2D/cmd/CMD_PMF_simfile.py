@@ -10,9 +10,6 @@ from functools import partial
 import os
 from PISC.potentials import quartic_bistable
 
-
-### FIGURE OUT WHAT IS WRONG WITH INSTANTON FINDER CODE!
-
 def main(nbeads=4,times = 1.0):
     sysname = 'Selene'
     path = os.path.dirname(os.path.abspath(__file__))
@@ -36,7 +33,7 @@ def main(nbeads=4,times = 1.0):
     Tkey = 'T_{}Tc'.format(times)
     
     N = 1000
-    dt = 0.01
+    dt = 0.05
     time_therm = 50.0
     time_relax = 10.0
     nsample = 5
@@ -50,7 +47,7 @@ def main(nbeads=4,times = 1.0):
         #xgrid = np.zeros_like(ygrid)
         #qgrid = list(zip(xgrid,ygrid))
        
-        if(1):
+        if(0):
             instpath = '/home/vgs23/PISC/examples/2D/rpmd/Datafiles/'
             fname = 'Instanton2_{}_T_{}Tc_nbeads_{}.dat'.format(potkey,times,nbeads)
             f = open(instpath+fname,'rb')
@@ -66,8 +63,8 @@ def main(nbeads=4,times = 1.0):
     # 12 cores for 32 beads, 10 cores for 16 beads, 4 cores for 8 beads and 2 cores for 4 beads.
 
     func = partial(begin_simulation, nbeads)
-    seeds = range(0,12)
-    seed_split = chunks(seeds,12)
+    seeds = range(100)
+    seed_split = chunks(seeds,20)
 
     start_time = time.time()
     batching(func,seed_split,max_time=1e6)

@@ -54,15 +54,18 @@ def main(filename,pathname,sysname,lamda,g,times,m,N,nbeads,dt,rngSeed,time_ther
         # Bind the simulation object with the various components
         sim.bind(ens,motion,rng,rp,pes,propa,therm,pes_fort=False,propa_fort=True,transf_fort=True)  
         
-        # Thermalize the system ensuring that the centroid mode is frozen
-        sim.step(ndt=nsteps_therm,mode="nvt",var='pq',RSP=True,pc=False,centmove=False,update_hess=True)
-
+        # Thermalize the system ensuring that the centroid mode is frozen    
+        sim.propa.centmove = False
+        sim.propa.update_hess = True
+        sim.propa.rebind()
+        sim.step(ndt=nsteps_therm, mode="nvt", var="pq", RSP=False, pc=False)
+    
         if(rngSeed==0):
             print('k, q[k]',k, rp.q[0,0,0])
         
         # Compute the force and Hessian at the centroid mode as an average of 'nsample' samples
         for i in range(nsample):
-            sim.step(ndt=nsteps_relax,mode="nvt",var='pq',RSP=True,pc=False,centmove=False,update_hess=True)
+            sim.step(ndt=nsteps_relax,mode="nvt",var='pq',RSP=False,pc=False)
             fgrid[k]+=np.mean(pes.dpot[...,0])  # Centroid force
             #print('force',pes.dpot[...,0], np.mean(pes.dpot[...,0]))
             #print('rp.q, rp.p',rp.q, rp.p)
@@ -73,11 +76,11 @@ def main(filename,pathname,sysname,lamda,g,times,m,N,nbeads,dt,rngSeed,time_ther
     fgrid/=nsample
     hessgrid/=nsample
 
-    print('grid',qgrid)
+    #print('grid',qgrid)
 
-    fname = 'CMD_PMF_LONGER_{}_inv_harmonic_T_{}Tc_N_{}_nbeads_{}_dt_{}_thermtime_{}_relaxtime_{}_nsample_{}_seed_{}'.format(sysname,times,N,nbeads,dt,time_therm,time_relax,nsample,rngSeed)
+    fname = 'CMD_PMF_ORIGIN_{}_inv_harmonic_T_{}Tc_N_{}_nbeads_{}_dt_{}_thermtime_{}_relaxtime_{}_nsample_{}_seed_{}'.format(sysname,times,N,nbeads,dt,time_therm,time_relax,nsample,rngSeed)
     store_1D_plotdata(qgrid,fgrid,fname,"{}/Datafiles".format(pathname))
 
-    print('grid 2',qgrid)
-    fname = 'CMD_Hess_LONGER_{}_inv_harmonic_T_{}Tc_N_{}_nbeads_{}_dt_{}_thermtime_{}_relaxtime_{}_nsample_{}_seed_{}'.format(sysname,times,N,nbeads,dt,time_therm,time_relax,nsample,rngSeed)
+    #print('grid 2',qgrid)
+    fname = 'CMD_Hess_ORIGIN_{}_inv_harmonic_T_{}Tc_N_{}_nbeads_{}_dt_{}_thermtime_{}_relaxtime_{}_nsample_{}_seed_{}'.format(sysname,times,N,nbeads,dt,time_therm,time_relax,nsample,rngSeed)
     store_1D_plotdata(qgrid,hessgrid,fname,"{}/Datafiles".format(pathname))

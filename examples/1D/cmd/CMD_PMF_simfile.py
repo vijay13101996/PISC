@@ -29,7 +29,7 @@ def main(nbeads=16,times = 1.0):
     m = 0.5
 
     N = 1000
-    dt = 0.01
+    dt = 0.05
     time_therm = 50.0
     time_relax = 10.0
     nsample = 5
@@ -39,8 +39,8 @@ def main(nbeads=16,times = 1.0):
 
 
     def begin_simulation(nbeads,rngSeed):
-        qgrid = np.linspace(-12.0,12.0,101) 
-        CMD_PMF.main('{}/CMD_PMF_{}_{}.txt'.format(path,sysname,potkey),path,sysname,lamda,g,times,m,N,nbeads,dt,rngSeed,time_therm,time_relax,qgrid,nsample)
+        qgrid = [0.0]#np.linspace(-12.0,12.0,101) 
+        CMD_PMF.main('{}/CMD_PMF_origin_{}_{}.txt'.format(path,sysname,potkey),path,sysname,lamda,g,times,m,N,nbeads,dt,rngSeed,time_therm,time_relax,qgrid,nsample)
 
     # 12 cores for 32 beads, 10 cores for 16 beads, 4 cores for 8 beads and 2 cores for 4 beads.
 
