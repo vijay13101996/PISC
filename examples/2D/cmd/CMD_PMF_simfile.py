@@ -8,27 +8,30 @@ import CMD_PMF
 from PISC.utils.mptools import chunks, batching        
 from functools import partial
 import os
-from PISC.potentials import quartic_bistable
+from PISC.potentials import quartic_bistable, DW_Morse_harm
 
-def main(nbeads=4,times = 1.0):
-    sysname = 'Selene'
-    path = os.path.dirname(os.path.abspath(__file__))
+sysname = 'Selene'
+path = os.path.dirname(os.path.abspath(__file__))
 
-    m = 0.5
+m = 0.5
+
+lamda = 2.0
+g = 0.08
+Vb = lamda**4/(64*g)
+
+alpha = 0.382
+D = 3*Vb
+
+Tc = lamda*(0.5/np.pi)
     
-    lamda = 2.0
-    g = 0.08
-    Vb = lamda**4/(64*g)
+def main(z,nbeads,times,pot):
+    if(pot=='dw_qb'):
+        pes = quartic_bistable(alpha,D,lamda,g,z)
+        potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
+    elif(pot=='dw_harm'):
+        pes = DW_Morse_harm(alpha,D,lamda,g,z)
+        potkey = 'DW_Morse_harm_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
 
-    alpha = 0.382
-    D = 3*Vb
-
-    z = 1.0
-     
-    pes = quartic_bistable(alpha,D,lamda,g,z)
-    potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
-    
-    Tc = lamda*(0.5/np.pi)
     T = times*Tc    
     Tkey = 'T_{}Tc'.format(times)
     
@@ -70,14 +73,15 @@ def main(nbeads=4,times = 1.0):
     batching(func,seed_split,max_time=1e6)
     print('Total time taken: ',time.time()-start_time)
 
-
 if __name__ == '__main__':
     import argparse 
     parser = argparse.ArgumentParser(description='Run Simulations to get CMD PMF and Hessian in two dimensions')
-    parser.add_argument('-nbeads',type=int,help='Number of beads',default=8)
-    parser.add_argument('-times',type=float,help='Temperature in units of Tc',default=1.0)
+    parser.add_argument('--nbeads','-nb',type=int,help='Number of beads',default=8)
+    parser.add_argument('-times','-t',type=float,help='Temperature in units of Tc',default=1.0)
+    parser.add_argument('--pot','-p',type=str,help='Potential',default='dw_qb')
+    parser.add_argument('--z','-z',type=float,help='z',default=0.0)
     args = parser.parse_args()
-    main(args.nbeads,args.times)
+    main(args.z,args.nbeads,args.times,args.pot)
 
 
 

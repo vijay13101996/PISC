@@ -36,7 +36,7 @@ def main(times,nbeads,pot,z):
     T = times*Tc
     Tkey = 'T_{}Tc'.format(times)
 
-    N = 1000
+    N = 1
     dt_therm = 0.05
     dt = 0.005
     time_therm = 50.0
@@ -71,7 +71,7 @@ def main(times,nbeads,pot,z):
 
     start_time=time.time()
     func = partial(Sim_class.run_seed,op='Hess')
-    seeds = range(20)
+    seeds = range(100000)
     seed_split = chunks(seeds,20)
 
     param_dict = {'Temperature':Tkey,'CType':corrkey,'Ensemble':enskey,'m':m,\

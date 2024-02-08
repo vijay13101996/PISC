@@ -123,7 +123,7 @@ class Symplectic(Integrator):
         dpc= np.einsum('ijk,ik->ij',hess,dq) 
         dpc=dpc.reshape(-1,self.pes.ndim,self.rp.nbeads)
         ind = 0
-        if self.centmove:
+        if self.centmove == False:
             ind = 1
         self.rp.dp[...,ind:]-=dpc[...,ind:]*self.motion.pdt[k]
 

@@ -53,7 +53,7 @@ def main(filename,pathname,sysname,pes,potkey,T,Tkey,m,N,nbeads,dt,rngSeed,time_
         rp = RingPolymer(q=q,p=p,m=m,nmats=1,sgamma=1)
 
         # Bind the simulation object with the various components
-        sim.bind(ens,motion,rng,rp,pes,propa,therm,pes_fort=True,propa_fort=True,transf_fort=True)
+        sim.bind(ens,motion,rng,rp,pes,propa,therm,pes_fort=False,propa_fort=True,transf_fort=True)
         
         # Thermalize the system ensuring that the centroid mode is frozen
         sim.propa.centmove = False

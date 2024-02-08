@@ -24,8 +24,8 @@ Tc = lamda*0.5/np.pi
 
 path = os.path.dirname(os.path.abspath(__file__))	
 
-basis_N = 100
-n_eigen = 60
+basis_N = 70
+n_eigen = 40
 
 reg='Kubo'
 t_arr = np.linspace(0.0,5.0,1000)
@@ -35,13 +35,7 @@ z=2.0
 
 fig,ax = plt.subplots()
 
-times_arr = [0.7,0.8,0.95,1.0,1.2,1.4,1.8,2.2]#,2.6,3.0]
-z_arr = [0.0,2.0]
-times = 3.0#0.95
-for times in times_arr:
-    print('z',z)
-    print('times',times)
-
+def plot_and_slope(z,times,pot,plot_slope=True):
     if(pot=='dw_qb'):
         potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
     elif(pot=='dw_harm'):
@@ -49,18 +43,24 @@ for times in times_arr:
 
     print('pot',potkey)
     
-    
     fname = 'Quantum_{}_OTOC_{}_T_{}Tc_neigen_{}_basis_{}'.format(reg,potkey,times,n_eigen,basis_N)
     dataarr = read_1D_plotdata('{}/Datafiles/{}.txt'.format(path,fname))
     
     tarr = dataarr[:,0]
     CT = dataarr[:,1]
-    ax.plot(tarr,np.log(CT),label=r'$z={},T={}T_c$'.format(z,times))
 
-    slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope('{}/Datafiles/{}'.format(path,fname),0.9,1.7)#0.95,1.5)
-    #ax.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k')
-    print('slope',slope)
+    slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope('{}/Datafiles/{}'.format(path,fname),0.95,1.5)#0.95,1.5)
+    
+    if(plot_slope):
+        ax.plot(tarr,np.log(CT),label=r'$z={},T={}T_c$, slope={}'.format(z,times,np.around(slope,2)),linewidth=1.5)
+        ax.plot(t_trunc, slope*t_trunc+ic,linewidth=1.5,color='k')
+    else: 
+        ax.plot(tarr,np.log(CT),label=r'$z={},T={}T_c$'.format(z,times),linewidth=1.5)
 
+plot_and_slope(0.0,3.0,'dw_harm')
+plot_and_slope(2.0,3.0,'dw_harm')
+plot_and_slope(0.0,0.95,'dw_harm',plot_slope=False)
+plot_and_slope(2.0,0.95,'dw_harm',plot_slope=False)
 
 plt.legend()
 plt.show()
