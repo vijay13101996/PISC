@@ -27,7 +27,7 @@ dt = 0.02
 time_therm = 50.0
 time_relax = 400.0
 
-T_therm = 10*Tc
+T_therm = 0.95*Tc
 beta = 1/T_therm
 
 #-------------------------------------------------------------------------------------------
@@ -114,7 +114,7 @@ for i in range(nsteps_relax):
         plt.pause(0.05)
 
 
-    if 0:#i%10 == 0:
+    if 0:#i%100 == 0:
         plt.plot(bins[:-1], hist, c='0.5')
         plt.pause(0.05)
 
