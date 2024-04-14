@@ -3,7 +3,7 @@ from sympy import *
 
 x = sympy.Symbol('x')
 y = sympy.Symbol('y')
-
+q = sympy.Symbol('q')
 if(0):
 	ws = sympy.Symbol('self.ws')
 	wu = sympy.Symbol('self.wu')
@@ -29,7 +29,20 @@ if(0):
 	print('Vx',diff(V,x))
 	print('Vxx',diff(V,x,x))
 	
-if(1):### Double-double well potential
+if(1):
+    m = sympy.Symbol('self.m')
+    omega = sympy.Symbol('self.omega')
+    k = sympy.Symbol('self.k')
+
+    V = 0.5*m*omega**2*q**2*(1-exp(-k*q))/(k*q)
+
+
+    print('V',V)
+    print('Vx',diff(V,q))
+    print('Vxx',diff(V,q,q))
+
+
+if(0):### Double-double well potential
 	lamdax = sympy.Symbol('self.lamdax')	
 	gx = sympy.Symbol('self.gx')
 	lamday = sympy.Symbol('self.lamday')	

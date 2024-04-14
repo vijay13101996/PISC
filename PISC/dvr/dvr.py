@@ -57,12 +57,12 @@ class DVR1D(object):
 					Pot_mat[i][j] = self.potential(self.grid[i])
 		return Pot_mat  
 
-	def Diagonalize(self):
+	def Diagonalize(self,neig_total=150):
 		T = self.Kin_matrix()
 		V = self.Pot_matrix()
 
 		H = T+V
-		vals, vecs = eigsh(H,k=150,which='SM') # np.linalg.eigh(H)
+		vals, vecs = eigsh(H,k=neig_total,which='SM') # np.linalg.eigh(H)
 		
 		norm = 1/(np.sum(vecs[:,0]**2*self.dx))**0.5
 		vecs*=norm
