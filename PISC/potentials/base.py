@@ -24,6 +24,8 @@ class PES(object):
         # Bind the ensemble and ring polymer objects to the PES
         self.ens = ens
         self.rp = rp
+        self.motion = rp.motion # To keep track of simulation time
+
         self.pes_fort = pes_fort
         self.transf_fort = transf_fort
         self.fd_update = fd_update

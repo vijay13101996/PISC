@@ -15,6 +15,7 @@ module otoc_tools
 	public :: kubo_corr_elts
 	public :: lambda_corr_elts
 	public :: lambda_corr_arr_t
+        public :: wightman_corr_elts
 	public :: therm_corr_arr_t
 	public :: two_time_corr_mc_elts
 	public :: two_time_corr_mc_arr_t
@@ -31,7 +32,7 @@ module otoc_tools
 			real(kind=8), intent(inout) :: pos_mat_elt
 			pos_mat_elt = 0.0d0
 			do i = 1,len1vecs
-					pos_mat_elt = pos_mat_elt + vecs(i,n)*vecs(i,k)*x_arr(i)*dx*dy !! Change here for 1D 
+					pos_mat_elt = pos_mat_elt + vecs(i,n)*vecs(i,k)*x_arr(i)*dx!*dy !! Change here for 1D 
 			end do
 			!if (pos_mat_elt > 1E-2) then
 			!	print*, 'pos', n,k, pos_mat_elt
@@ -471,6 +472,54 @@ module otoc_tools
 			end do
 		end subroutine lambda_corr_elts
 
+
+                subroutine wightman_corr_elts(vecs,len1vecs,len2vecs,mass,x_arr,lenx,dx,dy,k_arr,lenk, &
+					vals_arr,lenv,m_arr,lenm,t,beta,n_eigen,key,lambda,corr_elt)
+			integer, intent(in) :: len1vecs,len2vecs,lenx,lenv,lenk,lenm,n_eigen
+			real(kind=8), dimension(len1vecs,len2vecs), intent(in) :: vecs
+			real(kind=8), dimension(lenx), intent(in) :: x_arr
+			real(kind=8), intent(in) ::  dx,dy
+			integer, dimension(lenm),intent(in) :: m_arr
+			integer, dimension(lenk), intent(in) :: k_arr
+			real(kind=8), dimension(lenv), intent(in) :: vals_arr
+			real(kind=8), intent(in) :: t,beta, mass,lambda
+			integer :: n,m
+			character*3, intent(in) :: key
+			!f2py complex,intent(in,out,copy) :: corr_elt
+			complex,intent(inout) :: corr_elt
+			real :: Z
+			complex :: O_nm, O_mn 
+			Z=0.0
+			do n=1,n_eigen
+				Z = Z + exp(-beta*vals_arr(n))
+			end do
+			do n=1,n_eigen
+				do m=1,lenm
+					O_nm = 0.0
+					O_mn = 0.0
+					if (key=='qq1' .or. key=='qp1' .or. key=='pq1' .or. key=='pp1') then 
+						call linop_matrix_elts(vecs,len1vecs,len2vecs,mass,x_arr,&
+							lenx,dx,dy,vals_arr,lenv,n,m_arr(m),t,key(1:1),O_nm)
+						call linop_matrix_elts(vecs,len1vecs,len2vecs,mass,x_arr,&
+							lenx,dx,dy,vals_arr,lenv,m_arr(m),n,0.0d0,key(2:2),O_mn)
+					else if (key=='xxC') then
+						call quadop_matrix_elts(vecs,len1vecs,len2vecs,mass,x_arr,&
+							lenx,dx,dy,k_arr,lenk,vals_arr,lenv,n,m_arr(m),t,0.0d0,'cm',O_nm)
+						O_mn = conjg(O_nm)
+					else if (key=='qq2' .or. key=='qp2' .or. key=='pq2' .or. key=='pp2') then
+						call quadop_matrix_elts(vecs,len1vecs,len2vecs,mass,x_arr,&
+							lenx,dx,dy,k_arr,lenk,vals_arr,lenv,n,m_arr(m),t,t,key(1:1)//key(1:1),O_nm)
+						call quadop_matrix_elts(vecs,len1vecs,len2vecs,mass,x_arr,&
+							lenx,dx,dy,k_arr,lenk,vals_arr,lenv,m_arr(m),n,0.0d0,0.0d0,key(2:2)//key(2:2),O_mn)
+					end if
+					corr_elt = corr_elt + (1/Z)*O_nm*O_mn*exp(-0.5*beta*(vals_arr(n) + vals_arr(m)))*&
+                                                                 exp(-lambda*beta*(vals_arr(m)-vals_arr(n)))
+				end do
+			end do
+		end subroutine wightman_corr_elts
+
+
+
 		subroutine lambda_corr_arr_t(vecs,len1vecs,len2vecs,mass,x_arr,lenx,dx,dy,k_arr,lenk, &
 					vals_arr,lenv,m_arr,lenm,t_arr,lent,beta,n_eigen,key,lambda,corr_mat)
 			integer, intent(in) :: len1vecs,len2vecs,lenx,lenv,lenk,lenm,lent,n_eigen
@@ -493,7 +542,7 @@ module otoc_tools
 			end do
 			!$OMP END PARALLEL DO
 		end subroutine lambda_corr_arr_t
-			
+		
 		subroutine therm_corr_arr_t(vecs,len1vecs,len2vecs,mass,x_arr,lenx,dx,dy,k_arr,lenk, &
 					vals_arr,lenv,m_arr,lenm,t_arr,lent,beta,n_eigen,key,corrkey,corr_mat)
 			integer, intent(in) :: len1vecs,len2vecs,lenx,lenv,lenk,lenm,lent,n_eigen

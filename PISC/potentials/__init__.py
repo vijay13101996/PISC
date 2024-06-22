@@ -1,7 +1,7 @@
 import numpy as np
 
 from PISC.potentials.double_well_potential import double_well
-
+from PISC.potentials.TD_DW import td_dw
 from PISC.potentials.Adams_function import adams_function
 from PISC.potentials.Coupled_harmonic import coupled_harmonic
 from PISC.potentials.double_well_potential import double_well
@@ -24,6 +24,10 @@ from PISC.potentials.pot_adder import PotAdder
 from PISC.potentials.Coupled_quartic import coupled_quartic
 from PISC.potentials.DW_Morse_harm import DW_Morse_harm
 # from PISC.potentials.Tanimura_SB import Tanimura_SB
+from PISC.potentials.triple_well_potential import triple_well
+from PISC.potentials.Morse_harm_2D import Morse_harm_2D
+from PISC.potentials.Coupled_harmonic_oblique import coupled_harmonic_oblique
+
 
 potentials = {
     "harmonic1D": harmonic1D,

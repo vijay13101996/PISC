@@ -17,7 +17,7 @@ from PISC.engine.gen_stable_manifold import generate_stable_manifold_rp
 from PISC.engine.gen_mc_ensemble import generate_rp
 from PISC.engine.gen_const_qp_ensemble import thermalize_rp_const_qp
 from PISC.utils.time_order import reorder_time
-
+from matplotlib import pyplot as plt
 debug = False
 
 
@@ -752,6 +752,33 @@ class SimUniverse(object):
             tarr, tcf = gen_tcf(parr, qarr, tarr, corraxis=0)
         return tarr, tcf
 
+    def run_ImTCF(self, sim):
+        """Run simulation to compute the imaginary time correlation function"""
+        tarr = np.arange(0,sim.rp.nbeads)*sim.ens.beta/sim.rp.nbeads
+        q = sim.rp.qcart
+        p = sim.rp.pcart
+        Im_TCF_arr = np.zeros_like(tarr)
+
+        if self.corrkey == "Im_qq_TCF":
+            B = q[:,0,:]
+            A = q[:,0,:]
+        if self.corrkey == "Im_pp_TCF":
+            B = np.sum(p[:,0,:],axis=1)
+            A = p[:,0,:]
+        if self.corrkey == "Im_qp_TCF":
+            B = np.sum(q[:,0,:],axis=1)
+            A = p[:,0,:]
+        if self.corrkey == "Im_pq_TCF":
+            B = np.sum(p[:,0,:],axis=1)
+            A = q[:,0,:]
+
+        for i in range(len(tarr)): # A more efficient way to do this needs to be implemented
+            Im_TCF_arr[i] = np.mean(A[:,i]*B[:,0])
+            
+        print('total', np.sum(Im_TCF_arr)/sim.rp.nbeads)
+        
+        return tarr, Im_TCF_arr
+
     def run_seed(self, rngSeed, op=None):
         """Runs one seed. Note that this is n_traj (~1000) parallel trajectories"""
         print(
@@ -787,7 +814,10 @@ class SimUniverse(object):
         if "OTOC" in self.corrkey:
             tarr, Carr = self.run_OTOC(sim)
         elif "TCF" in self.corrkey:
-            tarr, Carr = self.run_TCF(sim)
+            if 'Im' in self.corrkey:
+                tarr, Carr = self.run_ImTCF(sim)
+            else:
+                tarr, Carr = self.run_TCF(sim)
         elif self.corrkey == "stat_avg":
             if op is 'Hess':
                 pes_ddpot_cart = sim.pes.compute_hessian()

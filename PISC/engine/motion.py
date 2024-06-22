@@ -10,6 +10,8 @@ class Motion(object):
     def __init__(self,dt=1e-2,symporder=2):
         self.dt=dt
         self.order = symporder
+        self.t = 0.0 # Simulation time, initialized to zero
+        # (Needs to be checked if the simulation time is the same as time variable here)
         if(self.order==2):
             """ Velocity Verlet splitting scheme """""
             self.qdt = np.array([1.0,0.0])*self.dt

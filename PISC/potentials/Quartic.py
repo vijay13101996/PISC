@@ -10,7 +10,7 @@ class quartic(PES):
 		super(quartic,self).bind(ens,rp,pes_fort=pes_fort,transf_fort=transf_fort)
 		
 	def potential(self,q):
-		q = q[:,0,:]
+		#q = q[:,0,:]
 		return 0.25*self.a*q**4 
 	
 	def dpotential(self,q):

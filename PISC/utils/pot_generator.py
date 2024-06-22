@@ -4,6 +4,23 @@ from sympy import *
 x = sympy.Symbol('x')
 y = sympy.Symbol('y')
 
+if(1): ### DW + Harm
+    lamda = sympy.Symbol('self.lamda')
+    g = sympy.Symbol('self.g')
+    w = sympy.Symbol('self.w')
+    m = sympy.Symbol('self.m')
+    quartx = (x**2 - lamda**2/(8*g))
+
+    V = 0.5*m*w**2*y**2 + g*quartx**2
+    
+    print('V',V)
+    print('Vx =',diff(V,x))
+    print('Vy =',diff(V,y))
+    print('Vxx = ',diff(V,x,x))
+    print('Vxy =',diff(V,x,y))
+    print('Vyx',diff(V,y,x))
+    print('Vyy =',diff(V,y,y))
+
 if(0):
 	ws = sympy.Symbol('self.ws')
 	wu = sympy.Symbol('self.wu')
@@ -109,7 +126,7 @@ if(0):### Double-double well potential
 
 
 
-if(1):### Quartic Bistable potential
+if(0):### Quartic Bistable potential
 	alpha = sympy.Symbol('alpha')#'self.alpha')
 	lamda = sympy.Symbol('lamda')#'self.lamda')
 	g = sympy.Symbol('g')#self.g')

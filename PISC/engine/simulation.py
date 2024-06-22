@@ -105,7 +105,7 @@ class RP_Simulation(Simulation):
         self.propa.O(pc)
         self.rp.mats2cart()
 
-    def step(self, ndt=1, mode="nvt",var='pq',RSP=False,pc=None):#,centmove=True,update_hess=False):
+    def step(self, ndt=1, mode="nvt",var='pq',RSP=False,pc=None):
         """ Propagate the dynamics of the system for ndt steps """
         if mode == "nve":
             if(var=='pq' or var=='fd_monodromy'):
@@ -150,6 +150,7 @@ class RP_Simulation(Simulation):
         elif mode == 'nvt_theta':
             self.NVT_const_theta(pc)
         self.t += ndt*self.dt
+        self.motion.t = self.t
         self.nstep += ndt
 
 class Matsubara_Simulation(Simulation):

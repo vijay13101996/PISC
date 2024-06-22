@@ -11,18 +11,18 @@ dim = 1
 
 if(1): #Double well potential
     lamda = 2.0
-    g = 0.08
+    g = 0.02
     Vb = lamda**4/(64*g)
 
     Tc = lamda*(0.5/np.pi)
-    times = 3.0
+    times = 4.0#0.95
     T = times*Tc
     beta=1/T
     print('T',T)
 
     m = 0.5
     N = 1000
-    dt = 0.002
+    dt = 0.005
 
     time_total = 5.0#
 
@@ -31,12 +31,12 @@ if(1): #Double well potential
 
     Tkey = 'T_{}Tc'.format(times)
 
-if(0): #Quartic
+if(1): #Quartic
     a = 1.0
 
     pes = quartic(a)
 
-    T = 1.0
+    T = 2.5#0.125
 
     m = 1.0
     N = 1000
@@ -51,16 +51,16 @@ if(0): #Quartic
 
 if(0): #Mildly anharmonic
     omega = 1.0
-    a = 0.4#-0.605#0.5#
-    b = a**2#0.427#a**2#
+    a = 0.0#4     #0.4#-0.605#0.5#
+    b = 0.0#16    #a**2#0.427#a**2#
 
-    T = 1.0#times*Tc
+    T = 2.0 #times*Tc
     beta = 1/T
 
-    m=1.0
+    m = 1.0
     N = 1000
     dt_therm = 0.05
-    dt = 0.002
+    dt = 0.01
 
     time_therm = 50.0
     time_total = 30.0
@@ -121,11 +121,15 @@ Cext = '{}/classical/Datafiles/'.format(path)
 rpext = '{}/rpmd/Datafiles/'.format(path)
 
 #Simulation specifications
-corrkey = 'OTOC'#'R2'#'singcomm' #
+corrkey = 'Im_qq_TCF'#'OTOC'#'R2'#'singcomm' #
 syskey = 'Papageno'#'Tosca2'
 
 if(1):#RPMD
-    nbeads = 1
+    nbeads = 32
+    tarr = np.arange(0,nbeads)
+    OTOCarr = np.zeros_like(tarr) +0j
+    #potkey = 'harmonic_omega_{}'.format(1.0)
+    #Tkey = 'T_{}'.format(4.0)
     beadkey = 'nbeads_{}_'.format(nbeads)
     
     if(1): ##Collect files of thermal ensembles
@@ -141,8 +145,8 @@ if(1):#RPMD
         else:
             plt.plot(tarr,np.log(abs(OTOCarr)))
         store_1D_plotdata(tarr,OTOCarr,'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,nbeads,dt),rpext)
-        #plt.show()
-        #exit()
+        plt.show()
+        exit()
         ext = rpext + 'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}'.format(enskey,'OTOC',potkey,Tkey,nbeads,dt)
         slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,2,3)#3.4,4.4)#1.8,3.8)#3.2,4.2)
         plt.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='m')
