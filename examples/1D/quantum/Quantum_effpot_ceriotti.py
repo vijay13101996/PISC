@@ -58,7 +58,7 @@ plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,exponentiate
 
 fig.set_size_inches(4,4)
 imfile = 'ceriotti.pdf'
-fig.savefig(imfile,dpi=400,bbox_inches='tight')#,pad_inches=0.0)
+#fig.savefig(imfile,dpi=400,bbox_inches='tight')#,pad_inches=0.0)
 
 plt.show()
 #-------------------------------------------

@@ -22,7 +22,8 @@ tp_fs = 12
 le_fs = 9
 ti_fs = 12
 
-def plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,exponentiate=True,renorm='NCF',tol=1e-8,TinKlist=None):
+#def plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,exponentiate=True,renorm='NCF',tol=1e-8,TinKlist=None):
+def plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,exponentiate=True,tol=1e-8,TinKlist=None):
     """
     Plot the distribution of the quantum, classical and effective potential for a given set of betas
     Parameters:
@@ -69,7 +70,8 @@ def plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,exponent
 
         #----------------------------------------------------------------------------------------
         #Classical
-        bVcl = beta*potgrid 
+        bVcl = beta*potgrid
+        renorm = 'NCF'
         if(renorm=='harm' or renorm=='NCF'):
             bVcl+= 0.5*np.log(m/2/np.pi/beta)/beta #added to offset the kinetic energy term in the Partition function
         if(exponentiate):
@@ -81,8 +83,8 @@ def plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,exponent
         ax.plot(qgrid,bVcl,color='g',label=lcl,alpha=0.9,zorder=3)
 
         #----------------------------------------------------------------------------------------
-        #Effective potential
-        pes_eff = Veff_classical_1D_LH(pes,beta,m,tol=tol,renorm=renorm)
+        #Effective potential with NCF renormalization
+        pes_eff = Veff_classical_1D_LH(pes,beta,m,tol=tol,renorm='NCF')
         bVeff = np.zeros_like(qgrid)
         for i in range(len(qgrid)): 
             bVeff[i] = beta*pes_eff.potential(qgrid[i])
@@ -97,10 +99,26 @@ def plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,exponent
         ax.plot(qgrid,bVeff,color='k',label=leff)
 
         #----------------------------------------------------------------------------------------
-        ax.set_xlim(llim,ulim)
         ylim = np.max([np.max(bVcl),np.max(bVeff)])
-        ax.set_ylim(0,1.25*ylim)
 
+        #Effective potential with PF renormalization
+        pes_eff = Veff_classical_1D_LH(pes,beta,m,tol=tol,renorm='PF')
+        bVeff = np.zeros_like(qgrid)
+        for i in range(len(qgrid)): 
+            bVeff[i] = beta*pes_eff.potential(qgrid[i])
+        if(exponentiate):
+            bVeff = np.exp(-bVeff)
+            norm = np.sum(bVeff*dx)
+            bVeff/=norm
+            leff = r'$P_{eff}(q)$'
+        else:
+            leff = r'$\beta V_{eff}(q)$'
+
+        ax.plot(qgrid,bVeff,color='k',ls=':')
+
+        #----------------------------------------------------------------------------------------
+        ax.set_xlim(llim,ulim)
+        ax.set_ylim(0,1.25*ylim)
         print('max',np.max(bVeff),np.max(bVcl))
 
 

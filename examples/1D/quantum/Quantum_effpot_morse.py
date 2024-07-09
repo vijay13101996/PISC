@@ -20,13 +20,13 @@ ngrid = 801
 #----------------------------------------------
 #Morse
 lb = -5
-ub = 20.0
+ub = 25.0
 dx = (ub-lb)/(ngrid-1)
 qgrid = np.linspace(lb,ub,ngrid)
 
 m = 1
 we = 1
-xe = 0.05
+xe = 0.2
 
 alpha = np.sqrt(2*m*we*xe)
 D = we/(4*xe)
@@ -42,7 +42,7 @@ else:
     ulim_list = [8,5,4.5,3]
 
 #----------------------------------------------
-tol = 1e-2
+tol = 1e-4
 
 betalist = [0.1,1.0,10.0,100.0]
 
@@ -54,8 +54,8 @@ fig, ax = plt.subplots(2,2,gridspec_kw={'hspace': 0.3, 'wspace': 0.3})
 plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,exponentiate=True,renorm='NCF',tol=tol)
 
 fig.set_size_inches(4,4)
-imfile = 'morse_h_anh.pdf'
-#fig.savefig(imfile,dpi=400,bbox_inches='tight')#,pad_inches=0.0)
+imfile = 'morse_anh.pdf'
+fig.savefig(imfile,dpi=400,bbox_inches='tight')#,pad_inches=0.0)
 plt.show()
 
 exit()

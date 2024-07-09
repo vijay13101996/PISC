@@ -33,9 +33,9 @@ ub = 10.0
 dx = (ub-lb)/(ngrid-1)
 
 m = 1
-w = 0 #quadratic term (frequency)
-a = 0.0 #cubic term
-b = 1.0#1 #quartic term
+w = 1 #quadratic term (frequency)
+a = 0.1 #cubic term
+b = 0.1#1 #quartic term
 tol = 1e-4
 
 pes = mildly_anharmonic(m,a,b)
@@ -178,6 +178,6 @@ handles, labels = ax1.get_legend_handles_labels()
 
 fig.legend(handles,labels,loc=[0.18,0.9],ncol=3)
 fig.set_size_inches(4,4)
-fig.savefig(imfile,dpi=400,bbox_inches='tight')#,pad_inches=0.0)
+#fig.savefig(imfile,dpi=400,bbox_inches='tight')#,pad_inches=0.0)
 
 plt.show()

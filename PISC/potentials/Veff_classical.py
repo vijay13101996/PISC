@@ -32,7 +32,7 @@ class Veff_classical_1D_LH(PES):
        
                 wa=0.0
                 ka = grad
-                Vc = self.pes.potential(q)
+                Vc = self.pes.potential(q)#self.m**2*hess*q**2/2 #
                 if (hess < self.tol):
                     hess = self.tol
                 wa = np.sqrt(hess)
@@ -75,6 +75,62 @@ class Veff_classical_1D_LH(PES):
 
         def ddpotential(self,q):
                 return None
+
+class Veff_classical_2D_LH(PES):
+    def __init__(self,pes,beta,m,grad=None,hess=None,tol=1.0,renorm='harm'):
+        super(Veff_classical_2D_LH).__init__()
+        self.beta = beta
+        self.m=m
+        self.pes = pes
+        self.grad = grad
+        self.hess = hess
+        self.tol = tol
+        self.renorm = renorm
+
+    def bind(self,ens,rp):
+        super(Veff_classical_2D_LH,self).bind(ens,rp)
+
+    def potential(self,q):
+        if(self.hess is None):
+            hess = self.pes.ddpotential(q)/self.m
+        else:
+            hess = self.hess(q)/self.m
+
+        if(self.grad is None):
+            grad = self.pes.dpotential(q)/self.m
+        else:
+            grad = self.grad(q)/self.m
+
+        wa1 = 0.0
+        wa2 = 0.0
+
+        ka = grad
+        Vc = self.pes.potential(q)
+       
+        hess1,hess2 = np.linalg.eigvals(hess[0,:,:,0])
+        
+        if (hess1 < self.tol):
+            hess1 = self.tol
+        if (hess2 < self.tol):
+            hess2 = self.tol
+        
+        wa1 = np.sqrt(hess1)
+        wa2 = np.sqrt(hess2)
+        xi1 = 0.5*self.beta*wa1
+        xi2 = 0.5*self.beta*wa2
+
+        pref = Vc
+
+        if(self.renorm=='NCF'): # Only NCF renormalisation is implemented for 2D
+            Vnc =  pref*(np.tanh(xi1)/xi1 + np.tanh(xi2)/xi2 - 1)  - 0.5*(np.log(np.tanh(xi1)) + np.log(np.tanh(xi2)))/self.beta + 0.5*(np.log(xi1*xi2))/self.beta
+        return Vnc
+
+    def potential_xy(self,x,y):
+        q = np.zeros((1,2,1))
+        q[:,0,:] = x
+        q[:,1,:] = y
+        return self.potential(q)
+
 
 class Veff_classical_1D_GH(PES):
     """

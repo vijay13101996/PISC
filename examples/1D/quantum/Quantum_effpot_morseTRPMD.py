@@ -62,7 +62,7 @@ fig, ax = plt.subplots(2,2,gridspec_kw={'hspace': 0.3, 'wspace': 0.3})
 plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,exponentiate=True,renorm='NCF',tol=tol,TinKlist=Tlist)
 
 fig.set_size_inches(4,4)
-fig.savefig(imfile,dpi=400,bbox_inches='tight')#,pad_inches=0.0)
+#fig.savefig(imfile,dpi=400,bbox_inches='tight')#,pad_inches=0.0)
 plt.show()
 
 exit()

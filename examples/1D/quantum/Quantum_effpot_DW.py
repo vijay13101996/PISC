@@ -41,7 +41,10 @@ vals,vecs = DVR.Diagonalize()
 #--------------------------------------------------
 fig, ax = plt.subplots(2,2,gridspec_kw={'hspace': 0.3, 'wspace': 0.3})
 
-plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,exponentiate=True,renorm='NCF',tol=tol)
+#plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,exponentiate=True,renorm='NCF',tol=tol)
+
+plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,exponentiate=True,tol=tol)
+
 
 fig.set_size_inches(4,4)
 imfile = 'morse_h_anh.pdf'

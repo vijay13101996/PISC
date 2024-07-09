@@ -19,4 +19,4 @@ from PISC.potentials.mildly_anharmonic import mildly_anharmonic
 from PISC.potentials.Ceriotti import anharmonic
 from PISC.potentials.Polynomial import polynomial
 from PISC.potentials.Hexic import hexic
-from PISC.potentials.Veff_classical import Veff_classical_1D_LH, Veff_classical_1D_GH, Veff_classical_1D_FH, Veff_classical_1D_FK
+from PISC.potentials.Veff_classical import Veff_classical_1D_LH, Veff_classical_2D_LH, Veff_classical_1D_GH, Veff_classical_1D_FH, Veff_classical_1D_FK

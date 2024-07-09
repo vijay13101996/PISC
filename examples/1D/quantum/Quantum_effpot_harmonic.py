@@ -22,7 +22,7 @@ tp_fs = 12
 le_fs = 9
 ti_fs = 12
 
-renorm = 'harm'
+renorm = 'NCF'#harm'
 exponentiate = True
 
 betalist = [0.1,1.0,10.0,100.0]
