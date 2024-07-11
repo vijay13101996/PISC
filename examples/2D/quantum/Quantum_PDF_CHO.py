@@ -18,7 +18,7 @@ n_eig_tot = 100 #Number of eigenstates to be calculated
 m = 1.0
 hbar = 1.0
 
-L = 10.0
+L = 4.0
 lbx = -L
 ubx = L
 lby = -L
@@ -37,7 +37,7 @@ xgr,ygr = np.meshgrid(xg,yg)
 
 w1 = 1.0
 w2 = 2.0
-g = 0.0
+g = 0.1
 
 potkey = 'coupled_harmonic_w1_{}_w2_{}_g_{}'.format(w1,w2,g)
 pes = coupled_harmonic_oblique(m,w1,w2,g)
@@ -61,7 +61,7 @@ if(1): #Test whether the Wavefunctions look correct
 #---------------------------------------------------------------
 
 #Compute the position distribution functions
-beta = 10.0
+beta = 0.1
 Z = 0.0
 for n in range(len(vals)):
     Z += np.exp(-beta*vals[n])
@@ -78,10 +78,10 @@ print('norm',np.sum(pdf*dx*dy))
 #-----------------------------------------------------------------
 
 #Compute the classical position distribution function analytically
-pdf_analytic_cl = np.exp(-beta*pes.potential_xy(xgr,ygr))
-pdf_analytic_cl /= np.sum(pdf_analytic_cl*dx*dy)
+pdf_cl = np.exp(-beta*pes.potential_xy(xgr,ygr))
+pdf_cl /= np.sum(pdf_cl*dx*dy)
 
-print('norm c',np.sum(pdf_analytic_cl*dx*dy))
+print('norm c',np.sum(pdf_cl*dx*dy))
 
 #-----------------------------------------------------------------
 
@@ -100,14 +100,24 @@ for i in range(ngridx+1):
 
 print('norm q',np.sum(pdf_analytic_qm*dx*dy))
 
+pdf_nc = pdf/pdf_cl
+
+plt.contour(xgr,ygr,pdf_nc,origin='lower',levels=np.arange(0,5,0.1))
+plt.xlim([-3,3])
+plt.ylim([-3,3])
+plt.show()
+
+exit()
+
+
 kl_div_q = np.sum(pdf*np.log(pdf/pdf_analytic_qm)*dx*dy)
-kl_div_c = np.sum(pdf*np.log(pdf/pdf_analytic_cl)*dx*dy)
+kl_div_c = np.sum(pdf*np.log(pdf/pdf_cl)*dx*dy)
 
 print('kl_div_q',kl_div_q)
 print('kl_div_c',kl_div_c)
 
 diff_qm = np.abs(pdf_analytic_qm - pdf)
-diff_cl = np.abs(pdf_analytic_cl - pdf)
+diff_cl = np.abs(pdf_cl - pdf)
 
 plt.contour(xgr,ygr,diff_qm,origin='lower',levels=np.arange(0,0.5,0.01))
 plt.xlim([-3,3])

@@ -15,7 +15,7 @@ n_eig_tot = 100 #Number of eigenstates to be calculated
 
 #System parameters
 m = 1.0
-L = 10.0
+L = 4.0
 lbx = -L
 ubx = L
 lby = -L
