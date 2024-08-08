@@ -23,15 +23,17 @@ qgrid = np.linspace(lb,ub,ngrid)
 m = 0.5
 
 lamda = 2.0
-g = 0.08
+g = 0.02
 pes = double_well(lamda,g)
 
-imfile = 'DW_anharm.pdf'
-llim_list = [-5,-5,-5,-5]#[-10,-10,-10,-10]#
-ulim_list = [5,5,5,5]#[10,10,10,10]#
+imfile = 'DW_harm.pdf'
+#llim_list = [-5,-5,-5,-5]
+llim_list = [-10,-10,-10,-10]
+#ulim_list = [5,5,5,5]
+ulim_list = [10,10,10,10]#
 
 #--------------------------------------------------
-tol = 1
+tol = 1e-8
 
 betalist = [0.1,1.0,10.0,100.0]
 
@@ -43,11 +45,10 @@ fig, ax = plt.subplots(2,2,gridspec_kw={'hspace': 0.3, 'wspace': 0.3})
 
 #plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,exponentiate=True,renorm='NCF',tol=tol)
 
-plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,exponentiate=True,tol=tol)
+plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,exponentiate=True,tol=tol,ylcoord=-0.3)
 
 
 fig.set_size_inches(4,4)
-imfile = 'morse_h_anh.pdf'
-#fig.savefig(imfile,dpi=400,bbox_inches='tight')#,pad_inches=0.0)
+fig.savefig(imfile,dpi=400,bbox_inches='tight')#,pad_inches=0.0)
 plt.show()
 

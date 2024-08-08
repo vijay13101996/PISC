@@ -9,6 +9,7 @@ from PISC.utils.plottools import plot_1D
 import matplotlib.gridspec as gridspec
 import matplotlib.ticker as ticker
 from Truncated_pes import truncate_pes
+from numpy import nan
 import os 
 
 # Set formatting for the plots
@@ -23,7 +24,7 @@ le_fs = 9
 ti_fs = 12
 
 #def plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,exponentiate=True,renorm='NCF',tol=1e-8,TinKlist=None):
-def plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,exponentiate=True,tol=1e-8,TinKlist=None):
+def plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,exponentiate=True,tol=1e-8,TinKlist=None,ylcoord=-0.26):
     """
     Plot the distribution of the quantum, classical and effective potential for a given set of betas
     Parameters:
@@ -92,15 +93,16 @@ def plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,exponent
             bVeff = np.exp(-bVeff)
             norm = np.sum(bVeff*dx)
             bVeff/=norm
-            leff = r'$P_{eff}(q)$'
+            leff = r'$P_{\rm LH}(q)$'
         else:
-            leff = r'$\beta V_{eff}(q)$'
+            leff = r'$\beta V_{\rm LH}(q)$'
 
         ax.plot(qgrid,bVeff,color='k',label=leff)
 
         #----------------------------------------------------------------------------------------
         ylim = np.max([np.max(bVcl),np.max(bVeff)])
-
+        print('max',np.max(bVeff),np.max(bVcl))
+        
         #Effective potential with PF renormalization
         pes_eff = Veff_classical_1D_LH(pes,beta,m,tol=tol,renorm='PF')
         bVeff = np.zeros_like(qgrid)
@@ -114,12 +116,12 @@ def plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,exponent
         else:
             leff = r'$\beta V_{eff}(q)$'
 
-        ax.plot(qgrid,bVeff,color='k',ls=':')
+        bVeff[bVeff>1.01*ylim] = ylim
+        ax.plot(qgrid,bVeff,color='k',ls=':',lw=3)
 
         #----------------------------------------------------------------------------------------
         ax.set_xlim(llim,ulim)
         ax.set_ylim(0,1.25*ylim)
-        print('max',np.max(bVeff),np.max(bVcl))
 
 
         if(TinKlist is not None): #If temperature is given in K, then annotate the temperature
@@ -139,13 +141,12 @@ def plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,exponent
                 ax.set_ylabel(r'$P(q)$',fontsize=yl_fs)
             else:
                 ax.set_ylabel(r'$\beta V(q)$',fontsize=yl_fs)
-            ax.yaxis.set_label_coords(-0.26,0.5)
+            ax.yaxis.set_label_coords(ylcoord,0.5)
         
         #ax.yaxis.set_major_formatter(ticker.LogLocator())#(labelOnlyBase=False,base=10))
 
     handles, labels = ax1.get_legend_handles_labels()
 
-    fig.legend(handles,labels,loc=[0.15,0.9],ncol=3)
-
+    fig.legend(handles,labels,loc=[0.185,0.9],ncol=3)
 
 

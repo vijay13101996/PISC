@@ -44,13 +44,13 @@ if trunc:
     ulim_list = np.array([2.6,2.6,2.6,2.6]) 
 else:
     imfile = 'morse_trpmd.pdf'
-    llim_list = [1.4,1,0.4,0.4]
-    ulim_list = [2.6,3,3.6,3.6]
+    llim_list = np.flip([1.4,1,0.4,0.4])
+    ulim_list = np.flip([2.6,3,3.6,3.6])
 
 #--------------------------------------------
 tol = 1e-4
 
-Tlist = np.array([1, 100, 300, 5000])
+Tlist = np.flip([1, 100, 300, 5000])
 K2au = 315775.13
 betalist = [1/T*K2au for T in Tlist]
 
@@ -59,10 +59,13 @@ vals,vecs = DVR.Diagonalize()
 
 #--------------------------------------------
 fig, ax = plt.subplots(2,2,gridspec_kw={'hspace': 0.3, 'wspace': 0.3})
-plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,exponentiate=True,renorm='NCF',tol=tol,TinKlist=Tlist)
+
+#plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,exponentiate=True,renorm='NCF',tol=tol,TinKlist=Tlist)
+
+plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,exponentiate=True,tol=tol,TinKlist=Tlist)
 
 fig.set_size_inches(4,4)
-#fig.savefig(imfile,dpi=400,bbox_inches='tight')#,pad_inches=0.0)
+fig.savefig(imfile,dpi=400,bbox_inches='tight')#,pad_inches=0.0)
 plt.show()
 
 exit()

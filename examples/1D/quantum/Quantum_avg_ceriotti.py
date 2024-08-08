@@ -7,6 +7,18 @@ from matplotlib import pyplot as plt
 import os 
 from PISC.utils.plottools import plot_1D
 import matplotlib.gridspec as gridspec
+import matplotlib
+
+# Set formatting for the plots
+plt.rcParams.update({'font.size': 10, 'font.family': 'serif','font.style':'italic','font.serif':'Garamond'})
+matplotlib.rcParams['axes.unicode_minus'] = False
+
+xl_fs = 14 
+yl_fs = 14
+tp_fs = 12
+ 
+le_fs = 9
+ti_fs = 12
 
 ngrid = 201
 
@@ -77,6 +89,7 @@ def func(lbarr,ubarr,ma):
                     Pq += np.exp(-beta*vals[n])*vecs[:,n]**2/Zq
                 Eavg_q = np.sum(np.exp(-beta*vals)*vals)/Zq
                 Vavg_q = np.sum(Pq*potgrid)*dx
+                Kavg_q = Eavg_q - Vavg_q
 
                 tol = 1e-10
                 #Classical
@@ -84,6 +97,7 @@ def func(lbarr,ubarr,ma):
                 Pcl = np.exp(-beta*pes.potential(qgrid))/Zcl
                 #Pcl[Pcl<tol] = tol
                 Vavg_cl = np.sum(Pcl*potgrid)*dx
+                
 
                 #Local harmonic approximation
                 tol = 1e-12
@@ -115,13 +129,13 @@ def func(lbarr,ubarr,ma):
                         ax.scatter(wcm,Vavg_q*beta,marker=ma,color='r',label=r'$\beta \langle V \rangle$ (Quantum)')
                         ax.scatter(wcm,Vavg_cl*beta,marker=ma,color='g',label=r'$\beta \langle V \rangle$ (Classical)')
                         ax.scatter(wcm,Vavg_LH*beta,marker=ma,color='k',label=r'$\beta \langle V \rangle$ (LHA)')
-                        ax.scatter(wcm,Eavg_q*beta,marker=ma,color='b',label=r'$\beta \langle E \rangle$ (Quantum)')
+                        #ax.scatter(wcm,Eavg_q*beta,marker=ma,color='b',label=r'$\beta \langle E \rangle$ (Quantum)')
                         #ax.scatter(wcm,Vavg_FK*beta,marker=ma,color='y',label=r'$\beta \langle V \rangle$ (FKA)')
                     else: 
                         ax.scatter(wcm,Vavg_q*beta,marker=ma,color='r')
                         ax.scatter(wcm,Vavg_cl*beta,marker=ma,color='g')
                         ax.scatter(wcm,Vavg_LH*beta,marker=ma,color='k')
-                        ax.scatter(wcm,Eavg_q*beta,marker=ma,color='b')
+                        #ax.scatter(wcm,Eavg_q*beta,marker=ma,color='b')
                         #ax.scatter(wcm,Vavg_FK*beta,marker=ma,color='y')
                 if(0):
                     ax[omega_arr.index(wcm)].plot(qgrid,Pq,color='r')
@@ -133,13 +147,17 @@ func(lbarr,ubarr2,'o')
 #func(lbarr,ubarr1,'x')
 
 
-ax.set_xlabel(r'$\omega$ (cm$^{-1}$)')
-ax.set_ylabel(r'$\beta \langle E \rangle$')
+ax.set_xlabel(r'$\omega$ (cm$^{-1}$)',fontsize=xl_fs)
+ax.set_ylabel(r'$\beta \langle V \rangle$' ,fontsize=yl_fs)
+
+ax.set_yticks([0.5,1,2,3,4])
+
+ax.tick_params(axis='both',labelsize=ti_fs)
 ax.legend()
 ax.set_xscale('log')
 ax.set_yscale('log')
 
-fig.set_size_inches(6,6)
+fig.set_size_inches(4,4)
 fig.savefig('/home/vgs23/Images/Quantum_avg_ceriotti.pdf',dpi=400,bbox_inches='tight',pad_inches=0.0)
 
 plt.show()

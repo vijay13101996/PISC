@@ -39,13 +39,13 @@ if trunc:
     llim_list = [-2,-2.5,-3,-5]
     ulim_list = [5,5,5,8]
 else:
-    llim_list = [-2,-2.5,-3,-5]
-    ulim_list = [5,5,5,8]
+    llim_list = [-5,-3,-1,-0.75] #[-2,-2.5,-3,-5]
+    ulim_list = [8,5,1.5,1.25]
 
 #-------------------------------------------
 tol = 1e-7
 
-TinKlist = np.array([10,100,1000,10000])
+TinKlist = np.array([10000,1000,100,10])
 Tlist = TinKlist*K2au
 betalist = 1/Tlist
 
@@ -54,11 +54,14 @@ vals,vecs = DVR.Diagonalize()
 
 #-------------------------------------------
 fig, ax = plt.subplots(2,2,gridspec_kw={'hspace': 0.3, 'wspace': 0.3})
-plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,exponentiate=True,renorm='NCF',tol=tol,TinKlist=TinKlist)
+
+#plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,exponentiate=True,renorm='NCF',tol=tol,TinKlist=TinKlist)
+
+plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,exponentiate=True,tol=tol,ylcoord=-0.3,TinKlist=TinKlist)
 
 fig.set_size_inches(4,4)
 imfile = 'ceriotti.pdf'
-#fig.savefig(imfile,dpi=400,bbox_inches='tight')#,pad_inches=0.0)
+fig.savefig(imfile,dpi=400,bbox_inches='tight')#,pad_inches=0.0)
 
 plt.show()
 #-------------------------------------------

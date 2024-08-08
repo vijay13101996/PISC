@@ -10,45 +10,49 @@ import os
 from PISC.utils.plottools import plot_1D
 import matplotlib.gridspec as gridspec
 import matplotlib.ticker as ticker
+from Distribution_plotter import plot_dist
+
 ngrid = 801
 
-plt.rcParams.update({'font.size': 10, 'font.family': 'serif','font.style':'italic','font.serif':'Garamond'})
-matplotlib.rcParams['axes.unicode_minus'] = False
-
-xl_fs = 14 
-yl_fs = 14
-tp_fs = 12
- 
-le_fs = 9
-ti_fs = 12
-
-renorm = 'NCF'#harm'
-exponentiate = True
-
-
-betalist = [0.1,1.0,10.0,100.0]
 #Quartic/Harmonic/Mildly anharmonic
 lb = -10
 ub = 10.0
 dx = (ub-lb)/(ngrid-1)
+qgrid = np.linspace(lb,ub,ngrid)
 
 m = 1
-w = 1 #quadratic term (frequency)
-a = 0.1 #cubic term
-b = 0.1#1 #quartic term
+w = 0.0 #quadratic term (frequency)
+a = 0.0 #cubic term
+b = 0.25#1 #quartic term
 tol = 1e-4
 
 pes = mildly_anharmonic(m,a,b)
 
-if(renorm=='harm' or renorm=='NCF'):
-    imfile = 'quartic.pdf'
-    llim_list = [-5,-3,-2.5,-2]
-    ulim_list = [5,3,2.5,2]
-else:
-    imfile = 'quartic_PF.pdf'
-    llim_list = [-5,-3,-1.5,-0.5]
-    ulim_list = [5,3,1.5,0.5]
+imfile = 'quartic.pdf'
+llim_list = [-5,-3,-2.5,-2]
+ulim_list = [5,3,2.5,2]
+#--------------------------------------------
+tol = 1e-4
 
+betalist = [0.1,1.0,10.0,100.0]
+
+DVR = DVR1D(ngrid,lb,ub,m,pes.potential)
+vals,vecs = DVR.Diagonalize() 
+
+#--------------------------------------------
+fig, ax = plt.subplots(2,2,gridspec_kw={'hspace': 0.3, 'wspace': 0.3})
+
+#plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,exponentiate=True,renorm='NCF',tol=tol,TinKlist=Tlist)
+
+plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,exponentiate=True,tol=tol)
+
+fig.set_size_inches(4,4)
+fig.savefig(imfile,dpi=400,bbox_inches='tight')#,pad_inches=0.0)
+plt.show()
+
+
+
+exit()
 
 DVR = DVR1D(ngrid,lb,ub,m,pes.potential)
 vals,vecs = DVR.Diagonalize() 
