@@ -11,11 +11,11 @@ ngrid = 100 #Number of grid points
 ngridx = ngrid #Number of grid points along x
 ngridy = ngrid #Number of grid points along y
 
-n_eig_tot = 100 #Number of eigenstates to be calculated
+n_eig_tot = 1000 #Number of eigenstates to be calculated
 
 #System parameters
 m = 0.5
-L = 10.0
+L = 15.0
 lbx = -L
 ubx = L
 lby = -L
@@ -24,7 +24,7 @@ hbar = 1.0
 ngrid = 100
 ngridx = ngrid
 ngridy = ngrid
-omega = 1.0
+omega = 2.0
 
 def main(g):
     start_time = time.time()
@@ -57,8 +57,8 @@ def main(g):
     if(1):
         vals,vecs = DVR.Diagonalize(neig_total=n_eig_tot)
 
-        store_arr(vecs[:,:n_eig_tot],'{}_vecs'.format(fname),'{}/Datafiles'.format(path))
-        store_arr(vals[:n_eig_tot],'{}_vals'.format(fname),'{}/Datafiles'.format(path))
+        store_arr(vecs[:,:n_eig_tot],'MID_{}_vecs'.format(fname),'{}/Datafiles'.format(path))
+        store_arr(vals[:n_eig_tot],'MID_{}_vals'.format(fname),'{}/Datafiles'.format(path))
         print('Time taken:',time.time()-start_time)
         exit()
 

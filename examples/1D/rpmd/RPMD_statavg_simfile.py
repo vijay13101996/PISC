@@ -31,7 +31,7 @@ dt = 0.002
 time_therm = 50.0
 time_total = 5.0
 
-nbeads = 32
+nbeads = 4
 
 method = 'RPMD'
 potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)

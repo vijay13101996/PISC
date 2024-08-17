@@ -11,7 +11,7 @@ class double_well(PES):
         super(double_well,self).bind(ens,rp,pes_fort=pes_fort,transf_fort=transf_fort)
     
     def potential(self,q):
-        #q = q[:,0,:]
+        q = q[:,0,:]
         return -(self.lamda**2/4.0)*q**2 + self.g*q**4 + self.lamda**4/(64*self.g)  
 
     def dpotential(self,q):
@@ -22,3 +22,6 @@ class double_well(PES):
     
     def scalar_potential(self,q):
         return -(self.lamda**2/4.0)*q**2 + self.g*q**4 + self.lamda**4/(64*self.g)
+
+    def potential_func(self,q):
+        return -(self.lamda**2/4.0)*q**2 + self.g*q**4 + self.lamda**4/(64*self.g)  

@@ -601,7 +601,6 @@ class SimUniverse(object):
 
         # Compute correlation function
         tar, R2eq = gen_R2_tcf(dt, tarr, Aarr, Marr, self.beta)
-
         return tar, R2eq
 
     def run_R3_eq(self, sim, seed_number=None):
@@ -779,7 +778,7 @@ class SimUniverse(object):
         
         return tarr, Im_TCF_arr
 
-    def run_seed(self, rngSeed, op=None):
+    def run_seed(self, rngSeed, op=None, nmoments=0):
         """Runs one seed. Note that this is n_traj (~1000) parallel trajectories"""
         print(
             "Start simulation.      Seed: {}  T {}, nbeads {}".format(
@@ -813,6 +812,92 @@ class SimUniverse(object):
 
         if "OTOC" in self.corrkey:
             tarr, Carr = self.run_OTOC(sim)
+        elif self.corrkey == "ImTCF_moments":
+            """Run simulation to compute moments of the imaginary time correlation function at tau=beta/2""" 
+
+            # Analytical calculation of the moments of the Matsubara distribution
+            omega = 1.0
+            mu0 = 1/(2*omega*np.sinh(sim.rp.ens.beta*omega/2))
+            mu2 = omega**2*mu0
+            #print('mu0 harm, mu2 harm',mu0,mu2)
+
+
+            #wk = sim.rp.get_rp_freqs()[2::2]
+            #wmats = np.arange(1,len(wk)+1)*2*np.pi/sim.rp.ens.beta
+            qmats = sim.rp.q/sim.rp.nbeads**0.5
+            #xp = qmats[:,0,2::2] # Matsubara modes with positive index
+            #xm = qmats[:,0,1::2] # Matsubara modes with negative index
+            #xc = qmats[:,0,0] # Centroid
+            #m1 = (-1)**(np.arange(len(wk))) # Array with alternating signs
+
+
+            #print('w1',wk[0],2*np.pi/sim.rp.ens.beta)
+
+            qmats2 = np.mean(qmats**2,axis=0)
+            #xp2 = xp**2
+            #xp_avg = np.mean(xp**2,axis=0)
+            #mats_mode = np.arange(1,len(wk)+1)
+            #mats_avg = 1/(sim.rp.m*sim.rp.ens.beta*(wk**2+omega**2))
+            #print('xp_avg',xp_avg)
+            #print('mats avg',mats_avg)# 1/(sim.rp.m*sim.rp.ens.beta*(wk**2+omega**2)))#,1/(sim.rp.m*sim.rp.ens.beta*(wmats**2+1)))
+            
+            self.store_vector(qmats2, rngSeed, suffix='qmats2')
+            return 
+            
+            #plt.scatter(mats_mode,xp_avg,color='r')
+            #plt.scatter(mats_mode,1/(sim.rp.m*sim.rp.ens.beta*(wk**2)),color='b')
+            #plt.scatter(mats_mode,xp_avg[0]/mats_mode**2,color='g')
+            #plt.scatter(mats_mode,wk**2,color='b')
+            #plt.plot(mats_mode,wk**4)
+            #plt.show()
+
+
+            #exit()
+            #print('xp cross avg', np.mean(xp[:,1]*xp[:,3]))
+            #print('xp avg', np.mean(xm**2,axis=0),1/(sim.rp.m*sim.rp.ens.beta*(wk**2+1)),1/(sim.rp.m*sim.rp.ens.beta*(wmats**2+1)))
+            #exit()
+        
+            xc2 = np.mean(xc**2)
+            xm_odd = np.mean( np.sum(xm[:,0::2]**2,axis=1) )
+            xm_even = np.mean( np.sum(xm[:,1::2]**2,axis=1) )
+           
+            n = 4
+            #print('wmats,wk', wmats[:5], wk[:5])
+            #print('wmats', wmats/(2*np.pi/sim.rp.ens.beta))
+            xmwn_odd  = np.mean(np.sum(xm[:,0::2]**2*wk[0::2]**n,axis=1) )
+            xmwn_even = np.mean(np.sum(xm[:,1::2]**2*wk[1::2]**n,axis=1) )
+            
+            xmwn_odd = np.mean(np.sum(mats_avg[0::2],axis=0))
+            xmwn_even = np.mean(np.sum(mats_avg[1::2],axis=0))
+
+            #mu2 = 2*(np.mean(xm[:,0]**2)*wmats[0]**2 - np.mean(xm[:,1]**2)*wmats[1]**2)
+ 
+            print('mu0 num', xc2 - 2*(xm_odd - xm_even))
+            #print('mu2 num', -2*(xmwn_odd - xmwn_even) + 1/(sim.rp.m*sim.rp.ens.beta) - 2*(np.sum(wk[1::2]**2 - wk[0::2]**2))/(sim.rp.m*sim.rp.ens.beta))
+            #- 1/(sim.rp.m*sim.rp.ens.beta) + 2*(np.sum(wmats[1::2]**2 - wmats[0::2]**2))/(sim.rp.m*sim.rp.ens.beta))
+                        
+            mu_arr = np.zeros(nmoments)
+            
+            # Bead position at tau=0
+            x0 = xc + np.sqrt(2)*np.sum(xm,axis=1)
+            wkn = wk**n
+            xb2 = np.sqrt(2)*np.sum(xm*wkn*m1,axis=1)
+            #print('xb2*x0', (x0*xb2).mean())
+            exit()
+            for n in range(nmoments):
+                wkn = wk**n
+                if ((n+1)%2 == 0): # Odd moments
+                    pref = np.sqrt(2)*(-1)**((n+1)//2 + 1)
+                    xb2_n = pref*(xp*wkn*m1).sum(axis=1)
+                else: # Even moments
+                    pref = np.sqrt(2)*(-1)**(n//2 + 1)
+                    xb2_n = pref*(xm*wkn*m1).sum(axis=1)
+                
+                mu = (x0*xb2_n).mean()
+                mu_arr[n] = mu
+                #print('n,mu',n,mu)
+
+            return mu_arr
         elif "TCF" in self.corrkey:
             if 'Im' in self.corrkey:
                 tarr, Carr = self.run_ImTCF(sim)
@@ -836,7 +921,6 @@ class SimUniverse(object):
                 self.store_scalar(np.mean(vals_mats), rngSeed, suffix='mats_Hessian')
                 print('Hessian computed',np.sqrt(-vals.mean()/sim.rp.m),
                       np.sqrt(-vals_cent.mean()/sim.rp.m),np.sqrt(-vals_mats.mean()/sim.rp.m))
-
                 return
             else:
                 # The assumption here is that 'op' is scalar-valued function (i.e. returns a scalar for every bead)
@@ -847,7 +931,6 @@ class SimUniverse(object):
             tarr, Carr = self.run_OTOC(sim, single=True)
         elif self.corrkey == "R2":
             assert self.extparam is not None
-
             tarr, Csym, Casym = self.run_R2(
                 sim,
                 self.extparam[0],
@@ -865,7 +948,6 @@ class SimUniverse(object):
             )
             self.store_time_series_2D(tarr, R2, rngSeed, "R2", mode=2)
             return
-
         elif self.corrkey == "R3eq":
             tarr, R3_eq = self.run_R3_eq(
                 sim,
@@ -902,7 +984,7 @@ class SimUniverse(object):
                 "{} method is not implemented, sorry".format(self.method)
             )
 
-        if self.corrkey != "stat_avg":
+        if self.corrkey != "stat_avg" and self.corrkey != "ImTCF_moments": # Better code design needed
             seedext = "seed_{}".format(rngSeed)
         else:
             seedext = ""
@@ -955,8 +1037,17 @@ class SimUniverse(object):
     def store_scalar(self, scalar, rngSeed, suffix=None):
         # Scalar values are stored in the same filename
         fname = self.assign_fname(rngSeed, suffix)
+        print('fname',fname)
         f = open("{}/{}/{}.txt".format(self.pathname, self.folder_name, fname), "a")
         f.write(str(rngSeed) + "  " + str(scalar) + "\n")
+        f.close()
+
+    def store_vector(self, vec, rngSeed, suffix=None):
+        # Vector values are stored in the same filename
+        fname = self.assign_fname(rngSeed, suffix)
+        f = open("{}/{}/{}.txt".format(self.pathname, self.folder_name, fname), "a")
+        # Store data as float where first column is the seed number, the rest are the values of the vector
+        np.savetxt(f, np.column_stack((rngSeed, vec)), fmt='%i' + ' %1.8e' * vec.shape[1])
         f.close()
 
 

@@ -1,6 +1,6 @@
 import numpy as np
 from PISC.potentials.base import PES
-from PISC.potentials.coupled_quartic_f import coupled_quartic as coupled_quartic_f
+#from PISC.potentials.coupled_quartic_f import coupled_quartic as coupled_quartic_f
 
 class coupled_quartic(PES):
         def __init__(self,g1,g2):
@@ -34,7 +34,7 @@ class coupled_quartic(PES):
 
         def potential_xy(self,x,y):
             #return np.array( self.g2*(x**4+y**4) + self.g1*x**4*y**4 )
-            return np.array( self.g1*(x**4+y**4) + self.g2*x**2*y**2 )
+            return np.array( self.g1*(x**2+y**2) + self.g2*x**4*y**4 )
 
         def potential_f(self,qcart_f,pot_f):
             return coupled_quartic_f.potential_f(qcart_f,self.param_list,pot_f)

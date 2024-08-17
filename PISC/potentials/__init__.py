@@ -22,10 +22,10 @@ from PISC.potentials.mildly_anharmonic_2D import mildly_anharmonic_2D
 from PISC.potentials.inv_harmonic import InvHarmonic
 from PISC.potentials.pot_adder import PotAdder
 from PISC.potentials.Coupled_quartic import coupled_quartic
-from PISC.potentials.DW_Morse_harm import DW_Morse_harm
+#from PISC.potentials.DW_Morse_harm import DW_Morse_harm
 # from PISC.potentials.Tanimura_SB import Tanimura_SB
 from PISC.potentials.triple_well_potential import triple_well
-from PISC.potentials.Morse_harm_2D import Morse_harm_2D
+#from PISC.potentials.Morse_harm_2D import Morse_harm_2D
 from PISC.potentials.Coupled_harmonic_oblique import coupled_harmonic_oblique
 
 
