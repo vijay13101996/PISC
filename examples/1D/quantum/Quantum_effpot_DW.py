@@ -10,7 +10,7 @@ import os
 from PISC.utils.plottools import plot_1D
 import matplotlib.gridspec as gridspec
 import matplotlib.ticker as ticker
-from Distribution_plotter import plot_dist
+from Distribution_plotter2 import plot_dist
 
 ngrid = 801
 
@@ -49,6 +49,6 @@ plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,exponentiate
 
 
 fig.set_size_inches(4,4)
-fig.savefig(imfile,dpi=400,bbox_inches='tight')#,pad_inches=0.0)
+#fig.savefig(imfile,dpi=400,bbox_inches='tight')#,pad_inches=0.0)
 plt.show()
 

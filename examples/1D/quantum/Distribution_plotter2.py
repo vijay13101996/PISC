@@ -93,7 +93,7 @@ def plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,exponent
             bVeff = np.exp(-bVeff)
             norm = np.sum(bVeff*dx)
             bVeff/=norm
-            leff = r'$P_{\rm LH}(q)$'
+            leff = r'$P_{{LH}}(q) \;\; ({})$'.format(renorm)
         else:
             leff = r'$\beta V_{\rm LH}(q)$'
 
@@ -120,8 +120,8 @@ def plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,exponent
         #ax.plot(qgrid,bVeff,color='k',ls=':',lw=3)
 
         #----------------------------------------------------------------------------------------
-        ax.set_xlim(llim,ulim)
-        ax.set_ylim(0,1.25*ylim)
+        #ax.set_xlim(llim,ulim)
+        #ax.set_ylim(0,1.25*ylim)
 
 
         if(TinKlist is not None): #If temperature is given in K, then annotate the temperature
@@ -147,6 +147,6 @@ def plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,exponent
 
     handles, labels = ax1.get_legend_handles_labels()
 
-    fig.legend(handles,labels,loc=[0.185,0.9],ncol=3)
+    fig.legend(handles,labels,loc=[0.1,0.9],ncol=3)
 
 

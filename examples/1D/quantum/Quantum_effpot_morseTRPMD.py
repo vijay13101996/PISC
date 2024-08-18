@@ -13,7 +13,7 @@ import matplotlib.ticker as ticker
 import scipy
 from scipy.optimize import curve_fit
 from Truncated_pes import truncate_pes
-from Distribution_plotter import plot_dist
+from Distribution_plotter2 import plot_dist
 
 ngrid = 801
 
@@ -65,7 +65,7 @@ fig, ax = plt.subplots(2,2,gridspec_kw={'hspace': 0.3, 'wspace': 0.3})
 plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,exponentiate=True,tol=tol,TinKlist=Tlist)
 
 fig.set_size_inches(4,4)
-fig.savefig(imfile,dpi=400,bbox_inches='tight')#,pad_inches=0.0)
+#fig.savefig(imfile,dpi=400,bbox_inches='tight')#,pad_inches=0.0)
 plt.show()
 
 exit()

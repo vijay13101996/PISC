@@ -33,20 +33,35 @@ class Veff_classical_1D_LH(PES):
                 wa=0.0
                 ka = grad
                 Vc = self.pes.potential(q)#self.m**2*hess*q**2/2 #
-                if (hess < self.tol):
-                    hess = self.tol
-                wa = np.sqrt(hess)
-                xi = 0.5*self.beta*wa
-               
+                if(0): #VGS renormalisation
+                    if (hess < self.tol):
+                        hess = self.tol
+                    wa = np.sqrt(hess)
+                    xi = 0.5*self.beta*wa
+                    qu = xi/np.tanh(xi)
+                if(1): #Liu and Miller renormalisation
+                    if (hess >0):
+                        wa = np.sqrt(hess)
+                        xi = 0.5*self.beta*wa
+                        qu = xi/np.tanh(xi)
+                    else:
+                        print('there')
+                        wa = np.sqrt(-hess)
+                        xi = 0.5*self.beta*wa
+                        qu = np.tanh(xi)/xi
+
                 pref = self.m*ka**2/(2*hess)
 
                 if(self.renorm=='harm'):# Harmonic renormalisation (i.e. gives normalised distribution for a harmonic potential)
-                    Vnc = pref*(np.tanh(xi)/xi -1) - 0.5*np.log(np.tanh(xi))/self.beta - 0.5*np.log(self.m*wa/np.pi)/self.beta
+                    pref = Vc   
+                    #Vnc = pref*(np.tanh(xi)/xi -1) - 0.5*np.log(np.tanh(xi))/self.beta - 0.5*np.log(self.m*wa/np.pi)/self.beta
+                    Vnc = pref*(1/qu -1) - 0.5*np.log(1/qu)/self.beta - 0.5*np.log(self.m*wa**2/np.pi)/self.beta
                 elif(self.renorm=='PF'):# Normalised to the partition function (i.e. when integrated over q, gives the partition function)
                     Vnc = pref*(np.tanh(xi)/xi -1) + (-0.5*np.log(np.tanh(xi)/xi) + np.log(np.sinh(xi)/xi))/self.beta
                 elif(self.renorm=='NCF'):
                     pref = Vc
-                    Vnc =  pref*(np.tanh(xi)/xi -1) - 0.5*np.log(np.tanh(xi))/self.beta + 0.5*np.log(xi)/self.beta
+                    #Vnc =  pref*(np.tanh(xi)/xi -1) - 0.5*np.log(np.tanh(xi))/self.beta + 0.5*np.log(xi)/self.beta
+                    Vnc = pref*(1/qu -1) - 0.5*np.log(1/qu)/self.beta 
                 return Vc+Vnc
 
         def distribution(self,q):
