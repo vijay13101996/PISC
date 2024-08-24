@@ -4,41 +4,29 @@ from matplotlib import pyplot as plt
 
 n_anharm = 4
 
-if(0) : #Plot bnarr, mun_arr vs n at different L for 1D Box
-    m=0.5
-    neigs = 250
-    for L in [1,5,10,20]:
-        potkey = 'LowT_1D_Box_m_{}_L_{}'.format(m,np.around(L,2))
-
-        fname = 'mun_arr_{}_neigs_{}'.format(potkey,neigs)
-        mun_arr = read_arr(fname)
-
-        fname = 'bnarr_{}_neigs_{}'.format(potkey,neigs)
-        bnarr = read_arr(fname)
-
-        T_arr = read_arr('T_arr_{}_neigs_{}'.format(potkey,neigs))
-
-        ncoeff = bnarr.shape[1]
-        nmoments = (mun_arr.shape[1]-1)*2
-
-        i=0
-        for i in [0]:
-            plt.scatter(np.arange(ncoeff),bnarr[i,:],label='T={},neigs={},L={}'.format(T_arr[i],neigs,L))
-
-    plt.xlabel(r'$n$')
-    plt.ylabel(r'$b_{n}$')
-    plt.legend()
-    plt.show()
-
-if(1): #Plot bnarr, mun_arr vs n at different T for 1D Box
+if(1): #Plot bnarr, mun_arr vs n at different T for Billiards/2D Box
 
     m=0.5
-    #L=8
-    L=4*np.sqrt(1/(4+np.pi))#10
-    
-    potkey = '1D_Box_m_{}_L_{}'.format(m,np.around(L,2))
+    R=np.sqrt(1/(4+np.pi))#10
+    a=R 
 
-    for neigs in [550]:#10,14,18,22,50]:
+    neigs = 100
+    potkey_list = ['lowT_stadium_billiards_a_{}_R_{}'.format(np.around(a,2),np.around(R,2)),
+                   'lowT_rectangular_box_a_{}_R_{}'.format(np.around(a,2),np.around(R,2))]
+
+    for potkey in potkey_list: 
+        if('stadium' in potkey):
+            if a==0.0:
+                potkey_trunc = 'CB'
+            else:
+                potkey_trunc = 'SB' 
+        elif('rectangular' in potkey):
+            if a==0.0:
+                potkey_trunc = 'Sq. Box'
+            else:
+                potkey_trunc = 'Rec. Box'
+
+
         fname = 'mun_arr_{}_neigs_{}'.format(potkey,neigs)
         mun_arr = read_arr(fname)
 
@@ -52,24 +40,24 @@ if(1): #Plot bnarr, mun_arr vs n at different T for 1D Box
 
         i=0
         for i in [2]:#,4,8,12,16]:
-            plt.scatter(np.arange(ncoeff),bnarr[i,:],label='T={},neigs={}'.format(T_arr[i],neigs))
+            plt.scatter(np.arange(ncoeff),bnarr[i,:],label='T={},neigs={},{}'.format(T_arr[i],neigs,potkey_trunc))
 
-    #plt.xlabel(r'$n$')
-    #plt.ylabel(r'$b_{n}$')
-    #plt.legend()
-    #plt.show()
+    plt.xlabel(r'$n$')
+    plt.ylabel(r'$b_{n}$')
+    plt.legend()
+    plt.show()
 
-if(1): # Plot bnarr, mun_arr vs n at different T for MAH
+if(0): # Plot bnarr, mun_arr vs n at different T for MAH
     neigs = 550
     a=0.0
     w=0.0
     n_anharm = 4
     b=1.
     n_anharm = 4
-    for n_anharm in [8]:#,6,8,10]:
-    #for b in [0.1,0.5,1.0]:
+    #for n_anharm in [4,6,8,10]:
+    for b in [0.1,0.5,1.0]:
     #for w in [1.0,0.0]:
-        potkey = 'highT_MAH_w_{}_a_{}_b_{}_n_{}'.format(w,a,b,n_anharm)
+        potkey = 'MAH_w_{}_a_{}_b_{}_n_{}'.format(w,a,b,n_anharm)
 
         fname = 'mun_arr_{}_neigs_{}'.format(potkey,neigs)
         mun_arr = read_arr(fname)
@@ -83,11 +71,11 @@ if(1): # Plot bnarr, mun_arr vs n at different T for MAH
         nmoments = (mun_arr.shape[1]-1)*2
 
         i=0
-        for i in [2]:#,2,4,6,8,10,12,14,16]:#,4,8,12]:#,4,8,12,16]:
-            plt.scatter(np.arange(ncoeff),bnarr[i,:ncoeff],label='T={},neigs={},n_anharm={},b={}'.format(T_arr[i],neigs,n_anharm,b))
+        for i in [8,]:#,4,8,12,16]:
+            plt.scatter(np.arange(ncoeff),bnarr[i,:],label='T={},neigs={},n_anharm={},b={}'.format(T_arr[i],neigs,n_anharm,b))
 
     plt.xlabel(r'$n$')
-    plt.ylabel(r'$b_{n}$')
+    plt.ylabel(r'$\mu_{2n}$')
 
     plt.legend()
     plt.show()

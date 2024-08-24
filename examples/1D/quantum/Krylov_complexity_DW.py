@@ -5,9 +5,9 @@ from PISC.potentials import double_well, quartic, harmonic1D, mildly_anharmonic,
 import scipy
 from matplotlib import pyplot as plt
 
-ngrid = 400
+ngrid = 1000
 
-L = 10
+L = 20
 lb = -L
 ub = L
 
@@ -21,7 +21,7 @@ Tc = 0.5*lamda/np.pi
 potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
 
 DVR = DVR1D(ngrid,lb,ub,m,pes.potential_func)
-neigs = 50
+neigs = 150
 vals,vecs = DVR.Diagonalize(neig_total=neigs)
 
 x_arr = DVR.grid[1:ngrid]
@@ -41,11 +41,11 @@ L = Krylov_complexity.krylov_complexity.compute_liouville_matrix(vals,liou_mat)
 LO = np.zeros((neigs,neigs))
 LO = Krylov_complexity.krylov_complexity.compute_hadamard_product(L,O,LO)
 
-times_arr = np.arange(0.6,8.05,0.2)#[0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0]
+times_arr = np.arange(1.0,8.05,0.5)#[0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0]
 mun_arr = []
 bnarr = []
-nmoments = 8
-ncoeff = 10
+nmoments = 40
+ncoeff = 200
 
 for times in times_arr:
     T_au = times*Tc
@@ -69,10 +69,21 @@ bnarr = np.array(bnarr)
 print('mun_arr',mun_arr.shape)
 print('bnarr',bnarr.shape)
 
-for i in [0,2,4,6,8]:#range(0,ncoeff,2):
-    plt.scatter(times_arr,bnarr[:,i]-bnarr[0,i],label='n={}'.format(i))
-    #plt.scatter(times_arr,mun_arr[:,i],label='n={}'.format(i))
+if(1):
+    for i in [0,2,4]:#[1,3,5,7,9]:
+        plt.scatter(np.arange(200),bnarr[i,:200],label='T={}'.format(np.around(times_arr[i],2)))
+
     plt.legend()
+    plt.show()
+
+if(0):
+    for i in [2,4,6,8,10]:#,10,12,14,16,18]:#range(0,ncoeff,2):
+    #for i in range(0,ncoeff,2):
+        #plt.scatter(times_arr,bnarr[:,i],label='n={}'.format(i))
+        plt.scatter((times_arr),np.log(mun_arr[:,i]),label='n={}'.format(i))
+    plt.legend()
+    #plt.xscale('log')
+    #plt.yscale('log')
     plt.show()
 
 if(0):
