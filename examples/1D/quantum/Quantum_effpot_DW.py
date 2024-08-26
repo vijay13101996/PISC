@@ -26,14 +26,19 @@ lamda = 2.0
 g = 0.02
 pes = double_well(lamda,g)
 
-imfile = 'DW_harm.pdf'
+renorm = 'NCF'
+fur_renorm = 'VGS'
+
+imfile = 'DW_{}_{}.png'.format(renorm,fur_renorm)
+#imfile = 'DW_harm.pdf'
+
 #llim_list = [-5,-5,-5,-5]
 llim_list = [-10,-10,-10,-10]
 #ulim_list = [5,5,5,5]
 ulim_list = [10,10,10,10]#
 
 #--------------------------------------------------
-tol = 1e-8
+tol = 1e-4
 
 betalist = [0.1,1.0,10.0,100.0]
 
@@ -45,10 +50,10 @@ fig, ax = plt.subplots(2,2,gridspec_kw={'hspace': 0.3, 'wspace': 0.3})
 
 #plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,exponentiate=True,renorm='NCF',tol=tol)
 
-plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,exponentiate=True,tol=tol,ylcoord=-0.3)
+plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,exponentiate=True,tol=tol,ylcoord=-0.3,renorm=renorm,fur_renorm=fur_renorm)
 
 
 fig.set_size_inches(4,4)
-#fig.savefig(imfile,dpi=400,bbox_inches='tight')#,pad_inches=0.0)
+fig.savefig(imfile,dpi=400,bbox_inches='tight')#,pad_inches=0.0)
 plt.show()
 

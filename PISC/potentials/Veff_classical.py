@@ -6,7 +6,7 @@ class Veff_classical_1D_LH(PES):
         The local harmonic ansatz for the effective classical potential
         """
 
-        def __init__(self,pes,beta,m,grad=None,hess=None,tol=1.0,renorm='harm'):
+        def __init__(self,pes,beta,m,grad=None,hess=None,tol=1.0,renorm='harm',fur_renorm='VGS'):
                 super(Veff_classical_1D_LH).__init__()
                 self.beta = beta
                 self.m=m
@@ -15,7 +15,8 @@ class Veff_classical_1D_LH(PES):
                 self.hess = hess
                 self.tol = tol
                 self.renorm = renorm
-
+                self.fur_renorm = fur_renorm
+                
         def bind(self,ens,rp):
                 super(Veff_classical_1D_LH,self).bind(ens,rp)
 
@@ -33,14 +34,15 @@ class Veff_classical_1D_LH(PES):
                 wa=0.0
                 ka = grad
                 Vc = self.pes.potential(q)#self.m**2*hess*q**2/2 #
-                if(0): #VGS renormalisation
+                if(self.fur_renorm =='VGS'): #VGS renormalisation
                     if (hess < self.tol):
                         hess = self.tol
                     wa = np.sqrt(hess)
                     xi = 0.5*self.beta*wa
                     qu = xi/np.tanh(xi)
-                if(1): #Liu and Miller renormalisation
+                if(self.fur_renorm == 'Liu'): #Liu and Miller renormalisation
                     if (hess >0):
+                        print('here')  
                         wa = np.sqrt(hess)
                         xi = 0.5*self.beta*wa
                         qu = xi/np.tanh(xi)

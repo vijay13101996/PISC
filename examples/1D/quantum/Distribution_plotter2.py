@@ -24,7 +24,8 @@ le_fs = 9
 ti_fs = 12
 
 #def plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,exponentiate=True,renorm='NCF',tol=1e-8,TinKlist=None):
-def plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,exponentiate=True,tol=1e-8,TinKlist=None,ylcoord=-0.26,renorm='NCF'):
+def plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,
+              exponentiate=True,tol=1e-8,TinKlist=None,ylcoord=-0.26,renorm='NCF',fur_renorm='VGS'):
     """
     Plot the distribution of the quantum, classical and effective potential for a given set of betas
     Parameters:
@@ -45,6 +46,7 @@ def plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,exponent
     tol : Tolerance for the effective potential (frequency cutoff)
     TinKlist : List of temperatures in K (optional)
     """
+    
 
     ax1,ax2,ax3,ax4 = ax.flatten()
     axlist = [ax1,ax2,ax3,ax4]
@@ -85,7 +87,7 @@ def plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,exponent
 
         #----------------------------------------------------------------------------------------
         #Effective potential with NCF renormalization
-        pes_eff = Veff_classical_1D_LH(pes,beta,m,tol=tol,renorm=renorm)#'NCF')
+        pes_eff = Veff_classical_1D_LH(pes,beta,m,tol=tol,renorm=renorm,fur_renorm=fur_renorm)
         bVeff = np.zeros_like(qgrid)
         for i in range(len(qgrid)): 
             bVeff[i] = beta*pes_eff.potential(qgrid[i])
@@ -121,7 +123,7 @@ def plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,exponent
 
         #----------------------------------------------------------------------------------------
         #ax.set_xlim(llim,ulim)
-        #ax.set_ylim(0,1.25*ylim)
+        ax.set_ylim(0,1.25*ylim)
 
 
         if(TinKlist is not None): #If temperature is given in K, then annotate the temperature
