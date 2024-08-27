@@ -8,8 +8,6 @@ from matplotlib import pyplot as plt
 import time
 import os
 
-
-
 ngrid = 100 #Number of grid points
 ngridx = ngrid #Number of grid points along x
 ngridy = ngrid #Number of grid points along y

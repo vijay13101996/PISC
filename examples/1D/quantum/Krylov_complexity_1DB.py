@@ -100,7 +100,7 @@ L = Krylov_complexity.krylov_complexity.compute_liouville_matrix(vals,liou_mat)
 LO = np.zeros((neigs,neigs))
 LO = Krylov_complexity.krylov_complexity.compute_hadamard_product(L,O,LO)
 
-T_arr = [5,10,20,30,40,100]#np.arange(1.,30.05,2.)#[0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0]
+T_arr = [1,2,4,10,20,40,100]#np.arange(1.,30.05,2.)#[0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0]
 mun_arr = []
 mu0_harm_arr = []
 bnarr = []
@@ -134,7 +134,7 @@ store_arr(mun_arr,'mun_arr_{}_neigs_{}'.format(potkey,neigs))
 store_arr(bnarr,'bnarr_{}_neigs_{}'.format(potkey,neigs))
 #exit()
 
-if(1):
+if(0):
     narr = np.arange(1,nmoments//2+1)
     nlogn = narr#*np.log(narr)
     for i in [0]:#,1,2,3]:#4,6,8,10,12,14,16]:
@@ -157,10 +157,17 @@ if(1):
     plt.show()
     exit()
 
-if(0):
-    for i in [0,1,2,3]:#range(0,len(T_arr),2):
-        plt.scatter(np.arange(ncoeff),bnarr[i,:200],label='T={}'.format(T_arr[i]))
+if(1):
+    slope_arr = []
+    for i in [0,1,2,3,4,5,6]:#range(0,len(T_arr),2):
+        plt.scatter(np.arange(ncoeff),bnarr[i,:200],label='T={}'.format(T_arr[i]),s=3)
         #plt.scatter(np.log(np.arange(1,nmoments//2+1)),np.log(mun_arr[i,1:]),label='T={}'.format(T_arr[i]))
+        
+        # Find slope
+        slope = np.polyfit((np.arange(5,50)),(bnarr[i,5:50]),1)
+        slope_arr.append(slope[0])
+        
+        plt.plot(np.arange(5,50),slope[0]*np.arange(5,50)+slope[1],lw=2.5)
 
     #plt.xlim([10,nmoments//2])
     
@@ -173,6 +180,13 @@ if(0):
     #plt.ylim([0.0,700])
     plt.legend()    
     plt.show()
+
+    plt.scatter(T_arr,slope_arr)
+    plt.plot(T_arr, np.pi*np.array(T_arr))
+    plt.xlabel(r'$T$')
+    plt.ylabel(r'$slope$')
+    plt.show()
+
     exit()
 
 slope_arr = []

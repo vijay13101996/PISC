@@ -54,7 +54,7 @@ def main(T,nbeads):
         a=0.0
         b=1.0
         n=4
-        w=1.0
+        w=0.0
 
         pes = mildly_anharmonic(m,a,b,w,n=n)
         potkey = 'mildly_anharmonic_a_{}_b_{}_n_{}_w_{}'.format(a,b,n,w)

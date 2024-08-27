@@ -191,11 +191,14 @@ class DVR2D(DVR1D):
     
     def pos_mat(self,ind):
         temp = self.tuple_index()
-        x_arr = np.zeros(len(temp))
+        q_arr = np.zeros(len(temp))
         for p in range(len(temp)):
             i = temp[p][ind]  ##It works alright, except for the fact the xgrid/ygrid needs to be toggled. 
-            x_arr[p] = self.xgrid[i]
-        return x_arr
+            if(ind==1):
+                q_arr[p] = self.ygrid[i]
+            else:
+                q_arr[p] = self.xgrid[i]
+        return q_arr
 
     # The function below swaps x and y axis for some reason. However, the ordering of the tuple_index is x-major as usual.
 

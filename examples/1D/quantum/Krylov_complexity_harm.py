@@ -8,15 +8,15 @@ from matplotlib import pyplot as plt
 
 ngrid = 1000
 
-L = 8
+L = 16
 lb = -L
 ub = L
 
-m=1.0
+m=2.0
 a=0.0#4
-b=1.#16
-omega=0.0
-n_anharm=8
+b=0.#16
+omega=2.0
+n_anharm=4
 
 pes = mildly_anharmonic(m,a,b,omega,n=n_anharm)
 
@@ -29,8 +29,8 @@ vals,vecs = DVR.Diagonalize(neig_total=neigs)
 x_arr = DVR.grid[1:ngrid]
 dx = x_arr[1]-x_arr[0]
 
-plt.plot(x_arr,vecs[:,-1])
-plt.show()
+#plt.plot(x_arr,vecs[:,-1])
+#plt.show()
 
 pos_mat = np.zeros((neigs,neigs)) 
 pos_mat = Krylov_complexity.krylov_complexity.compute_pos_matrix(vecs, x_arr, dx, dx, pos_mat)
@@ -49,7 +49,7 @@ L = Krylov_complexity.krylov_complexity.compute_liouville_matrix(vals,liou_mat)
 LO = np.zeros((neigs,neigs))
 LO = Krylov_complexity.krylov_complexity.compute_hadamard_product(L,O,LO)
 
-T_arr = [10,20,40,100]#np.arange(1.,13.05,0.5)#[0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0]
+T_arr = [1.0,2.0,4.0]#,10.0,20.0,40.0,100.0]#[10,20,40,100]#np.arange(1.,13.05,0.5)#[0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0]
 mun_arr = []
 mu0_harm_arr = []
 bnarr = []
@@ -70,6 +70,8 @@ for T_au in T_arr:
     barr = Krylov_complexity.krylov_complexity.compute_lanczos_coeffs(O, L, barr, beta, vals, 'wgm')
     bnarr.append(barr)
 
+    print('barr',barr[:2])
+
     #print('moments',np.around(moments[-1],5))
     mun_arr.append(even_moments)
 
@@ -87,7 +89,7 @@ store_arr(bnarr,'bnarr_{}_neigs_{}'.format(potkey,neigs))
 #exit()
 
 if(0):
-    for i in [0,2,4]:#,6,8,10,12,14,16]:
+    for i in [0,1,2,3]:#,6,8,10,12,14,16]:
         plt.scatter((np.arange(1,nmoments//2+1)),np.log(mun_arr[i,1:]),label='T={}'.format(np.around(T_arr[i],2)))
     
     #plt.xlim([10,nmoments//2])
@@ -101,7 +103,7 @@ if(0):
     exit()
 
 if(1):
-    for i in [0,2,4]:#,6,8,10,12,14,16]:
+    for i in [0,1,2,3,4,5,6]:#,6,8,10,12,14,16]:
         plt.scatter(np.arange(ncoeff),bnarr[i,:],label='T={}'.format(T_arr[i]))
     
     #plt.xlim([10,nmoments//2])
@@ -109,7 +111,7 @@ if(1):
     plt.title(r'$neigs={},L={}$'.format(neigs,ub))
     plt.xlabel(r'$n$')
     plt.ylabel(r'$b_n$')
-    plt.ylim([0.0,2000])
+    #plt.ylim([0.0,2000])
     plt.legend()    
     plt.show()
     exit()

@@ -8,18 +8,15 @@ from matplotlib import pyplot as plt
 import time
 import os
 
-# 1. Tomorow, compute the moments of the Matsubara distribution for a quartic oscillator. See if decays faster than that of the harmonic oscillator.
-
-
 ngrid = 100 #Number of grid points
 ngridx = ngrid #Number of grid points along x
 ngridy = ngrid #Number of grid points along y
 
-neigs = 1000 #Number of eigenstates to be calculated
+neigs = 100 #Number of eigenstates to be calculated
 
 #System parameters
 m = 0.5
-L = 20.0
+L = 10.0
 lbx = -L
 ubx = L
 lby = -L
@@ -31,14 +28,14 @@ ngridy = ngrid
 dx = (ubx-lbx)/ngridx
 dy = (uby-lby)/ngridy
 
-omega = 1.0
-g = 0.4
+omega = 2.0
+g = 0.0
 
 start_time = time.time()
 print('g',g)
   
-potkey = 'coupled_harmonic_w_{}_g_{}'.format(omega,g)
-pes = coupled_harmonic(omega,g)
+potkey = 'coupled_harmonic_w_{}_g_{}_m_{}'.format(omega,g,m)
+pes = coupled_harmonic(omega,g,m=m)
 
 if(0): #Plot the potential
     xg = np.linspace(lbx,ubx,ngridx)
@@ -70,20 +67,34 @@ if(0): #Diagonalize the Hamiltonian
     #exit()
 
 if(1): #Read eigenvalues and eigenvectors and test whether the Wavefunctions look correct
-    vals = read_arr('LONG_{}_vals'.format(fname),'{}/Datafiles'.format(path))
-    vecs = read_arr('LONG_{}_vecs'.format(fname),'{}/Datafiles'.format(path))
+    vals = read_arr('{}_vals'.format(fname),'{}/Datafiles'.format(path))
+    vecs = read_arr('{}_vecs'.format(fname),'{}/Datafiles'.format(path))
     
     n=99
-    print('vals[n]', vals[-10:-1])
+    #print('vals[n]', vals[-10:-1])
     
     #plt.imshow(DVR.eigenstate(vecs[:,-1])**2,origin='lower')
     #plt.show()
 
 x_arr = DVR.pos_mat(0)
+y_arr = DVR.pos_mat(1)
+
 #-------------------------------------------------------
 pos_mat = np.zeros((neigs,neigs)) 
 pos_mat = Krylov_complexity_2D.krylov_complexity.compute_pos_matrix(vecs, x_arr, dx, dy, pos_mat)
-O = pos_mat
+X = pos_mat
+
+pos_mat = np.zeros((neigs,neigs))
+pos_mat = Krylov_complexity_2D.krylov_complexity.compute_pos_matrix(vecs, y_arr, dx, dy, pos_mat)
+Y = pos_mat
+
+prod = 1
+if(prod):
+    print('O','XY')
+    O = np.matmul(X,Y)
+else:
+    O = X
+    print('O','X')
 
 print('O',np.around(O[:5,:5],3),'vals',vals[-1])
 #exit()
@@ -98,12 +109,12 @@ L = Krylov_complexity_2D.krylov_complexity.compute_liouville_matrix(vals,liou_ma
 LO = np.zeros((neigs,neigs))
 LO = Krylov_complexity_2D.krylov_complexity.compute_hadamard_product(L,O,LO)
 
-T_arr = [0.5,1.0,1.5]#np.arange(1.0,5.05,0.5)#[0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0]
+T_arr = [1.0,2.0,4.0]#np.arange(1.0,5.05,0.5)#[0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0]
 mun_arr = []
 mu0_harm_arr = []
 bnarr = []
 nmoments = 40
-ncoeff = 200
+ncoeff = 20
 
 for T_au in T_arr:    
     Tkey = 'T_{}'.format(T_au)
@@ -113,22 +124,33 @@ for T_au in T_arr:
     moments = np.zeros(nmoments+1)
     moments = Krylov_complexity_2D.krylov_complexity.compute_moments(O, vals, beta, moments)
     even_moments = moments[0::2]
+    mun_arr.append(even_moments)
+    mu0_num, mu2_num, mu4_num = moments[0], moments[2], moments[4]
+
+    #print('moments',even_moments[0],even_moments[1],even_moments[1]/even_moments[0])
 
     barr = np.zeros(ncoeff)
     barr = Krylov_complexity_2D.krylov_complexity.compute_lanczos_coeffs(O, L, barr, beta, vals, 'wgm')
+    #print('T',T_au, 'barr',barr[0],barr[1])
     bnarr.append(barr)
 
-    #print('moments',np.around(moments[0],5))
-    mun_arr.append(even_moments)
+    
+    mu0 = 1.0/(2*m*omega*np.sinh(0.5*beta*omega))
+    mu2 = omega/(2*m*np.sinh(0.5*beta*omega))
+    mu4 = omega**2*mu2
 
-    mu0_harm_arr.append(1.0/(2*m*omega*np.sinh(0.5*beta*omega)))
-    #print('mu0_harm',mu0_harm_arr[-1])
+    mu0_harm_arr.append(mu0)
+    
+    print('mu0_num, mu2_num, mu4_num',mu0_num,mu2_num)#,mu4_num)
+    #print('mu0,mu2,mu4',mu0,mu2,mu4)
+    #print('mu0_sq, mu2_sq, mu4_sq', mu0**2, mu2**2/2, mu4**2/2)
+    print('2 mu0*mu2', 2*mu0*mu2)
 
 mun_arr = np.array(mun_arr)
 bnarr = np.array(bnarr)
-print('mun_arr',mun_arr.shape)
-print('bnarr',bnarr.shape)
-#exit()
+#print('mun_arr',mun_arr.shape)
+#print('bnarr',bnarr.shape)
+exit()
 
 if(1):
     for i in [0,1,2]:#,2,4,6,8]:

@@ -52,7 +52,7 @@ if(0): #Quartic
 if(1): #Mildly anharmonic
     a = 0.0
     b = 1.0
-    w = 1.0
+    w = 0.0
     n_anh = 4
 
     T = 10.0 
@@ -97,7 +97,7 @@ syskey = 'Selene'
 beadkey = 'nbeads_{}_'.format(nbeads)
 
 
-for T in [10.0]:#,20.0,40.0,100.0]:#,20.0,40.0,100.0]:
+for T in [10.0,20.0,40.0,100.0]:
     Tkey = 'T_{}'.format(T)
     beta = 1/T
     omegan = nbeads/beta
@@ -118,27 +118,38 @@ for T in [10.0]:#,20.0,40.0,100.0]:#,20.0,40.0,100.0]:
     
     x2 = mom_num[1:]*wk[1:]**6
     
-    for nmom in [0]:#2,4,6,8]:
+    for nmom in [4]:#,4,6,8]:
         xp2 = mom_num[2::2]*wk[2::2]**nmom
         xm2 = mom_num[1::2]*wk[1::2]**nmom
         xc2 = mom_num[0]
-
 
         xm2_odd = xm2[0::2]
         xm2_even = xm2[1::2]
         
         nmom_arr = np.arange(1,len(xp2))
-    
-        plt.scatter(np.log(nmom_arr),np.log(xp2)[:-1],label='T={},w={}'.format(T,w))#n_anh))
+        log_nmom_arr = np.log(nmom_arr)
+        log_xp2 = (np.log(xp2)[:-1])
+        log_anal = (np.log(T)+np.log(wk[2::2][:-1]**(nmom-2)))
+
+        plt.scatter(nmom_arr,(log_xp2),label='T={},w={}'.format(T,w))#n_anh))
+        plt.plot(nmom_arr,(log_anal))
+
+        #plt.scatter(log_nmom_arr,abs((log_xp2)-(log_anal)),label='T={},w={}'.format(T,w))
+
+        #plt.plot(log_nmom_arr,(abs(log_xp2-log_anal)),label='T={},w={}'.format(T,w)) #n_anh))
+
+        print('diff, nmom',log_xp2[1], log_anal[1],nmom, log_xp2[1]-log_anal[1])
+
+        #plt.scatter(np.log(nmom_arr),np.log(xp2)[:-1],label='T={},w={}'.format(T,w))#n_anh))
         #plt.plot(np.log(nmom_arr),np.log(xp2)[:-1],label='T={},w={}'.format(T,w))#n_anh))
+        #plt.plot(np.log(nmom_arr),np.log(T)+np.log(wk[2::2][:-1]**(nmom-2)))
         
         # Fit log nmom vs log xp2
         p = np.polyfit(np.log(nmom_arr)[:-3],np.log(xp2)[:-4],1)
-        #print('p',p)
         #plt.plot(np.log(nmom_arr),np.polyval(p,np.log(nmom_arr)),label='slope={}'.format(p[0]))
-        plt.plot(np.log(nmom_arr),np.log(T)+np.log(wk[2::2][:-1]**(nmom-2)))
         #plt.scatter(np.log(np.arange(1,len(xm2))),np.log(xm2)[:-1],label='T={},n={}'.format(T,n))
 
+plt.xscale('log')
 plt.legend()
 plt.show()
 
