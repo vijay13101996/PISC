@@ -26,16 +26,15 @@ a = 0.#-0.75 #cubic term
 b = 0.25#1 #quartic term
 tol = 1e-4
 
-pes = mildly_anharmonic(m,a,b)
+pes = mildly_anharmonic(m,a,b,w)
 
-renorm = 'harm'
-fur_renorm = 'Liu'
+renorm = 'NCF'
+fur_renorm = 'Liu'#VGS'#Liu'
 
-imfile = 'quart_{}_{}.png'.format(renorm,fur_renorm)
+imfile = 'NO_MAGIC_quart_{}_{}.png'.format(renorm,fur_renorm)
 llim_list = [-5,-3,-2.5,-2]
 ulim_list = [5,3,2.5,2]
 #--------------------------------------------
-tol = 1e-4
 
 betalist = [0.1,1.0,10.0,100.0]
 

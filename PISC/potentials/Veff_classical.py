@@ -6,7 +6,7 @@ class Veff_classical_1D_LH(PES):
         The local harmonic ansatz for the effective classical potential
         """
 
-        def __init__(self,pes,beta,m,grad=None,hess=None,tol=1.0,renorm='harm',fur_renorm='VGS'):
+        def __init__(self,pes,beta,m,grad=None,hess=None,tol=1.0,renorm='harm',fur_renorm='VGS',magic=True):
                 super(Veff_classical_1D_LH).__init__()
                 self.beta = beta
                 self.m=m
@@ -16,6 +16,7 @@ class Veff_classical_1D_LH(PES):
                 self.tol = tol
                 self.renorm = renorm
                 self.fur_renorm = fur_renorm
+                self.magic = magic
                 
         def bind(self,ens,rp):
                 super(Veff_classical_1D_LH,self).bind(ens,rp)
@@ -41,29 +42,29 @@ class Veff_classical_1D_LH(PES):
                     xi = 0.5*self.beta*wa
                     qu = xi/np.tanh(xi)
                 if(self.fur_renorm == 'Liu'): #Liu and Miller renormalisation
-                    if (hess >0):
-                        print('here')  
+                    if (hess >= 0): 
                         wa = np.sqrt(hess)
                         xi = 0.5*self.beta*wa
                         qu = xi/np.tanh(xi)
                     else:
-                        print('there')
+                        print('Negative hessian encountered')
                         wa = np.sqrt(-hess)
                         xi = 0.5*self.beta*wa
                         qu = np.tanh(xi)/xi
 
                 pref = self.m*ka**2/(2*hess)
-
-                if(self.renorm=='harm'):# Harmonic renormalisation (i.e. gives normalised distribution for a harmonic potential)
-                    pref = Vc   
+                if(self.magic):
+                    #print('magic')
+                    pref = Vc
+                if(self.renorm=='harm'):# Harmonic renormalisation (i.e. gives normalised distribution for a harmonic potential)  
                     #Vnc = pref*(np.tanh(xi)/xi -1) - 0.5*np.log(np.tanh(xi))/self.beta - 0.5*np.log(self.m*wa/np.pi)/self.beta
                     Vnc = pref*(1/qu -1) - 0.5*np.log(1/qu)/self.beta - 0.5*np.log(self.m*wa**2/np.pi)/self.beta
                 elif(self.renorm=='PF'):# Normalised to the partition function (i.e. when integrated over q, gives the partition function)
                     Vnc = pref*(np.tanh(xi)/xi -1) + (-0.5*np.log(np.tanh(xi)/xi) + np.log(np.sinh(xi)/xi))/self.beta
                 elif(self.renorm=='NCF'):
-                    pref = Vc
                     #Vnc =  pref*(np.tanh(xi)/xi -1) - 0.5*np.log(np.tanh(xi))/self.beta + 0.5*np.log(xi)/self.beta
-                    Vnc = pref*(1/qu -1) - 0.5*np.log(1/qu)/self.beta 
+                    Vnc = pref*(1/qu -1) - 0.5*np.log(1/qu)/self.beta
+                    #print('x, beta,pref, Vnc1, Vnc, Vc',q,self.beta,pref,pref*(1/qu -1), Vnc, Vc)
                 return Vc+Vnc
 
         def distribution(self,q):

@@ -95,11 +95,29 @@ def plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,
             bVeff = np.exp(-bVeff)
             norm = np.sum(bVeff*dx)
             bVeff/=norm
-            leff = r'$P_{{LH}}(q) \;\; ({})$'.format(renorm)
+            print('norm',np.sum(bVeff*dx))
+            leff = r'$P_{{LH,magic}}(q) \;\; ({})$'.format(renorm)
         else:
             leff = r'$\beta V_{\rm LH}(q)$'
 
         ax.plot(qgrid,bVeff,color='k',label=leff)
+
+        #----------------------------------------------------------------------------------------
+        #Effective potential with NCF renormalization
+        pes_eff = Veff_classical_1D_LH(pes,beta,m,tol=tol,renorm=renorm,fur_renorm=fur_renorm,magic=False)
+        bVeff = np.zeros_like(qgrid)
+        for i in range(len(qgrid)): 
+            bVeff[i] = beta*pes_eff.potential(qgrid[i])
+        if(exponentiate):
+            bVeff = np.exp(-bVeff)
+            norm = np.sum(bVeff*dx)
+            bVeff/=norm
+            print('norm',np.sum(bVeff*dx))
+            leff = r'$P_{{LH}}(q) \;\; ({})$'.format(renorm)
+        else:
+            leff = r'$\beta V_{\rm LH}(q)$'
+
+        ax.plot(qgrid,bVeff,color='0.5',label=leff,ls=':',lw=3)
 
         #----------------------------------------------------------------------------------------
         ylim = np.max([np.max(bVcl),np.max(bVeff)])
@@ -113,7 +131,7 @@ def plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,
         if(exponentiate):
             bVeff = np.exp(-bVeff)
             norm = np.sum(bVeff*dx)
-            bVeff/=norm
+            #bVeff/=norm
             leff = r'$P_{eff}(q)$'
         else:
             leff = r'$\beta V_{eff}(q)$'
@@ -123,7 +141,7 @@ def plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,
 
         #----------------------------------------------------------------------------------------
         #ax.set_xlim(llim,ulim)
-        ax.set_ylim(0,1.25*ylim)
+        #ax.set_ylim(0,1.25*ylim)
 
 
         if(TinKlist is not None): #If temperature is given in K, then annotate the temperature
@@ -149,6 +167,6 @@ def plot_dist(fig,ax,llim_list,ulim_list,betalist,qgrid,vals,vecs,pes,m,
 
     handles, labels = ax1.get_legend_handles_labels()
 
-    fig.legend(handles,labels,loc=[0.1,0.9],ncol=3)
+    fig.legend(handles,labels,loc=[0.1,0.9],ncol=2)
 
 

@@ -26,10 +26,10 @@ lamda = 2.0
 g = 0.02
 pes = double_well(lamda,g)
 
-renorm = 'NCF'
+renorm = 'harm'
 fur_renorm = 'VGS'
 
-imfile = 'DW_{}_{}.png'.format(renorm,fur_renorm)
+imfile = 'NO_MAGIC_DW_{}_{}.png'.format(renorm,fur_renorm)
 #imfile = 'DW_harm.pdf'
 
 #llim_list = [-5,-5,-5,-5]
