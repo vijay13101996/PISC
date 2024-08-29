@@ -7,19 +7,18 @@ from matplotlib import pyplot as plt
 
 ngrid = 1000
 
-L=10#4*np.sqrt(1/(4+np.pi))#10
+L=1 #4*np.sqrt(1/(4+np.pi))#10
 lb=0
 ub=L
 
-lbc = 0
-ubc = L
+lbc=0
+ubc=L
 
 m=0.5
 
 print('L',L)
 
 potkey = '1D_Box_m_{}_L_{}'.format(m,np.around(L,2))
-
 
 anal = True
 #anal = False
@@ -31,7 +30,7 @@ def potential(x):
         #print('x',x)
         return 0.0#x**4
 
-neigs = 550
+neigs = 200
 potential = np.vectorize(potential)
 
 #xgrid = np.linspace(lb,ub,ngrid)
@@ -100,12 +99,12 @@ L = Krylov_complexity.krylov_complexity.compute_liouville_matrix(vals,liou_mat)
 LO = np.zeros((neigs,neigs))
 LO = Krylov_complexity.krylov_complexity.compute_hadamard_product(L,O,LO)
 
-T_arr = [1,2,4,10,20,40,100]#np.arange(1.,30.05,2.)#[0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0]
+T_arr = [2.0]#,2,4,10,20,40,100]#np.arange(1.,30.05,2.)#[0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0]
 mun_arr = []
 mu0_harm_arr = []
 bnarr = []
 nmoments = 60
-ncoeff = 200
+ncoeff = 40
 
 for T_au in T_arr:
     
@@ -118,7 +117,7 @@ for T_au in T_arr:
     even_moments = moments[0::2]
 
     barr = np.zeros(ncoeff)
-    barr = Krylov_complexity.krylov_complexity.compute_lanczos_coeffs(O, L, barr, beta, vals, 'wgm')
+    barr = Krylov_complexity.krylov_complexity.compute_lanczos_coeffs(O, L, barr, beta, vals, 'dir')
     bnarr.append(barr)
 
     mun_arr.append(even_moments)
@@ -159,15 +158,16 @@ if(0):
 
 if(1):
     slope_arr = []
-    for i in [0,1,2,3,4,5,6]:#range(0,len(T_arr),2):
+    for i in [0]:#range(0,len(T_arr),2):
         plt.scatter(np.arange(ncoeff),bnarr[i,:200],label='T={}'.format(T_arr[i]),s=3)
         #plt.scatter(np.log(np.arange(1,nmoments//2+1)),np.log(mun_arr[i,1:]),label='T={}'.format(T_arr[i]))
         
         # Find slope
-        slope = np.polyfit((np.arange(5,50)),(bnarr[i,5:50]),1)
-        slope_arr.append(slope[0])
-        
-        plt.plot(np.arange(5,50),slope[0]*np.arange(5,50)+slope[1],lw=2.5)
+        #slope = np.polyfit((np.arange(5,50)),(bnarr[i,5:50]),1)
+        #slope_arr.append(slope[0])
+    
+        #print('slope',slope, np.pi*T_arr[i])
+        #plt.plot(np.arange(5,50),slope[0]*np.arange(5,50)+slope[1],lw=2.5)
 
     #plt.xlim([10,nmoments//2])
     
@@ -180,6 +180,8 @@ if(1):
     #plt.ylim([0.0,700])
     plt.legend()    
     plt.show()
+
+    exit()
 
     plt.scatter(T_arr,slope_arr)
     plt.plot(T_arr, np.pi*np.array(T_arr))

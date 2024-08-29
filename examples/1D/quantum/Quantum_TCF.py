@@ -24,7 +24,9 @@ n_anharm=4
 
 pes = mildly_anharmonic(m,a,b,omega,n=n_anharm)
 
-T_au = 20.0	
+neigs = 50
+
+T_au = 0.085
 potkey = 'quartic_a_{}'.format(a)
 Tkey = 'T_{}'.format(T_au)	
 
@@ -32,7 +34,7 @@ beta = 1.0/T_au
 print('T in au, beta',T_au, beta) 
 
 DVR = DVR1D(ngrid,lb,ub,m,pes.potential_func)
-vals,vecs = DVR.Diagonalize(neig_total=ngrid-10) 
+vals,vecs = DVR.Diagonalize(neig_total=neigs) 
 
 print('vals',vals[:5],vecs.shape)
 print('delta omega', vals[1]-vals[0])
@@ -65,19 +67,19 @@ if(0): # Plots of PES and WF
 	#plt.show()
 
 x_arr = DVR.grid[1:DVR.ngrid]
-basis_N = 300
-n_eigen = 250
+basis_N = 40
+n_eigen = 20
 
 k_arr = np.arange(basis_N) +1
 m_arr = np.arange(basis_N) +1
 
-t_arr = np.linspace(0,30.0,2000)
+t_arr = np.linspace(0,200.0,4000)
 C_arr = np.zeros_like(t_arr) +0j
 
 path = os.path.dirname(os.path.abspath(__file__))
 
 corrkey = 'qq_TCF'#'OTOC'#'qp_TCF'
-enskey = 'Standard'#'mc'#'Kubo'
+enskey = 'Kubo'#Symmetrized'#'mc'#'Kubo'
 
 corrcode = {'OTOC':'xxC','qq_TCF':'qq1','qp_TCF':'qp1'}
 enscode = {'Kubo':'kubo','Standard':'stan'}	
@@ -99,10 +101,24 @@ if(0): #Microcanonical correlators
 path = os.path.dirname(os.path.abspath(__file__))	
 store_1D_plotdata(t_arr,C_arr,fname,'{}/Datafiles'.format(path))
 
+#Find points of local maxima of Carr
+a = C_arr
+ind = np.r_[True, a[1:] > a[:-1]] & np.r_[a[:-1] > a[1:], True]
+
+maxi = np.max(C_arr[ind])
+mini = np.min(C_arr[ind])
+
+diff = maxi - mini
+print('diff',diff)
+exit()
+
 fig,ax = plt.subplots()
-plt.plot(t_arr,((C_arr)))
+#plt.plot(t_arr,((C_arr)))
+plt.scatter(t_arr[ind],C_arr[ind])
 #fig.savefig('/home/vgs23/Images/TCF_quartic.pdf'.format(g), dpi=400, bbox_inches='tight',pad_inches=0.0)
 plt.show()
+
+exit()
 
 #Compute rfourier transform of the TCF
 Phi = np.fft.fft(C_arr) 

@@ -116,11 +116,12 @@ P = mom_mat
 
 liou_mat = np.zeros((neigs,neigs))
 L = Krylov_complexity_2D.krylov_complexity.compute_liouville_matrix(vals,liou_mat)
+#L = L.T
 
 LO = np.zeros((neigs,neigs))
 LO = Krylov_complexity_2D.krylov_complexity.compute_hadamard_product(L,O,LO)
 
-T_arr = [1.0,2.0,4.0,10.0]#[10.0,20.0,40.,100.0]#np.arange(1.0,5.05,0.5)#[0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0]
+T_arr = [10.0,2.0,4.0,10.0]#[10.0,20.0,40.,100.0]#np.arange(1.0,5.05,0.5)#[0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0]
 mun_arr = []
 mu0_harm_arr = []
 bnarr = []
@@ -156,14 +157,14 @@ store_arr(T_arr,'T_arr_{}_neigs_{}'.format(potkey,neigs))
 store_arr(mun_arr,'mun_arr_{}_neigs_{}'.format(potkey,neigs))
 store_arr(bnarr,'bnarr_{}_neigs_{}'.format(potkey,neigs))
 
-exit()
+#exit()
 
 if(1):
-    for i in [0,1,2,3]:#,2,4,6,8]:
+    for i in [0]:#,1,2,3]:#,2,4,6,8]:
         plt.scatter(np.arange(ncoeff),bnarr[i,:],label='T={}'.format(T_arr[i]))
         #plt.scatter((np.arange(1,nmoments//2+1)),(mun_arr[i,1:]),label='T={}'.format(np.around(T_arr[i],2)))
 
-    plt.ylim([0,700])
+    #plt.ylim([0,700])
     plt.title(potkey)
     plt.legend()    
     plt.show()

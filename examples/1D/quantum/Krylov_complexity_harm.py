@@ -8,22 +8,22 @@ from matplotlib import pyplot as plt
 
 ngrid = 1000
 
-L = 16
+L = 6
 lb = -L
 ub = L
 
-m=2.0
+m=1.0
 a=0.0#4
-b=0.#16
-omega=2.0
-n_anharm=4
+b=1.0#16
+omega=0.0
+n_anharm=8
 
 pes = mildly_anharmonic(m,a,b,omega,n=n_anharm)
 
 potkey = 'highT_MAH_w_{}_a_{}_b_{}_n_{}'.format(omega,a,b,n_anharm)
 
 DVR = DVR1D(ngrid,lb,ub,m,pes.potential_func)
-neigs = 550
+neigs = 250
 vals,vecs = DVR.Diagonalize(neig_total=neigs)
 
 x_arr = DVR.grid[1:ngrid]
@@ -36,8 +36,8 @@ pos_mat = np.zeros((neigs,neigs))
 pos_mat = Krylov_complexity.krylov_complexity.compute_pos_matrix(vecs, x_arr, dx, dx, pos_mat)
 O = (pos_mat)
 
-print('O',np.around(O[:5,:5],3),'vals',vals[-1])
-#exit()
+#print('O',np.around(O[:5,:5],3),'vals',vals[-1])
+exit()
 
 mom_mat = np.zeros((neigs,neigs))
 mom_mat = Krylov_complexity.krylov_complexity.compute_mom_matrix(vecs, vals, x_arr, m, dx, dx, mom_mat)
@@ -49,7 +49,7 @@ L = Krylov_complexity.krylov_complexity.compute_liouville_matrix(vals,liou_mat)
 LO = np.zeros((neigs,neigs))
 LO = Krylov_complexity.krylov_complexity.compute_hadamard_product(L,O,LO)
 
-T_arr = [1.0,2.0,4.0]#,10.0,20.0,40.0,100.0]#[10,20,40,100]#np.arange(1.,13.05,0.5)#[0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0]
+T_arr = [0.1]#,2.0,4.0]#,10.0,20.0,40.0,100.0]#[10,20,40,100]#np.arange(1.,13.05,0.5)#[0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0]
 mun_arr = []
 mu0_harm_arr = []
 bnarr = []
@@ -103,7 +103,7 @@ if(0):
     exit()
 
 if(1):
-    for i in [0,1,2,3,4,5,6]:#,6,8,10,12,14,16]:
+    for i in [0]:#,1,2,3,4,5,6]:#,6,8,10,12,14,16]:
         plt.scatter(np.arange(ncoeff),bnarr[i,:],label='T={}'.format(T_arr[i]))
     
     #plt.xlim([10,nmoments//2])
