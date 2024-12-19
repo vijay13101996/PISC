@@ -4,21 +4,23 @@ from PISC.dvr.dvr import DVR1D
 from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr, read_arr
 import scipy
 from matplotlib import pyplot as plt
+from compute_lanczos_moments import compute_Lanczos_iter, compute_Lanczos_det
 
-ngrid = 1000
 
-L=1 #4*np.sqrt(1/(4+np.pi))#10
+ngrid = 2000
+
+L=40 #4*np.sqrt(1/(4+np.pi))#10
 lb=0
 ub=L
 
 lbc=0
 ubc=L
 
-m=0.5
+m=1.0#0.5
 
 print('L',L)
 
-potkey = '1D_Box_m_{}_L_{}'.format(m,np.around(L,2))
+potkey = 'TEMP_1D_Box_m_{}_L_{}'.format(m,np.around(L,2))
 
 anal = True
 #anal = False
@@ -30,7 +32,7 @@ def potential(x):
         #print('x',x)
         return 0.0#x**4
 
-neigs = 200
+neigs = 400
 potential = np.vectorize(potential)
 
 #xgrid = np.linspace(lb,ub,ngrid)
@@ -83,6 +85,14 @@ else:
     vals = vals
     O = pos_mat
 
+if(0):
+    for k in [0,3,5]:#np.arange(0,10,2):
+        plt.plot(abs(np.diag(O,k))[:],label='k={}'.format(k))
+    plt.legend()
+    plt.show()
+    exit()
+
+
 i = 4
 j = 4
 #print('O_anal',O_anal[i,j])
@@ -99,12 +109,19 @@ L = Krylov_complexity.krylov_complexity.compute_liouville_matrix(vals,liou_mat)
 LO = np.zeros((neigs,neigs))
 LO = Krylov_complexity.krylov_complexity.compute_hadamard_product(L,O,LO)
 
-T_arr = [2.0]#,2,4,10,20,40,100]#np.arange(1.,30.05,2.)#[0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0]
+T_arr = [0.01]#
 mun_arr = []
 mu0_harm_arr = []
 bnarr = []
-nmoments = 60
-ncoeff = 40
+nmoments = 100
+ncoeff = 200
+
+mu_all_arr = []
+
+On = np.zeros((neigs,neigs))
+nmat = 10 
+
+ip = 'fta'
 
 for T_au in T_arr:
     
@@ -117,30 +134,92 @@ for T_au in T_arr:
     even_moments = moments[0::2]
 
     barr = np.zeros(ncoeff)
-    barr = Krylov_complexity.krylov_complexity.compute_lanczos_coeffs(O, L, barr, beta, vals, 'dir')
+    barr = Krylov_complexity.krylov_complexity.compute_lanczos_coeffs(O, L, barr, beta, vals, ip)
     bnarr.append(barr)
 
-    mun_arr.append(even_moments)
+    if(0):
+        for nmat in range(10,200,10):#range(100):
+            barr_mat = np.zeros(ncoeff)
+            barr_mat, On = Krylov_complexity.krylov_complexity.compute_on_matrix(O, L, barr, beta, vals, ip, On, nmat+1) 
+        
+            On2 = np.matmul(On,On.T)
+            logOn = np.log(np.abs(On))
+            logOn2 = np.log(np.abs(On2))
+            plt.imshow(np.abs(logOn2))#vmax=1e4)
+            plt.show()
 
+            print('trace', nmat, np.trace(On2), np.linalg.norm(On)**2)
+            #trace = np.trace(On2)
+            #plt.scatter(nmat,np.log(trace))
+            #plt.title(r'$O_{:d}$'.format(nmat))
+        plt.legend()
+        plt.show()
+        exit()
+
+    mun_arr.append(even_moments)
+    mu_all_arr.append(moments)
 
 mun_arr = np.array(mun_arr)
 bnarr = np.array(bnarr)
 print('mun_arr',mun_arr.shape)
 print('bnarr',bnarr.shape)
 
+
 store_arr(T_arr,'T_arr_{}_neigs_{}'.format(potkey,neigs))
 store_arr(mun_arr,'mun_arr_{}_neigs_{}'.format(potkey,neigs))
 store_arr(bnarr,'bnarr_{}_neigs_{}'.format(potkey,neigs))
-#exit()
+
+print(np.arange(nmoments//2+1), mun_arr[0,-1])
+
+#plt.scatter(np.arange(nmoments//2+1),np.log(mun_arr[0,:]))
+plt.scatter(np.arange(ncoeff),bnarr[0,:])
+plt.show()
+
+exit()
 
 if(0):
     narr = np.arange(1,nmoments//2+1)
-    nlogn = narr#*np.log(narr)
-    for i in [0]:#,1,2,3]:#4,6,8,10,12,14,16]:
-        plt.scatter(nlogn,np.log(mun_arr[i,1:]),label='T={}'.format(np.around(T_arr[i],2)))
-        #plt.plot(nlogn, (3*narr-2)*np.log((2*np.pi*T_arr[i])),label='T={}'.format(np.around(T_arr[i],2)))
+    nlogn = narr*np.log(narr)
+    
+    logmun_arr = np.log(mun_arr)[:,1:]
+
+    slope_arr = []
+
+    for i in [5]:
+        T = T_arr[i]
+        gamma = 0.57721566490
+        temp = ((narr*T)**(2*narr))*np.exp(gamma*narr)/(T**(np.pi/2)*np.exp(5*np.pi/2))
+        plt.plot(narr, np.log(temp),label='T={}'.format(np.around(T,2)))
+        plt.plot(narr, logmun_arr[i,:],label='T={}'.format(np.around(T,2)))
+
+
+    plt.show()
+    exit()
+
+
+
+    for i in range(len(T_arr)):#[0,1,2,3]:#4,6,8,10,12,14,16]:
+        temp = logmun_arr[i,:] - 2*nlogn
+        plt.scatter(narr[5:],temp[5:],label='T={}'.format(np.around(T_arr[i],2)))
+
         #Fit to a line
-        #p = np.polyfit(nlogn,np.log(mun_arr[i,5:]),1)
+        p = np.polyfit(narr[5:30],temp[5:30],1)
+        slope_num = p[0]
+        off_num = p[1]
+
+        gamma = 0.57721566490
+        slope_anal = 2*np.log(T_arr[i]) + gamma
+        off_anal = -0.5*np.pi*np.log(T_arr[i]) - np.exp(1)**2
+
+        #print('slope_anal',slope_anal,'slope_num',slope_num)
+        print('off_anal',off_anal,'off_num',off_num,'eee') 
+ 
+        plt.plot(narr[5:],slope_anal*narr[5:]+p[1],label='T={}'.format(np.around(T_arr[i],2)))
+        slope_arr.append(p[1])
+        
+
+        #plt.plot(narr[5:],slope*np.ones(len(narr[5:])),label='slope={}'.format(np.around(slope,2)))
+
         #print('p',p,nlogn,np.log(mun_arr[i,10:]))
         #plt.plot(nlogn,p[0]*nlogn+p[1],label='T={}'.format(np.around(T_arr[i],2)))
         
@@ -154,13 +233,26 @@ if(0):
     #plt.ylim([0.0,2000])
     plt.legend()    
     plt.show()
+
+    plt.scatter((T_arr),slope_arr)
+    #plt.plot(T_arr, 2*np.log(T_arr) - 0.54)
+    plt.xscale('log')
+    
+    #Fit slope_arr to log(T_arr)
+    p = np.polyfit(np.log(T_arr),slope_arr,1)
+    plt.plot(T_arr,p[0]*np.log(T_arr)+p[1],label='slope={}'.format(p[0]))
+    print('p',p)
+
+    plt.xlabel(r'$T$')
+    plt.ylabel(r'$slope$')
+    plt.show()
     exit()
 
 if(1):
     slope_arr = []
     for i in [0]:#range(0,len(T_arr),2):
-        plt.scatter(np.arange(ncoeff),bnarr[i,:200],label='T={}'.format(T_arr[i]),s=3)
-        #plt.scatter(np.log(np.arange(1,nmoments//2+1)),np.log(mun_arr[i,1:]),label='T={}'.format(T_arr[i]))
+        #plt.scatter(np.arange(ncoeff),bnarr[i,:200],label='T={}'.format(T_arr[i]),s=3)
+        plt.scatter((np.arange(1,nmoments//2+1)),(mun_arr[i,1:]),label='T={}'.format(T_arr[i]))
         
         # Find slope
         #slope = np.polyfit((np.arange(5,50)),(bnarr[i,5:50]),1)

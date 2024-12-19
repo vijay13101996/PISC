@@ -7,13 +7,13 @@ from matplotlib import pyplot as plt
 
 ngrid = 1000
 
-L = 20
+L = 30
 lb = -L
 ub = L
 
 m=0.5
 lamda = 2.0
-g = 0.02
+g = 0.08
 
 pes = double_well(lamda,g)
 Tc = 0.5*lamda/np.pi
@@ -21,7 +21,7 @@ Tc = 0.5*lamda/np.pi
 potkey = 'inv_harmonic_lambda_{}_g_{}'.format(lamda,g)
 
 DVR = DVR1D(ngrid,lb,ub,m,pes.potential_func)
-neigs = 150
+neigs = 250
 vals,vecs = DVR.Diagonalize(neig_total=neigs)
 
 x_arr = DVR.grid[1:ngrid]
@@ -41,11 +41,11 @@ L = Krylov_complexity.krylov_complexity.compute_liouville_matrix(vals,liou_mat)
 LO = np.zeros((neigs,neigs))
 LO = Krylov_complexity.krylov_complexity.compute_hadamard_product(L,O,LO)
 
-times_arr = np.arange(1.0,8.05,0.5)#[0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0]
+times_arr = np.arange(0.5,8.05,0.5)#[0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0]
 mun_arr = []
 bnarr = []
 nmoments = 40
-ncoeff = 200
+ncoeff = 50
 
 for times in times_arr:
     T_au = times*Tc
@@ -70,8 +70,8 @@ print('mun_arr',mun_arr.shape)
 print('bnarr',bnarr.shape)
 
 if(1):
-    for i in [0,2,4]:#[1,3,5,7,9]:
-        plt.scatter(np.arange(200),bnarr[i,:200],label='T={}'.format(np.around(times_arr[i],2)))
+    for i in [0,1,2,3]:#[1,3,5,7,9]:
+        plt.scatter(np.arange(ncoeff),bnarr[i,:ncoeff],label='T={}'.format(np.around(times_arr[i],2)))
 
     plt.legend()
     plt.show()

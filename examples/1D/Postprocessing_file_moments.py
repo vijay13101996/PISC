@@ -119,8 +119,8 @@ for T in [10.0,20.0,40.0,100.0]:
     x2 = mom_num[1:]*wk[1:]**6
     
     for nmom in [4]:#,4,6,8]:
-        xp2 = mom_num[2::2]*wk[2::2]**nmom
-        xm2 = mom_num[1::2]*wk[1::2]**nmom
+        xp2 = mom_num[2::2]*wk[2::2]**0#nmom
+        xm2 = mom_num[1::2]*wk[1::2]**0#nmom
         xc2 = mom_num[0]
 
         xm2_odd = xm2[0::2]
@@ -131,8 +131,14 @@ for T in [10.0,20.0,40.0,100.0]:
         log_xp2 = (np.log(xp2)[:-1])
         log_anal = (np.log(T)+np.log(wk[2::2][:-1]**(nmom-2)))
 
-        plt.scatter(nmom_arr,(log_xp2),label='T={},w={}'.format(T,w))#n_anh))
-        plt.plot(nmom_arr,(log_anal))
+    
+        plt.scatter(nmom_arr,xp2[:-1]-1/(m*beta*(wk[2::2][:-1]**2)),label='T={},w={}'.format(T,w))
+        #plt.scatter(nmom_arr,(xp2)[:-1],label='T={},w={}'.format(T,w))
+        #plt.plot(nmom_arr,1/(m*beta*(wk[2::2]**2))[:-1])
+
+        ### Comparing the moments with the analytical expression
+        #plt.scatter(nmom_arr,(log_xp2),label='T={},w={}'.format(T,w))#n_anh))
+        #plt.plot(nmom_arr,(log_anal))
 
         #plt.scatter(log_nmom_arr,abs((log_xp2)-(log_anal)),label='T={},w={}'.format(T,w))
 
