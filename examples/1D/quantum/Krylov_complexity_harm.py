@@ -77,7 +77,7 @@ def main(m,a,b,omega,n_anharm,L):
     pos_mat = Krylov_complexity.krylov_complexity.compute_pos_matrix(vecs, x_arr, dx, dx, pos_mat)
     O = (pos_mat)
     #O[abs(O)<1e-12] = 0.0 
-    if(1):
+    if(0):
 
         O[:] = 0.0
         for i in range(neigs):
@@ -142,11 +142,11 @@ def main(m,a,b,omega,n_anharm,L):
         beta = 1.0/T_au 
 
         moments = np.zeros(nmoments+1)
-        moments = Krylov_complexity.krylov_complexity.compute_moments(O, vals, beta, moments)
+        moments = Krylov_complexity.krylov_complexity.compute_moments(O, vals, beta, 'asm', 0.5, moments)
         even_moments = moments[0::2]
 
         barr = np.zeros(ncoeff)
-        barr = Krylov_complexity.krylov_complexity.compute_lanczos_coeffs(O, L, barr, beta, vals, 'wgm')
+        barr = Krylov_complexity.krylov_complexity.compute_lanczos_coeffs(O, L, barr, beta, vals,0.5, 'wgm')
         bnarr.append(barr)
 
         mun_arr.append(even_moments)
@@ -158,6 +158,7 @@ def main(m,a,b,omega,n_anharm,L):
 
     mun_arr = np.array(mun_arr)
     mu0_harm_arr = np.array(mu0_harm_arr)
+    mu_all_arr = np.array(mu_all_arr)
     bnarr = np.array(bnarr)
 
     #print('mun_arr',mun_arr.shape,mu0_harm_arr.shape)
@@ -165,9 +166,10 @@ def main(m,a,b,omega,n_anharm,L):
     print('bnarr',bnarr.shape,bnarr[0,:12])
 
     if(1):
-        plt.scatter(np.arange(ncoeff),bnarr[0,:]/(np.pi*T_arr[0]),label='T={},neigs={},b={}'.format(T_arr[0],neigs,b))
-        plt.plot(np.arange(ncoeff),np.arange(ncoeff))
+        #plt.scatter(np.arange(ncoeff),bnarr[0,:]/(np.pi*T_arr[0]),label='T={},neigs={},b={}'.format(T_arr[0],neigs,b))
+        #plt.plot(np.arange(ncoeff),np.arange(ncoeff))
         #plt.scatter(np.arange(nmoments//2+1),np.log(mun_arr[0,:]),label='T={},neigs={},b={}'.format(T_arr[0],neigs,b))
+        plt.scatter(np.arange(0,nmoments+1),np.log(mu_all_arr[0,:]),label='T={},neigs={},b={}'.format(T_arr[0],neigs,b))
         plt.xlabel(r'$n$')
         plt.ylabel(r'$b_{n}$')
         plt.legend()

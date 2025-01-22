@@ -89,7 +89,7 @@ module krylov_complexity
                         pos_mat_elt = 0.0d0
                         do i = 1,len1vecs
                                 !print *, vecs(i,n),vecs(i,k),x_arr(i)
-                                pos_mat_elt = pos_mat_elt + vecs(i,n)*vecs(i,k)*x_arr(i)*dx!*dy !! Change here for 1D 
+                                pos_mat_elt = pos_mat_elt + vecs(i,n)*vecs(i,k)*x_arr(i)*dx*dy !! Change here for 1D 
                         end do
                 end subroutine pos_matrix_elts
 
@@ -373,7 +373,7 @@ module krylov_complexity
  
                 end subroutine compute_On_matrix
 
-                subroutine compute_moments(O,vals,lenO,beta,nmoments,moments)
+                subroutine compute_moments(O,lenO,vals,beta,ipkey,lamda,moments,nmoments)
                         !Compute the moments of the correlation function of the operator O
                         !O: lenO x lenO matrix
                         !lenO: Dimension of the operator
@@ -386,13 +386,16 @@ module krylov_complexity
                         complex(kind=8), dimension(lenO,lenO), intent(in) :: O
                         real(kind=8), dimension(lenO), intent(in) :: vals
                         real(kind=8), intent(in) :: beta
-
+                        character(len=3), intent(in) :: ipkey
+                        real(kind=8), intent(in) :: lamda
+                                
                         !f2py real(kind=8), dimension(nmoments), intent(in,out,copy) :: moments
                         real(kind=8), dimension(nmoments), intent(inout) :: moments
 
-                        real(kind=8) :: tempvar, Z
+                        real(kind=8) :: tempvar, Z, pref, wgt
                         integer :: i,j,n
-
+        
+                        
                         Z = 0.0d0
                         do i=1,lenO
                                 Z = Z + exp(-beta*vals(i))
@@ -400,13 +403,30 @@ module krylov_complexity
 
                         moments = 0.0d0
 
-                        ! Currently only Wightman inner product is implemented
                         do n=1,nmoments
                                 do i=1,lenO
                                         do j=1,lenO
-                                                moments(n) = moments(n) + (vals(i) - vals(j))**(n-1) &
-                                                *exp(-0.5*beta*(vals(i)+vals(j)))*conjg(O(j,i))*O(j,i)
+                                        pref = (vals(i) - vals(j))**(n-1)*conjg(O(j,i))*O(j,i)
+                                        if (ipkey .eq. 'dir') then
+                                                wgt = 1.0d0
+                                        else if (ipkey .eq. 'wgm') then
+                                                wgt = exp(-0.5*beta*(vals(i)+vals(j)))
+                                        else if (ipkey .eq. 'std') then
+                                                wgt = exp(-beta*vals(i))
+                                        else if (ipkey .eq. 'asm') then
+                                                wgt = exp(-beta*lamda*vals(i))*exp(-beta*(1.0d0-lamda)*vals(j))
+                                        else if (ipkey .eq. 'kbo') then
+                                                if (i .ne. j) then !Take care of degeneracies when required!
+                                                        wgt = (exp(-beta*vals(i)) - exp(-beta*vals(j)))/(beta*(vals(j)-vals(i)))
+                                                else
+                                                        wgt = exp(-beta*vals(i)) 
+                                                end if
+                                        end if
+                                        moments(n) = moments(n) + wgt*pref
                                         end do
+                                        !        moments(n) = moments(n) + (vals(i) - vals(j))**(n-1) &
+                                        !        *exp(-0.5*beta*(vals(i)+vals(j)))*conjg(O(j,i))*O(j,i)
+                                        !end do
                                 end do
                                 moments(n) = moments(n)/Z
                         end do 

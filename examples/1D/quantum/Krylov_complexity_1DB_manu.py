@@ -5,11 +5,22 @@ from PISC.utils.readwrite import store_1D_plotdata, read_1D_plotdata, store_arr,
 import scipy
 from matplotlib import pyplot as plt
 from compute_lanczos_moments import compute_Lanczos_iter, compute_Lanczos_det
+import matplotlib
+
+plt.rcParams.update({'font.size': 10, 'font.family': 'serif','font.style':'italic','font.serif':'Garamond'})
+matplotlib.rcParams['axes.unicode_minus'] = False
+
+xl_fs = 16 
+yl_fs = 16
+tp_fs = 12
+
+le_fs = 13#9.5
+ti_fs = 12
 
 
-ngrid = 2000
+ngrid = 1000
 
-L=40 #4*np.sqrt(1/(4+np.pi))#10
+L=10 #4*np.sqrt(1/(4+np.pi))#10
 lb=0
 ub=L
 
@@ -32,13 +43,8 @@ def potential(x):
         #print('x',x)
         return 0.0#x**4
 
-neigs = 400
+neigs = 100
 potential = np.vectorize(potential)
-
-#xgrid = np.linspace(lb,ub,ngrid)
-#plt.plot(xgrid,potential(xgrid))
-#plt.ylim([0,1000])
-#plt.show()
 
 #----------------------------------------------------------------------
 
@@ -85,46 +91,25 @@ else:
     vals = vals
     O = pos_mat
 
-if(0):
-    for k in [0,3,5]:#np.arange(0,10,2):
-        plt.plot(abs(np.diag(O,k))[:],label='k={}'.format(k))
-    plt.legend()
-    plt.show()
-    exit()
-
-
-i = 4
-j = 4
-#print('O_anal',O_anal[i,j])
-#print('O',O[i,j])
-
-#print('O_anal',np.around(O_anal[:10,:10],3))
-#print('O',np.around(O[:10,:10],3),'vals',vals[-1])
-
-#exit()
-
 liou_mat = np.zeros((neigs,neigs))
 L = Krylov_complexity.krylov_complexity.compute_liouville_matrix(vals,liou_mat)
 
 LO = np.zeros((neigs,neigs))
 LO = Krylov_complexity.krylov_complexity.compute_hadamard_product(L,O,LO)
 
-T_arr = [1]#
+T_arr = np.array([1,2,3,4,5])
 mun_arr = []
 mu0_harm_arr = []
 bnarr = []
 nmoments = 100
-ncoeff = 200
+ncoeff = 120
 
 mu_all_arr = []
 
 On = np.zeros((neigs,neigs))
 nmat = 10 
 
-ip = 'fta'
-
-for T_au in T_arr:
-    
+for T_au in T_arr: 
     Tkey = 'T_{}'.format(T_au)
 
     beta = 1.0/T_au 
@@ -137,25 +122,6 @@ for T_au in T_arr:
     barr = Krylov_complexity.krylov_complexity.compute_lanczos_coeffs(O, L, barr, beta, vals,0.5,'wgm')
     bnarr.append(barr)
 
-    if(0):
-        for nmat in range(10,200,10):#range(100):
-            barr_mat = np.zeros(ncoeff)
-            barr_mat, On = Krylov_complexity.krylov_complexity.compute_on_matrix(O, L, barr, beta, vals, ip, On, nmat+1) 
-        
-            On2 = np.matmul(On,On.T)
-            logOn = np.log(np.abs(On))
-            logOn2 = np.log(np.abs(On2))
-            plt.imshow(np.abs(logOn2))#vmax=1e4)
-            plt.show()
-
-            print('trace', nmat, np.trace(On2), np.linalg.norm(On)**2)
-            #trace = np.trace(On2)
-            #plt.scatter(nmat,np.log(trace))
-            #plt.title(r'$O_{:d}$'.format(nmat))
-        plt.legend()
-        plt.show()
-        exit()
-
     mun_arr.append(even_moments)
     mu_all_arr.append(moments)
 
@@ -165,16 +131,59 @@ mu_all_arr = np.array(mu_all_arr)
 print('mun_arr',mun_arr.shape)
 print('bnarr',bnarr.shape)
 
-
 store_arr(T_arr,'T_arr_{}_neigs_{}'.format(potkey,neigs))
 store_arr(mun_arr,'mun_arr_{}_neigs_{}'.format(potkey,neigs))
 store_arr(bnarr,'bnarr_{}_neigs_{}'.format(potkey,neigs))
 
-print(np.arange(nmoments//2+1), mun_arr[0,-1])
 
 #plt.scatter(np.arange(nmoments//2+1),np.log(mun_arr[0,:]))
-plt.scatter(np.arange(nmoments+1),np.log(mu_all_arr[0,:]))
-#plt.scatter(np.arange(ncoeff),bnarr[0,:])
+#plt.scatter(np.arange(nmoments+1),np.log(mu_all_arr[0,:]))
+
+fig,ax = plt.subplots(1,2,sharex=False,sharey=False)
+fig.subplots_adjust(wspace=0.3,hspace=0.3)
+
+
+ax[0].annotate(r'$(a)$', xy=(0.02, 0.9), xytext=(0.02, 0.9), textcoords='axes fraction', fontsize=xl_fs)
+ax[1].annotate(r'$(b)$', xy=(0.02, 0.9), xytext=(0.02, 0.9), textcoords='axes fraction', fontsize=xl_fs)
+
+for i in range(len(T_arr)):
+    ax[0].scatter(np.arange(ncoeff),bnarr[i,:],s=10,label=r'$T={}$'.format(T_arr[i]))
+    
+    #Find slope
+    p = np.polyfit(np.arange(ncoeff)[4:17],bnarr[i,4:17],1)
+    print('p',p)
+
+    ax[1].scatter(T_arr[i],p[0],zorder=4)
+
+#Draw horizontal line at y=Emax/2
+ax[0].hlines(0.5*vals[-1],0,ncoeff,linestyles='dashed',lw=2,color='0.3')
+
+ax[0].set_xlabel(r'$n$',fontsize=xl_fs)
+ax[0].set_ylabel(r'$b_n$',fontsize=yl_fs)
+#ax[0].legend(fontsize=le_fs)
+ax[0].set_xticks(np.arange(0,ncoeff,25))
+ax[0].set_ylim([0,vals[-1]*0.6])
+ax[0].set_xlim([0,110])
+ax[0].tick_params(axis='both', which='major', labelsize=tp_fs)
+
+T_arr = np.arange(0.0,6.0,0.01)
+ax[1].plot(T_arr, np.pi*np.array(T_arr),lw=2.,color='black')
+ax[1].set_xlabel(r'$T$',fontsize=xl_fs)
+ax[1].set_ylabel(r'$\alpha_T$',fontsize=yl_fs)
+ax[1].set_xticks(np.arange(1,6,1))
+ax[1].set_xlim([0.0,6])
+ax[1].set_ylim([0.0,6*np.pi])
+
+ax[1].tick_params(axis='both', which='major', labelsize=tp_fs)
+
+
+#Annotate alpha_T = pi*T at 45 degrees angle in the line plot
+ax[1].annotate(r'$\alpha_T = \pi k_B T$', xy=(2.1, 3*np.pi), xytext=(2.1, 3*np.pi), textcoords='data', fontsize=xl_fs-2,rotation=55)
+
+fig.set_size_inches(7,3.5)	
+#fig.legend(loc='upper center',bbox_to_anchor=(0.5,1.0),fontsize=le_fs-2,ncol=5)
+fig.legend(fontsize=le_fs-2,loc=(0.11,0.91),ncol=5)
+#fig.savefig('/home/vgs23/Images/bn_vs_n_1DB.pdf', dpi=400, bbox_inches='tight',pad_inches=0.0)
 plt.show()
 
 exit()
