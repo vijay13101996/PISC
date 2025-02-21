@@ -27,7 +27,7 @@ By default the simulation runs entirely in python, but that can be changed simpl
 2. The potential, dpotential and ddpotential functions (to compute the potential, forces and hessian from the PES) are implemented in fortran.
 3. The transformation from Cartesian to normal modes is implemented in fortran.
 
-Note that a fortran file needs to be written and imported into fortran when a new PES is to be added to the codebase. This is straightforward to do and a model file (called base_fort.f90) is available under PISC/PISC/potentials/. The convention to import the fortran module and calling fortran functions from python is given in harmonic_2D.py
+Note that a fortran file needs to be written and imported into python when a new PES is to be added to the codebase. This is straightforward to do and a model file (called base_fort.f90) is available under PISC/PISC/potentials/. The convention to import the fortran module and calling fortran functions from python is given in harmonic_2D.py
 
 The code has been tested thoroughly and it is expected to be accurate. The following test files are most helpful to diagnose the code in the event of a bug (all available under PISC/test_files/):
 test_fort_integrator.py
