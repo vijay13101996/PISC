@@ -7,6 +7,18 @@ import scipy
 from matplotlib import pyplot as plt
 from compute_lanczos_moments import compute_Lanczos_iter, compute_Lanczos_det
 import argparse
+import matplotlib
+
+plt.rcParams.update({'font.size': 10, 'font.family': 'serif','font.style':'italic','font.serif':'Garamond'})
+matplotlib.rcParams['axes.unicode_minus'] = False
+
+
+xl_fs = 16 
+yl_fs = 16
+tp_fs = 14
+
+le_fs = 16#9.5
+ti_fs = 12
 
 ngrid = 1000
 
@@ -41,10 +53,10 @@ def main(m,a,b,omega,n_anharm,L):
     potkey = 'L_{}_MAH_w_{}_a_{}_b_{}_n_{}'.format(L,omega,a,b,n_anharm)
 
     DVR = DVR1D(ngrid,lb,ub,m,pes.potential_func)
-    neigs = 400
+    neigs = 100
     vals,vecs = DVR.Diagonalize(neig_total=neigs)
 
-    print('vals', vals[-1])
+    print('vals', vals[-1], vecs.shape)
 
     x_arr = DVR.grid[1:ngrid]
     dx = x_arr[1]-x_arr[0]
@@ -52,7 +64,8 @@ def main(m,a,b,omega,n_anharm,L):
     #plt.plot(x_arr,vecs[:,-1])
     #plt.show()
 
-    if(0):
+    analytic = 1
+    if(analytic):
         def comp_pos_mat(i,j):
             if(i==j):
                 return 0.0
@@ -72,23 +85,32 @@ def main(m,a,b,omega,n_anharm,L):
         for i in range(neigs):
             vals_anal[i] = omega*(i+0.5)
 
+        vecs_anal = np.zeros((len(x_arr),neigs))
+        
+        for i in range(neigs):
+            #vecs_anal[:,i] = np.sqrt(1/(2**i*np.math.factorial(i)*np.sqrt(np.pi)))\
+            #        *np.exp(-0.5*x_arr**2)*scipy.special.eval_hermite(i,x_arr)
+            vecs_anal[:,i] = np.exp(-0.5*x_arr**2)*scipy.special.eval_hermite(i,x_arr)/np.sqrt(1/(2**i))
+
+        for i in range(neigs):
+            vecs_anal[:,i] = vecs_anal[:,i]/np.sqrt(np.sum(vecs_anal[:,i]**2)*dx)
+        
+        #for i in range(50,51):
+        #    plt.plot(x_arr,vecs_anal[:,i],label='i={}'.format(i))
+        #    plt.plot(x_arr,vecs[:,i],label='i={}'.format(i))
+        #plt.legend()
+        #plt.show()
+    
+        #exit()
+        #vals = vals_anal
+        #vecs = vecs_anal
 
     pos_mat = np.zeros((neigs,neigs)) 
     pos_mat = Krylov_complexity.krylov_complexity.compute_pos_matrix(vecs, x_arr, dx, dx, pos_mat)
-    O = (pos_mat)
+    O = (pos_mat_anal)
     #O[abs(O)<1e-12] = 0.0 
-    if(0):
 
-        O[:] = 0.0
-        for i in range(neigs):
-            for j in range(i,neigs):
-                if(abs(i-j)%2==0 and abs(i-j)<=200):
-                    O[i,j] = np.random.normal(0,1)*1e-12
-                    O[j,i] = O[i,j]
-
-
-    #O[abs(O)<1e-12] = 0.0
-    #O = np.matmul(O,O) 
+    print('O',O[:4,:4])
 
     if(0):
         for k in [5,7]:#,5,7]:#np.arange(0,10,2):
@@ -100,20 +122,49 @@ def main(m,a,b,omega,n_anharm,L):
     mom_mat = np.zeros((neigs,neigs))
     mom_mat = Krylov_complexity.krylov_complexity.compute_mom_matrix(vecs, vals, x_arr, m, dx, dx, mom_mat)
     P = mom_mat
-
+    
     liou_mat = np.zeros((neigs,neigs))
     L = Krylov_complexity.krylov_complexity.compute_liouville_matrix(vals,liou_mat)
 
     LO = np.zeros((neigs,neigs))
     LO = Krylov_complexity.krylov_complexity.compute_hadamard_product(L,O,LO)
 
-    T_arr = [1.0,2.0]#2.0,4.0]#0.5,0.5,1.0,2.0]
+    n=1
+    d_max=30
+    def pow_n(O,n):
+        On = O
+        for i in range(1,n):
+            On = np.matmul(On,O)
+        return On
+
+    if(1):
+        O=pow_n(O,n)
+
+    if(1):
+        def f(i,j):
+            return j**0.5 
+
+        O[:] = 0.0
+        for i in range(neigs):
+            for j in range(i,neigs):
+                if(abs(i-j)%2==1 and abs(i-j)<=d_max):
+                    O[i,j] = 1#np.random.normal(0,1)
+                    O[j,i] = O[i,j]
+        print('O',O[:8,:8])
+        O= pow_n(O,n)
+        #print('On \n',O[:10,:10]) 
+        #plt.imshow(O)#,vmin=0,vmax=10)
+        #plt.colorbar()
+        #plt.show()
+
+
+    T_arr = [1]#,2,3,4,5]#,2.0]#2.0,4.0]#0.5,0.5,1.0,2.0]
     mun_arr = []
     mu0_harm_arr = []
     mu_all_arr = []
     bnarr = []
     nmoments = 100
-    ncoeff = 200
+    ncoeff = 100
 
     if(0):
         n_even = nmoments//2
@@ -160,20 +211,36 @@ def main(m,a,b,omega,n_anharm,L):
     mu0_harm_arr = np.array(mu0_harm_arr)
     mu_all_arr = np.array(mu_all_arr)
     bnarr = np.array(bnarr)
+    
 
     #print('mun_arr',mun_arr.shape,mu0_harm_arr.shape)
     #print('mun_arr',mun_arr[0,:5],mu0_harm_arr[0,:5])
-    print('bnarr',bnarr.shape,bnarr[0,:12])
+    #print('bnarr',bnarr.shape,bnarr[0,:12])
+
+    #Print all values upto zero of bnarr
+    print('bnarr',bnarr[0,:20])
+
 
     if(1):
-        #plt.scatter(np.arange(ncoeff),bnarr[0,:]/(np.pi*T_arr[0]),label='T={},neigs={},b={}'.format(T_arr[0],neigs,b))
-        #plt.plot(np.arange(ncoeff),np.arange(ncoeff))
-        #plt.scatter(np.arange(nmoments//2+1),np.log(mun_arr[0,:]),label='T={},neigs={},b={}'.format(T_arr[0],neigs,b))
-        plt.scatter(np.arange(0,nmoments+1),np.log(mu_all_arr[0,:]),label='T={},neigs={},b={}'.format(T_arr[0],neigs,b))
-        plt.xlabel(r'$n$')
-        plt.ylabel(r'$b_{n}$')
-        plt.legend()
+        fig,ax = plt.subplots(1,1,figsize=(4,4))
+        for i in range(len(T_arr)):
+            ax.scatter(np.arange(ncoeff),bnarr[i,:])#,label='T={},neigs={},b={}'.format(T_arr[i],neigs,b))
+            ax.plot(np.arange(ncoeff),np.arange(ncoeff)*np.pi*T_arr[i],color='r')#,label=r'$\pi T$')
+            #plt.scatter(np.arange(nmoments//2+1),np.log(mun_arr[0,:]),label='T={},neigs={},b={}'.format(T_arr[0],neigs,b))
+            #plt.scatter(np.arange(0,nmoments+1),np.log(mu_all_arr[0,:]),label='T={},neigs={},b={}'.format(T_arr[0],neigs,b))
+    
+        ax.axhline(vals[n*d_max]/2,color='black',ls='--')
+        
+        ax.tick_params(axis='both', which='major', labelsize=tp_fs)
+        ax.set_xlabel(r'$n$',fontsize=xl_fs)
+        ax.set_ylabel(r'$b_{n}$',fontsize=yl_fs)
+        ax.set_ylim([0,vals[neigs-1]/2])
+        #plt.legend(fontsize=le_fs)
+        
+        #fig.savefig('/home/vgs23/Images/barr_On_harm.pdf', dpi=400, bbox_inches='tight',pad_inches=0.0)
         plt.show()
+
+        
 
     store_arr(T_arr,'T_arr_{}_neigs_{}'.format(potkey,neigs))
     store_arr(mun_arr,'mun_arr_{}_neigs_{}'.format(potkey,neigs))
@@ -186,7 +253,7 @@ if __name__ == '__main__':
     parser.add_argument('--m', type=float, default=1.0, help='mass')
     parser.add_argument('--a', type=float, default=0.0, help='quartic anharmonicity')
     parser.add_argument('--b', type=float, default=0.0, help='quartic anharmonicity')
-    parser.add_argument('--omega', type=float, default=4.0, help='harmonic frequency')
+    parser.add_argument('--omega', type=float, default=1.0, help='harmonic frequency')
     parser.add_argument('--n_anharm', type=int, default=4, help='number of anharmonic terms')
     parser.add_argument('--L', type=float, default=L, help='grid length')
 

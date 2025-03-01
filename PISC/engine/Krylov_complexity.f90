@@ -89,7 +89,7 @@ module krylov_complexity
                         pos_mat_elt = 0.0d0
                         do i = 1,len1vecs
                                 !print *, vecs(i,n),vecs(i,k),x_arr(i)
-                                pos_mat_elt = pos_mat_elt + vecs(i,n)*vecs(i,k)*x_arr(i)*dx*dy !! Change here for 1D 
+                                pos_mat_elt = pos_mat_elt + vecs(i,n)*vecs(i,k)*x_arr(i)*dx!*dy !! Change here for 1D 
                         end do
                 end subroutine pos_matrix_elts
 
@@ -287,7 +287,7 @@ module krylov_complexity
                         On1 = An/barr(2)
 
                         do n=3,ncoeffs
-                                if (barr(n-1) < 1.0d-8) then
+                                if (barr(n-1) < 1.0d-10) then
                                         print *, 'barr(n) = 0.0d0'
                                         exit
                                 end if

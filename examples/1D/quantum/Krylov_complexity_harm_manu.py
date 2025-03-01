@@ -60,7 +60,8 @@ def main(m,a,b,omega,n_anharm,L):
     pos_mat = np.zeros((neigs,neigs)) 
     pos_mat = Krylov_complexity.krylov_complexity.compute_pos_matrix(vecs, x_arr, dx, dx, pos_mat)
     O = (pos_mat)
-    
+
+
     if(0):
         #print machine epsilon
         eps = np.finfo(float).eps
