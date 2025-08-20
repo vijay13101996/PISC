@@ -12,12 +12,12 @@ ngrid = 100 #Number of grid points
 ngridx = ngrid #Number of grid points along x
 ngridy = ngrid #Number of grid points along y
 
-neigs = 100 #Number of eigenstates to be calculated
+neigs = 500 #Number of eigenstates to be calculated
 
 R = np.sqrt(1/(4+np.pi))
 a = R#0.0
 
-if(0): #Stadium billiards
+if(1): #Stadium billiards
     def potential_xy(x,y):
         if( (x+a)**2 + y**2 < R**2 or (x-a)**2 + y**2 < R**2):
             return 0.0
@@ -29,7 +29,7 @@ if(0): #Stadium billiards
     potential_xy = np.vectorize(potential_xy)   
     potkey = 'lowT_stadium_billiards_a_{}_R_{}'.format(np.around(a,2),np.around(R,2))
 
-if(1): #Rectangular box
+if(0): #Rectangular box
     def potential_xy(x,y):
         if (x>(a+R) or x<(-a-R) or y>R or y<-R):
             return 1e6
@@ -79,7 +79,7 @@ param_dict = {'lbx':lbx,'ubx':ubx,'lby':lby,'uby':uby,'m':m,'ngridx':ngridx,'ngr
 with open('{}/Datafiles/Input_log_{}.txt'.format(path,potkey),'a') as f:    
     f.write('\n'+str(param_dict))
 
-if(1): #Diagonalize the Hamiltonian
+if(0): #Diagonalize the Hamiltonian
     vals,vecs = DVR.Diagonalize(neig_total=neigs)
 
     store_arr(vecs[:,:neigs],'{}_vecs'.format(fname),'{}/Datafiles'.format(path))
@@ -106,6 +106,28 @@ x_arr = DVR.pos_mat(0)
 pos_mat = np.zeros((neigs,neigs)) 
 pos_mat = Krylov_complexity_2D.krylov_complexity.compute_pos_matrix(vecs, x_arr, dx, dy, pos_mat)
 O = pos_mat
+
+#Compute level-spacing statistics
+vals = np.sort(vals)
+#Remove degenerate states
+vals_u = np.unique(vals)
+diffs = np.diff(vals_u)
+
+plt.hist(diffs, bins=50, density=True)
+plt.title('Level spacing distribution')
+plt.xlabel('Level spacing')
+plt.ylabel('Density')
+plt.show()
+
+
+#plt.plot(vals[:neigs])
+#plt.show()
+
+plt.imshow(O)
+plt.colorbar()
+plt.title('Position matrix O')
+plt.show()
+exit()
 
 print('O',np.around(O[:5,:5],3),'vals',vals[-1])
 #exit()

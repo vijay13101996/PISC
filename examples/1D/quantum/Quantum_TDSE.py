@@ -18,7 +18,7 @@ omega = 2.0
 g = 0.05
 Tc = 0.5*omega/np.pi
 def potential(x):
-    return -0.5*m*omega**2*x**2 + g*x**4 + m*omega**4/(32*g)
+    return x**4#-0.5*m*omega**2*x**2 + g*x**4 + m*omega**4/(32*g)
 V_x = potential(x)
 
 #Hamiltonian definition
@@ -28,7 +28,7 @@ vals,vecs = DVR.Diagonalize(neig_total=N-10)
 # Initial wavefunction
 sigma = 1.0
 x0 = 0.0
-p0 = 1.0
+p0 = 0.0
 
 #Coherent state
 psi_x0 = (m*omega/(np.pi*hbar))**0.25*np.exp(-m*omega*(x-x0)**2/(2*hbar) + 1j*p0*(x-x0)/hbar)

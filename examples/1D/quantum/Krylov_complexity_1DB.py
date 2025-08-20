@@ -80,6 +80,10 @@ if(anal):
     print('Using analytical pos_mat, vals')
     vals = vals_anal
     O = O_anal
+    
+    plt.plot(np.log(abs(O[0,1::2])))
+    plt.show()
+    exit()
 else:
     print('Using numerical pos_mat, vals')
     vals = vals

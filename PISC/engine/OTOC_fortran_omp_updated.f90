@@ -518,8 +518,6 @@ module otoc_tools
 			end do
 		end subroutine wightman_corr_elts
 
-
-
 		subroutine lambda_corr_arr_t(vecs,len1vecs,len2vecs,mass,x_arr,lenx,dx,dy,k_arr,lenk, &
 					vals_arr,lenv,m_arr,lenm,t_arr,lent,beta,n_eigen,key,lambda,corr_mat)
 			integer, intent(in) :: len1vecs,len2vecs,lenx,lenv,lenk,lenm,lent,n_eigen

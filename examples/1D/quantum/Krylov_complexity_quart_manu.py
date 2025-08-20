@@ -19,7 +19,7 @@ tp_fs = 12
 le_fs = 13#9.5
 ti_fs = 12
 
-ngrid = 5000
+ngrid = 1000
 
 L = 10
 
@@ -49,6 +49,18 @@ def main(m,a,b,omega,n_anharm,L):
     neigs = 400
     vals,vecs = DVR.Diagonalize(neig_total=neigs)
 
+    if(0):
+        nvals = np.log(np.arange(1,neigs+1))
+        valsarr = np.log(abs(vals))
+        
+        fit = np.polyfit(nvals[10:],valsarr[10:],1)
+        print('fit',fit)
+
+        plt.plot(nvals,valsarr)
+        plt.plot(nvals[10:],nvals[10:]*fit[0]+fit[1])
+        plt.show()
+        exit()
+
     print('vals', vals[-1])
 
     x_arr = DVR.grid[1:ngrid]
@@ -60,7 +72,18 @@ def main(m,a,b,omega,n_anharm,L):
     pos_mat = np.zeros((neigs,neigs)) 
     pos_mat = Krylov_complexity.krylov_complexity.compute_pos_matrix(vecs, x_arr, dx, dx, pos_mat)
     O = (pos_mat)
-    
+
+    if(0):
+        Ovals = np.log(abs(O[0,1::2]))
+        nvals = np.arange(1,len(Ovals)+1)
+
+        fit = np.polyfit(nvals[1:11],Ovals[1:11],1)
+        print('fit',fit)
+        plt.plot(nvals,Ovals)
+        plt.plot(nvals[1:11],nvals[1:11]*fit[0]+fit[1])
+        plt.xlim([0,50])
+        plt.show()
+        exit()
     if(0):
         #print machine epsilon
         eps = np.finfo(float).eps
@@ -145,7 +168,7 @@ def main(m,a,b,omega,n_anharm,L):
     fig.legend(loc='upper center',bbox_to_anchor=(0.5,1.0),fontsize=le_fs-1,ncol=4)
     #fig.legend(fontsize=le_fs-2,loc=(0.11,0.91),ncol=4)
     fig.set_size_inches(7,3.5)	
-    fig.savefig('/home/vgs23/Images/bn_vs_n_quartic.pdf', dpi=400, bbox_inches='tight',pad_inches=0.0)
+    #fig.savefig('/home/vgs23/Images/bn_vs_n_quartic.pdf', dpi=400, bbox_inches='tight',pad_inches=0.0)
     plt.show()
 
 
@@ -161,8 +184,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Compute moments for a mildly anharmonic potential')
     parser.add_argument('--m', type=float, default=1.0, help='mass')
     parser.add_argument('--a', type=float, default=0.0, help='Cubic anharmonicity')
-    parser.add_argument('--b', type=float, default=1.0, help='quartic anharmonicity')
-    parser.add_argument('--omega', type=float, default=0.0, help='harmonic frequency')
+    parser.add_argument('--b', type=float, default=0.0, help='quartic anharmonicity')
+    parser.add_argument('--omega', type=float, default=1.0, help='harmonic frequency')
     parser.add_argument('--n_anharm', type=int, default=4, help='number of anharmonic terms')
     parser.add_argument('--L', type=float, default=L, help='grid length')
 
