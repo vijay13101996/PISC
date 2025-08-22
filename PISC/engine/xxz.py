@@ -11,6 +11,7 @@ import cProfile
 from collections import defaultdict
 from itertools import product
 from numba import njit, prange
+import pickle
 
 """
 Exact diagonalization of the XXZ model with nearest-neighbor interactions.
@@ -39,13 +40,29 @@ class XXZ:
         self.nnn_pairs = [(i, (i + 2) % self.L) for i in range(self.L)]  # Next-nearest-neighbor pairs with periodic boundary conditions
 
         # By default, we generate the full basis states for the spin chain
-        self.basis_states = list(self.generate_basis())
-        print('Number of basis states:', len(self.basis_states))
 
-        # We group states based on the orbit they belong to. Each orbit is a 
+        # We also group states based on the orbit they belong to. Each orbit is a 
         # set of states that can be transformed into each other by cyclic shifts.
         # The magnetization of the states in each orbit is the same.
-        self.orbits = self.find_orbits(self.basis_states.copy())
+        
+        #Store basis and orbits for a given L into a pickle file
+        pkl_name = f'xxz_basis_orbits_L{self.L}.pickle'
+        try:
+            with open(pkl_name, 'rb') as f:
+                self.basis_states, self.orbits = pickle.load(f)
+                print(f'Loaded basis states and orbits from {pkl_name}')
+        except FileNotFoundError:
+            print(f'File {pkl_name} not found. Generating basis states and orbits.')
+            
+            self.basis_states = list(self.generate_basis())
+            print('Number of basis states:', len(self.basis_states))
+            
+            self.orbits = self.find_orbits(self.basis_states.copy())
+
+            with open(pkl_name, 'wb') as f:
+                pickle.dump((self.basis_states, self.orbits), f)
+                print(f'Saved basis states and orbits to {pkl_name}')
+
 
     def generate_basis(self):
         """
@@ -59,15 +76,35 @@ class XXZ:
         """
         return np.array([np.binary_repr(i, width=self.L) for i in range(2**self.L)])
 
+    def order_unique_orbit(self, orbit):
+        """
+        Given an orbit which has the right ordering, return elements which are unique.
+        """
+        seen = set() 
+        return [x for x in orbit if not (x in seen or seen.add(x))]
+
+    def T_op(self, state, n=1):
+        """
+        Apply the translation operator T^n to the state.
+        The translation operator shifts the state by n sites.
+        """
+        if n < 0:
+            raise ValueError("n must be non-negative")
+        n = n % self.L
+        return state[-n:] + state[:-n]  # Cyclic shift to the right by n positions
+
+
     def orbit(self, state):
         """
         Generate the orbit of a state under cyclic shifts.
         This function returns all cyclic permutations of the input state.
         """
-        orbits = [state[i:] + state[:i] for i in range(len(state))]
-        #Keep only unique orbits
-        unique_orbits = set((orbit) for orbit in orbits)
-        return [(orbit) for orbit in unique_orbits]
+        #orbit = [state[i:] + state[:i] for i in range(len(state))]
+        orbit = [self.T_op(state,i) for i in range(len(state))]  # Generate cyclic shifts
+
+        #Keep only unique states
+        unique_orbit = set((state) for state in orbit)
+        return [(state) for state in unique_orbit]
 
     def M_z(self, state):
         """
@@ -85,7 +122,7 @@ class XXZ:
     def flip_spin(self, state, sites):
         """
         Flip the spins at the specified sites in the state.
-        The sites are given as a list of indices.
+        Thesites are given as a list of indices.
         """
         state_list = list(state)
         for site in sites:
@@ -99,21 +136,21 @@ class XXZ:
 
         orbit_lst = []
         seen = []
-        
+        basis_lst = basis_states.copy()
         if(0):
-            for state in basis_states:
+            for state in basis_st:
                 if state not in seen:
                     current_orbit = self.orbit(state)
                     orbit_lst.append(current_orbit)
                     seen.extend(current_orbit) 
 
         if(1): #A lot more efficient
-            while basis_states:
-                state = basis_states[0]
+            while basis_lst:
+                state = basis_lst[0]
                 current_orbit = self.orbit(state)
-                orbit_lst.append(set(current_orbit))
+                orbit_lst.append(set(current_orbit)) # Append the current orbit to the list
                 for elt in current_orbit:
-                    basis_states.remove(elt)  # Remove the state from the basis states to avoid duplicates
+                    basis_lst.remove(elt)  # Remove the state from the basis states to avoid duplicates
                 
         return orbit_lst
 
@@ -151,6 +188,16 @@ class XXZ:
         elif isinstance(states, list):
             return [''.join('1' if s == '0' else '0' for s in state_i) for state_i in states]
 
+    def L_orbits(self, orbit_lst):
+        """
+        Given a list of orbits, return the orbits that have the same length as the system size L.
+        """
+        L_orbits = []
+        for orbit in orbit_lst:
+            if len(orbit) == self.L:
+                L_orbits.append(orbit)
+        return L_orbits
+
     def pair_orbits(self, orbit_lst, O):
         """
         Given a list of orbits, pair the orbits with that generated by the operator O.
@@ -163,12 +210,14 @@ class XXZ:
             orbit = list(ob_lst_copy[0])
             Oorbit = set(O(orbit))
             orbit = set(orbit)  # Convert to set for uniqueness 
+            #print('Orbit:', orbit, 'Oorbit:', Oorbit)
 
             unique = set(map(frozenset, [orbit, Oorbit]))
             paired_orbits.append(list(map(set, set(map(frozenset, unique)))))
             for elt in unique:
                 if set(elt) in ob_lst_copy:
                     ob_lst_copy.remove(set(elt))
+
 
         return paired_orbits
 
@@ -195,9 +244,6 @@ class XXZ:
 
             #print('Orbit:', orbit, '\n O1orbit:', O1orbit, '\n O2orbit:', O2orbit, '\n O1O2orbit:', O1O2orbit, '\n O2O1orbit:', O2O1orbit)
 
-            # Append only unique sets of orbits 
-            #unique_tuples = {tuple(arr) for arr in [orbit, O1orbit, O2orbit, O1O2orbit, O2O1orbit]}  # Convert to tuples for set operations
-            
             unique = set(map(frozenset, [orbit, O1orbit, O2orbit, O1O2orbit])) #  , O2O1orbit]))
             grouped_orbits.append(list(map(set, set(map(frozenset, unique)))))
             for elt in unique:
@@ -451,6 +497,7 @@ class XXZ:
         for n in range(l_j):
             # Apply the translation operator T^n to s2 
             sj = list(ob2)[n]  # Take the n-th state in the orbit ob2 - this is indeed T^k s2 for some k
+            
             #Hij+= self.H_NN(s1, sj)  # Calculate the matrix element <s1|H|T^n s2>
             Hij+= self.H_two_site(s1, sj, self.nn_pairs, self.J, self.Delta)  # Add the two-site interaction term
 
@@ -463,10 +510,50 @@ class XXZ:
         Hij *= np.sqrt(l_i/l_j)  # Normalize by the square root of the lengths of the orbits
         return Hij
 
-    def H_symm_adapted(self, ob_gp1, ob_gp2, B=False, NNN=False):
+    def H_k2piL(self, ob1, ob2, B=False, NNN=False):
+        """
+        Calculate the matrix elements of two states with k=2pi/L
+        The inputs are ob1 and ob2, which are orbits of a given state.
+        We take the first state in each of the orbits as representative, say s1 and s2.
+
+        The matrix elements are given as:
+        <ob1|H|ob2> = \sum_{n=0}^{L-1} e^{-2\pi n i/ L} <s1|H T^n |s2>
+
+        where l_i and l_j are the lengths of the orbits ob1 and ob2, respectively
+        and T is the translation operator that shifts the state by one site.
+        """
+
+        s1 = list(ob1)[0]
+        s2 = list(ob2)[0]  # Take the first state in the orbit as representative 
+        l_i = len(ob1)
+        l_j = len(ob2) 
+
+        if l_i != l_j or l_i != self.L:
+            raise ValueError("Orbits must have length L for k=2pi/L calculation.")
+
+        Hij = 0.0
+        for n in range(self.L):
+            Hijn = 0.0
+            
+            # Apply the translation operator T^n to s2 
+            sj = self.T_op(s2, n)
+
+            # Calculate the matrix element <s1|H|T^n s2>
+            pref = np.exp(-2j * np.pi * n / self.L)  # Phase factor for k=2pi/L
+            
+            Hijn += self.H_two_site(s1, sj, self.nn_pairs, self.J, self.Delta)  # Add the two-site interaction term
+            if B:
+                Hijn += self.H_B(s1, sj)
+            if NNN:
+                Hijn += self.H_two_site(s1, sj, self.nnn_pairs, self.J2, self.Delta2)
+            Hij += Hijn * pref # Multiply by the phase factor
+        return Hij
+
+    def H_symm_adapted(self, ob_gp1, ob_gp2, B=False, NNN=False, k=0):
         """
         We consider the matrix elements of the Hamiltonian in the k=0 sector
-        between two symmetry-adapted orbits or orbit groups ob_gp1 and ob_gp2 
+        or k=2pi/L sector, depending on the value of k, between two 
+        symmetry-adapted orbits or orbit groups ob_gp1 and ob_gp2 
         which are defined by operators O such that O^2 = I.
 
         We assume that the operators are translation invariant, 
@@ -488,8 +575,8 @@ class XXZ:
         We can also consider the case where O1 and O2 do not commute and the 
         case of more than 2 operators, but we will not consider this for now.
         
-        The matrix elements are calculated for ob_gp1 and ob_gp2, as follows:
-        <ob_gp1|H|ob_gp2> = \sum_{ob1 in ob_gp1, ob2 in ob_gp2} H_k0(ob1, ob2) / 
+        The matrix elements for momentum k are calculated for ob_gp1 and ob_gp2, as follows:
+        <ob_gp1|H|ob_gp2> = \sum_{ob1 in ob_gp1, ob2 in ob_gp2} H_k(ob1, ob2) / 
                             np.sqrt(len(ob_gp1) * len(ob_gp2))
 
         where ob_gp1 and ob_gp2 are the orbit groups defined by O1 and O2, respectively.
@@ -501,10 +588,45 @@ class XXZ:
 
         for ob1 in ob_gp1:
             for ob2 in ob_gp2:
-                Hij += self.H_k0(ob1, ob2, B=B, NNN=NNN)
+                if k == 0:
+                    Hij += self.H_k0(ob1, ob2, B=B, NNN=NNN)
+                elif k == 2 * np.pi / self.L:
+                    Hij += self.H_k2piL(ob1, ob2, B=B, NNN=NNN)
 
         Hij /= np.sqrt(l_i * l_j)
         return Hij
+
+    def compute_H_symm(self, gr_orbits, parallel=True, k=0):
+        """
+        Compute the symmetric Hamiltonian matrix for the XXZ model using the groups of orbits.
+        xxz: Instance of the XXZ class
+        gr_orbits: Groups of orbits identified by the P and Z2 symmetries
+
+        Returns:
+        H_symm: Symmetric Hamiltonian matrix
+        """
+        
+        H_symm = np.zeros((len(gr_orbits), len(gr_orbits)), dtype=float)
+        
+        if parallel:
+            # Use parallel processing to compute the rows of the symmetric Hamiltonian matrix
+            n_jobs = 20
+            rows = Parallel(n_jobs=n_jobs)(delayed(compute_H_symm_row)(xxz, i, gr_orbits, k) for i in range(len(gr_orbits)))
+
+            for i, row in enumerate(rows):
+                print(f"Calculating H_symm_row({i})")
+                H_symm[i, i:] = row
+                H_symm[i:, i] = row
+            return H_symm
+        
+        else:
+            for i in range(len(gr_orbits)):
+                print("Calculating H_symm_row(", i, ")")
+                row = compute_H_symm_row(xxz, i, gr_orbits)
+                H_symm[i, i:] = row
+                H_symm[i:, i] = row
+
+            return H_symm
 
 @njit
 def NN_XX(st2_n, st2_m):
