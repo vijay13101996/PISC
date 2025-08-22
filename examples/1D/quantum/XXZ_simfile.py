@@ -26,6 +26,7 @@ from multiprocessing import Pool
 # 8. Fix the speed issue with computing the H_two_site function.
 # 9. Understand and code up the matrix elements for the K=2\pi/L sector
 # 10. Check if the parallelization is actually efficient and check the time taken for L=18
+# 11. Problem with using set fixed. However group_orbits function need to be rewritten
 """
 
 
@@ -73,10 +74,11 @@ def restrict_basis(xxz, k=0.0):
     if(k==2*np.pi/xxz.L): # !!! This is potentially dangerous, adjust it later
         print('Limiting to orbits of length', xxz.L)
         orbits = xxz.L_orbits(orbits)
+        print("Number of orbits of length", xxz.L, ":", len(orbits))
 
     #gr_orbits = xxz.group_orbits(orbits, xxz.P_operator, xxz.Z2_operator)
-    #gr_orbits = xxz.pair_orbits(orbits, xxz.Z2_operator)
-    gr_orbits = [[orbit] for orbit in orbits]
+    gr_orbits = xxz.pair_orbits(orbits, xxz.Z2_operator)
+    #gr_orbits = [[orbit] for orbit in orbits]
 
     print("Number of groups of orbits:", len(gr_orbits), ",", sum(len(group) for group in gr_orbits), "orbits in total")
 
@@ -122,20 +124,17 @@ def compute_H_symm(xxz, gr_orbits, parallel=True, k=0.0):
 
     print("Computing the symmetric Hamiltonian matrix for k =", k)
     if parallel:
+        print("Using parallel processing to compute the Hamiltonian matrix")
         # Use parallel processing to compute the rows of the symmetric Hamiltonian matrix
         n_jobs = 10
-        rows = Parallel(n_jobs=n_jobs)(delayed(compute_H_symm_row)(xxz, i, gr_orbits, k) for i in range(len(gr_orbits)))
-   
-        for i, row in enumerate(rows):
-            H_symm[i, i:] = row
-            H_symm[i:, i] = np.conj(row)
+        if(0): # Use joblib for parallel processing
+            rows = Parallel(n_jobs=n_jobs)(delayed(compute_H_symm_row)(xxz, i, gr_orbits, k) for i in range(len(gr_orbits)))
+            for i, row in enumerate(rows):
+                H_symm[i, i:] = row
+                H_symm[i:, i] = np.conj(row)
 
-        return H_symm
-
-    else:
-        
-        if(0):# Compute the rows of the symmetric Hamiltonian matrix sequentially
-            n_jobs = 1
+            return H_symm 
+        else:
             func = partial(compute_H_symm_row, xxz, gr_orbits=gr_orbits, k=k)
             #with Pool(processes=n_jobs) as p:
             with ProcessPoolExecutor(max_workers=n_jobs) as p:
@@ -148,15 +147,14 @@ def compute_H_symm(xxz, gr_orbits, parallel=True, k=0.0):
                 H_symm[i:, i] = np.conj(row)
 
             return H_symm
+    else:
+        for i in range(len(gr_orbits)):
+            #print("Calculating H_symm_row(", i, ")")
+            row = compute_H_symm_row(xxz, i, gr_orbits, k)
+            H_symm[i, i:] = row
+            H_symm[i:, i] = np.conj(row)
 
-        if(1):
-            for i in range(len(gr_orbits)):
-                #print("Calculating H_symm_row(", i, ")")
-                row = compute_H_symm_row(xxz, i, gr_orbits, k)
-                H_symm[i, i:] = row
-                H_symm[i:, i] = np.conj(row)
-
-            return H_symm
+        return H_symm
 
 def benchmark_1():
     """
@@ -273,10 +271,9 @@ def main():
     start_time = time.time() 
     
     #benchmark_1()
-    benchmark_2()    
-    exit(0)
+    #benchmark_2()    
 
-    L = 6  # Length of the chain
+    L = 18  # Length of the chain
     J = 1.0  # Coupling constant
     Delta = 0.5  # Anisotropy parameter
     g = 0.0  # Magnetic field
@@ -287,15 +284,6 @@ def main():
 
     xxz = define_lattice(L, J, Delta, g, J2, Delta2)  # Initialize the XXZ model 
     basis_Mz0, orbits, gr_orbits = restrict_basis(xxz, k=k)  # Restrict the basis states
-
-    for ob1 in orbits:
-        for ob2 in orbits:
-            Hij1 = xxz.H_k2piL(ob1, xxz.T_op(list(ob2)), NNN=True)
-            Hij2 = xxz.H_k2piL(xxz.T_op(list(ob2)), ob1, NNN=True)
-            print(Hij1, Hij2)
-            assert np.isclose(Hij1, np.conj(Hij2)), "H_k2piL is not Hermitian!"
-    print('DOne')
-    exit(0)
 
     if(k == 0):
         fname= 'H_symm_L_{}_J_{}_Delta_{}_g_{}_J2_{}_Delta2_{}_k0.pkl'.format(L, J, Delta, g, J2, Delta2)
@@ -309,11 +297,11 @@ def main():
     except FileNotFoundError:
         print("File not found:", fname)
         print("Computing the k=0, P and Z2 invariant Hamiltonian matrix")
-        H_symm = compute_H_symm(xxz, gr_orbits, parallel=False, k=k)
+        H_symm = compute_H_symm(xxz, gr_orbits, parallel=True, k=k)
 
         #H_symm2 = compute_H_symm(xxz, gr_orbits, parallel=False, k=k)
         #assert np.allclose(H_symm, H_symm2), "Parallel and non-parallel results do not match!"
-
+        #print("Parallel and non-parallel results match!")
 
         #Store H_symm in a pickle file
         with open(fname, 'wb') as f:
@@ -326,7 +314,8 @@ def main():
         print("H_symm is not Hermitian")
 
 
-    if(1):
+
+    if(0):
         vals_symm, vecs_symm = np.linalg.eigh(H_symm)
         vals_symm = np.around(vals_symm, decimals=3)  # Round
 

@@ -93,7 +93,6 @@ class XXZ:
         n = n % self.L
         return state[-n:] + state[:-n]  # Cyclic shift to the right by n positions
 
-
     def orbit(self, state):
         """
         Generate the orbit of a state under cyclic shifts.
@@ -103,7 +102,9 @@ class XXZ:
         orbit = [self.T_op(state,i) for i in range(len(state))]  # Generate cyclic shifts
 
         #Keep only unique states
-        unique_orbit = set((state) for state in orbit)
+        #unique_orbit = set((state) for state in orbit)
+        unique_orbit = list(dict.fromkeys(orbit))  # Remove duplicates while preserving order
+        
         return [(state) for state in unique_orbit]
 
     def M_z(self, state):
@@ -135,22 +136,15 @@ class XXZ:
         """
 
         orbit_lst = []
-        seen = []
         basis_lst = basis_states.copy()
-        if(0):
-            for state in basis_st:
-                if state not in seen:
-                    current_orbit = self.orbit(state)
-                    orbit_lst.append(current_orbit)
-                    seen.extend(current_orbit) 
 
-        if(1): #A lot more efficient
-            while basis_lst:
-                state = basis_lst[0]
-                current_orbit = self.orbit(state)
-                orbit_lst.append(set(current_orbit)) # Append the current orbit to the list
-                for elt in current_orbit:
-                    basis_lst.remove(elt)  # Remove the state from the basis states to avoid duplicates
+        while basis_lst:
+            state = basis_lst[0]
+            current_orbit = self.orbit(state)
+            #orbit_lst.append(set(current_orbit)) # Append the current orbit to the list
+            orbit_lst.append(current_orbit) # Append the current orbit to the list
+            for elt in current_orbit:
+                basis_lst.remove(elt)  # Remove the state from the basis states to avoid duplicates
                 
         return orbit_lst
 
@@ -206,19 +200,34 @@ class XXZ:
         paired_orbits = [] 
         ob_lst_copy = orbit_lst.copy()  # Make a copy of the orbit list to avoid modifying it during iteration
 
-        while ob_lst_copy:
-            orbit = list(ob_lst_copy[0])
-            Oorbit = set(O(orbit))
-            orbit = set(orbit)  # Convert to set for uniqueness 
-            #print('Orbit:', orbit, 'Oorbit:', Oorbit)
+        if(0):
+            while ob_lst_copy:
+                orbit = list(ob_lst_copy[0])
+                Oorbit = set(O(orbit))
+                orbit = set(orbit)  # Convert to set for uniqueness 
+                #print('Orbit:', orbit, 'Oorbit:', Oorbit)
 
-            unique = set(map(frozenset, [orbit, Oorbit]))
-            paired_orbits.append(list(map(set, set(map(frozenset, unique)))))
-            for elt in unique:
-                if set(elt) in ob_lst_copy:
-                    ob_lst_copy.remove(set(elt))
+                unique = set(map(frozenset, [orbit, Oorbit]))
+                paired_orbits.append(list(map(set, set(map(frozenset, unique)))))
+                for elt in unique:
+                    if set(elt) in ob_lst_copy:
+                        ob_lst_copy.remove(set(elt))
+        else:
+            while ob_lst_copy: 
+                orbit = ob_lst_copy[0]
+                Oorbit = O(orbit)
 
+                Oorbit_exists = [set(Oorbit) == set(x) for x in ob_lst_copy]
+                Oorb_ind = np.where(Oorbit_exists)[0]
 
+                if any(Oorbit_exists) and set(orbit) != set(Oorbit):
+                    paired_orbits.append([orbit, Oorbit])
+                    ob_lst_copy.remove(ob_lst_copy[Oorb_ind[0]])
+                    ob_lst_copy.remove(orbit)
+                else:
+                    paired_orbits.append([orbit])
+                    ob_lst_copy.remove(orbit)
+                
         return paired_orbits
 
     def group_orbits(self, orbit_lst, O1, O2):
