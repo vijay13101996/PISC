@@ -39,6 +39,9 @@ class XXZ:
         self.nn_pairs = [(i, (i + 1) % self.L) for i in range(self.L)]  # Nearest-neighbor pairs with periodic boundary conditions
         self.nnn_pairs = [(i, (i + 2) % self.L) for i in range(self.L)]  # Next-nearest-neighbor pairs with periodic boundary conditions
 
+        #self.nn_pairs = [(i, i + 1) for i in range(self.L-1)]  # Nearest-neighbor pairs with open boundary conditions
+        #self.nnn_pairs = [(i, i + 2) for i in range(self.L-2)] # Next-nearest-neighbor pairs with open boundary conditions
+
         # By default, we generate the full basis states for the spin chain
 
         # We also group states based on the orbit they belong to. Each orbit is a 
@@ -90,6 +93,7 @@ class XXZ:
         """
         if n < 0:
             raise ValueError("n must be non-negative")
+
         n = n % self.L
         return state[-n:] + state[:-n]  # Cyclic shift to the right by n positions
 
@@ -346,8 +350,6 @@ class XXZ:
                     # Every spin except the pair i,j needs to be the same
                     # If so, add the nearest-neighbor interaction terms
                     h2site += J*self.h2_XX(st2_n, st2_m) 
-                    #print('flip_n:', flip_n, 'state_n', state_n, 'state_m:', state_m, i,j)
-                    #print('h2site')
             return h2site
 
 
@@ -454,7 +456,7 @@ class XXZ:
         sites = np.arange(self.L)  # Sites in the chain
         if(1):
             for n in range(N):
-                print(n, 'th row' )
+                print(n, 'th row of', N)
                 for m in range(n, N):
                     state_n = basis_states[n]
                     state_m = basis_states[m]
@@ -554,6 +556,7 @@ class XXZ:
             if B:
                 Hijn += self.H_B(s1, sj)
             if NNN:
+                #print('Adding NNN interaction', print(self.nnn_pairs))
                 Hijn += self.H_two_site(s1, sj, self.nnn_pairs, self.J2, self.Delta2)
             Hij += Hijn * pref # Multiply by the phase factor
         return Hij

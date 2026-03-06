@@ -11,6 +11,10 @@ from joblib import Parallel, delayed
 import pickle
 from functools import partial
 from multiprocessing import Pool
+import math
+import quspin
+from quspin.operators import hamiltonian # Hamiltonians and operators 
+from quspin.basis import spin_basis_1d # Hilbert space spin basis  
 
 """
 # Tasks tomorrow:
@@ -27,6 +31,8 @@ from multiprocessing import Pool
 # 9. Understand and code up the matrix elements for the K=2\pi/L sector
 # 10. Check if the parallelization is actually efficient and check the time taken for L=18
 # 11. Problem with using set fixed. However group_orbits function need to be rewritten
+# 12. It looks the H_symm_adapted function are working fine, however the level statistics aren't
+#     matching the expected results. Understand the 'unfolding' procedure properly.
 """
 
 
@@ -64,7 +70,7 @@ def restrict_basis(xxz, k=0.0):
     basis_Mz0 = xxz.find_Sz_0(xxz.basis_states, Mz=0)
     #for state in basis_Mz0:
     #    print(state, xxz.M_z(state), xxz.find_E(state))
-    print("Number of basis states with M_z = 0:", len(basis_Mz0), 'Expected:', np.math.comb(xxz.L, xxz.L//2))
+    print("Number of basis states with M_z = 0:", len(basis_Mz0), 'Expected:', math.comb(xxz.L, xxz.L//2))
 
     # Find orbits of the basis states - to get k=0 sector
     orbits = xxz.find_orbits(basis_Mz0)
@@ -243,7 +249,7 @@ def benchmark_2():
     basis_Mz0, orbits, gr_orbits = restrict_basis(xxz, k=k)  # Restrict the basis states
     print('\n')
 
-    print("Number of basis states with M_z = 0:", len(basis_Mz0),'Expected', np.math.comb(L, L//2))
+    print("Number of basis states with M_z = 0:", len(basis_Mz0),'Expected', math.comb(L, L//2))
 
     H_full = xxz.H(NNN=True)  # Full Hamiltonian with NNN and magnetic field terms
     vals_full, vecs_full = np.linalg.eigh(H_full)
@@ -266,24 +272,130 @@ def benchmark_2():
     if np.all(np.isin(vals_symm, vals_Sz0)):
         print("***Eigenvalues of the P and Z2 invariant sector are contained in the M_z = 0 sector eigenvalues***")
     
+def benchmark_3():
+    """ 
+    Benchmark the NNN coupling term in the Hamiltonian using the 
+    Majumdar-Ghosh point which is occurs at:
+    J2 = J/2 and Delta1 = Delta2 = 1.0
+
+    The ground state is a product of singlets:
+    |psi> = (|up,down> - |down,up>) (|up,down> - |down,up>) ...
+
+    And the ground state energy is -0.375 per site.
+    """
+
+    J = 1.0
+    J2 = 0.5 * J
+    Delta = 1.0
+    Delta2 = 1.0
+    g = 0.0
+
+    for L in [4, 6, 8, 10, 12]:
+        print("Benchmarking Majumdar-Ghosh point for L =", L)
+        xxz = define_lattice(L, J, Delta, g, J2, Delta2)
+        H_full = xxz.H(NNN=True, B=True)
+        vals_full, vecs_full = np.linalg.eigh(H_full)
+        print('Ground state energy per site:', vals_full[0]/L, 'Expected:', -0.375)
+        if np.isclose(vals_full[0]/L, -0.375, atol=1e-5):
+            print("***Ground state energy per site matches the expected value***")
+        print('\n')
+
+def unfold_spectrum(eigenvalues, num_points=100):
+    """
+    Unfold the spectrum of eigenvalues using a spline fit.
+    eigenvalues: Array of eigenvalues
+    num_points: Number of points to use for the spline fit
+
+    Returns:
+    unfolded_eigenvalues: Array of unfolded eigenvalues
+    """
+    # Sort the eigenvalues
+    uq_val = (np.sort(eigenvalues))
+
+    #Erange = np.linspace(eigenvalues.min(), eigenvalues.max(), num_points)
+    #nE = np.array([np.sum(eigenvalues <= val) for val in Erange])
+
+    Erange = eigenvalues[::20]
+    nE = np.array([np.sum(eigenvalues <= val) for val in Erange])
+
+    #Spline fit nE against Erange, i.e. nE = f(Erange)
+    print('Fitting spline to the spectrum')
+    fit = scipy.interpolate.UnivariateSpline(Erange, nE, s=0.0)
+    #fit = scipy.interpolate.PchipInterpolator(Erange, nE)
+    unfolded_eigenvalues = fit(eigenvalues)  # Unfold the eigenvalues using the spline fit
+    
+    print('Unfolded eigenvalues computed', unfolded_eigenvalues[:10])
+    print('eigenvalues', eigenvalues[:10])
+
+    return unfolded_eigenvalues
+
+def number_variance(eps, L_vals):
+    """
+    eps: unfolded eigenvalues (1D array, sorted)
+    L_vals: array of window lengths to compute Sigma^2(L)
+    Returns: Sigma2 array corresponding to L_vals
+    """
+    eps = np.sort(eps)
+    N = len(eps)
+    Sigma2 = []
+
+    for L in L_vals:
+        counts = []
+        # slide window: choose starting points at every level
+        for start in eps:
+            count = np.sum((eps >= start) & (eps < start+L))
+            counts.append(count)
+        counts = np.array(counts)
+        # variance around mean L
+        Sigma2.append(np.mean((counts - L)**2))
+    return np.array(Sigma2)
+
 
 def main():
     start_time = time.time() 
     
     #benchmark_1()
     #benchmark_2()    
+    #benchmark_3()
+    #exit()
 
-    L = 18  # Length of the chain
+    L = 8  # Length of the chain
     J = 1.0  # Coupling constant
     Delta = 0.5  # Anisotropy parameter
     g = 0.0  # Magnetic field
-    J2 = 0.5  # NNN coupling constant
+    J2 = 0.5*J  # NNN coupling constant
     Delta2 = 0.5  # NNN anisotropy parameter
 
-    k = 2 * np.pi / L  # Wavevector for the k=2\pi/L sector
+    k =  0.0#2 * np.pi / L  # Wavevector for the k=2\pi/L sector
 
     xxz = define_lattice(L, J, Delta, g, J2, Delta2)  # Initialize the XXZ model 
     basis_Mz0, orbits, gr_orbits = restrict_basis(xxz, k=k)  # Restrict the basis states
+
+    if(1): # Benchmark with QuSpin
+        basis = spin_basis_1d(L,pauli=False,Nup=L//2,kblock=0,zblock=1 ) # and positive parity sector
+
+        H_zz_NN = [[J*Delta,i,(i+1)%L] for i in range(L)] # periodic boundary conditions
+        H_zz_NNN = [[J2*Delta2,i,(i+2)%L] for i in range(L)] # periodic boundary conditions
+
+        H_xy_NN = [[0.5*J,i,(i+1)%L] for i in range(L)] # periodic boundary conditions
+        H_xy_NNN = [[0.5*J2,i,(i+2)%L] for i in range(L)] # periodic boundary conditions
+
+        static = [["zz",H_zz_NN],["zz",H_zz_NNN],["+-",H_xy_NN],["-+",H_xy_NN],["+-",H_xy_NNN],["-+",H_xy_NNN]]
+        dynamic = []
+
+        H_XXZ_NNN = hamiltonian(static,dynamic,basis=basis,dtype=np.float64)
+        E = H_XXZ_NNN.eigvalsh()
+
+        Hfull = xxz.H(NNN=True, B=True)  # Full Hamiltonian with NNN and magnetic field terms
+        vals_full, vecs_full = np.linalg.eigh(Hfull)
+        H_Sz0 = xxz.H(NNN=True, B=True, basis_states=basis_Mz0)  # Hamiltonian restricted to M_z = 0 sector
+        vals_Sz0, vecs_Sz0 = np.linalg.eigh(H_Sz0)
+        H_k0 = compute_H_symm(xxz, gr_orbits, parallel=False, k=k) # Hamiltonian restricted to P and Z2 invariant sector
+        vals_k0, vecs_k0 = np.linalg.eigh(H_k0) 
+
+        print('Shapes', H_XXZ_NNN.toarray().shape, H_k0.shape)
+        print('Eigenvalues from QuSpin', np.around(E, decimals=3))
+        print('Eigenvalues from Hk0', np.around(vals_k0, decimals=3))
 
     if(k == 0):
         fname= 'H_symm_L_{}_J_{}_Delta_{}_g_{}_J2_{}_Delta2_{}_k0.pkl'.format(L, J, Delta, g, J2, Delta2)
@@ -313,37 +425,28 @@ def main():
     else:
         print("H_symm is not Hermitian")
 
-
-
-    if(0):
+    if(1):
         vals_symm, vecs_symm = np.linalg.eigh(H_symm)
         vals_symm = np.around(vals_symm, decimals=3)  # Round
 
+        print("Eigenvalues of the k=0, P and Z2 invariant sector:", vals_symm[:10])
 
-        #Unfold the eigenvalues
-        vals_uf = vals_symm[::20]
-        irange = np.arange(len(vals_uf))
-
-        # Number of levels with energy less than or equal to each eigenvalue
-        nE = np.array([np.sum(vals_symm <= val) for val in vals_uf])
-
-        print("Number of levels with energy less than or equal to each eigenvalue:", nE)
-
-
-        #Spline fit nE against vals_uf, i.e. nE = f(vals_uf)
-        from scipy.interpolate import UnivariateSpline
-        spline = UnivariateSpline(vals_uf, nE, s=0)
-        x_fit = np.linspace(vals_uf.min(), vals_uf.max(), 1000)
-        y_fit = spline(x_fit)
-
-        Erange = np.arange(-4,4.01, 0.01)
-
-        nEr = np.array([np.sum(vals_symm <= val) for val in Erange])
-        plt.plot(Erange, nEr, label='Number of levels')
-        plt.scatter(vals_uf, nE, color='red', label='Data points')
-        plt.xlabel('Energy')
-        plt.ylabel('Number of levels')
+        #Unfold the spectrum
+        vals_uf = unfold_spectrum(vals_symm, num_points=2000)
+        L_vals = np.linspace(0.0, 1.0, 21)
+        Sigma2 = number_variance(vals_uf, L_vals)
+        plt.plot(L_vals, Sigma2, 'o-', label=r'$\Sigma^2(L)$')
+        plt.xlabel(r'$L$')
+        plt.ylabel(r'$\Sigma^2(L)$')
         plt.show()
+
+        if(0):
+            nEr = np.array([np.sum(vals_symm <= val) for val in Erange])
+            plt.plot(Erange, nEr, label='Number of levels')
+            plt.scatter(vals_uf, nE, color='red', label='Data points')
+            plt.xlabel('Energy')
+            plt.ylabel('Number of levels')
+            plt.show()
 
 
         if(0):
@@ -357,8 +460,11 @@ def main():
 
         if(1):
             bins = np.arange(0,3.01, 0.1)
-            diff = np.diff(vals_symm)
-            plt.hist(diff, bins=100, density=True)
+            diff = np.diff(vals_uf)
+            print('Mean level spacing:', np.mean(diff))
+            #diff/np.mean(diff)
+            
+            plt.hist(diff, bins=bins, density=True)
             plt.xlabel('Energy difference')
             plt.ylabel('Density')
             plt.title('Energy differences for the k=0, P and Z2 invariant sector')

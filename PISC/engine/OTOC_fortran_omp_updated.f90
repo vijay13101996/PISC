@@ -32,7 +32,7 @@ module otoc_tools
 			real(kind=8), intent(inout) :: pos_mat_elt
 			pos_mat_elt = 0.0d0
 			do i = 1,len1vecs
-					pos_mat_elt = pos_mat_elt + vecs(i,n)*vecs(i,k)*x_arr(i)*dx!*dy !! Change here for 1D 
+					pos_mat_elt = pos_mat_elt + vecs(i,n)*vecs(i,k)*x_arr(i)*dx*dy !! Change here for 1D 
 			end do
 			!if (pos_mat_elt > 1E-2) then
 			!	print*, 'pos', n,k, pos_mat_elt

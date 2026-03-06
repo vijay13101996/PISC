@@ -26,7 +26,7 @@ anal = True
 
 neigs = 200
 
-T_au = 0.01
+T_au = 1.
 Tkey = 'T_{}'.format(T_au)
 beta = 1.0/T_au 
 print('T_au',T_au,'beta',beta)

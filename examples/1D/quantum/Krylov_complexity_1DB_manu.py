@@ -52,7 +52,6 @@ DVR = DVR1D(ngrid, lb, ub,m, potential)
 if(not anal):
     vals,vecs = DVR.Diagonalize(neig_total=neigs)
 
-
 x_arr = DVR.grid[1:ngrid]
 dx = x_arr[1]-x_arr[0]
 

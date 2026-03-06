@@ -8,6 +8,8 @@ from matplotlib import pyplot as plt
 import time
 import os
 import matplotlib
+from matplotlib.patches import Rectangle
+
 
 plt.rcParams.update({'font.size': 10, 'font.family': 'serif','font.style':'italic','font.serif':'Garamond'})
 matplotlib.rcParams['axes.unicode_minus'] = False
@@ -28,7 +30,7 @@ neigs = 200 #Number of eigenstates to be calculated
 R = np.sqrt(1/(4+np.pi))
 a = R#0.0
 
-if(0): #Stadium billiards
+if(1): #Stadium billiards
     def potential_xy(x,y):
         if( (x+a)**2 + y**2 < R**2 or (x-a)**2 + y**2 < R**2):
             return 0.0
@@ -90,7 +92,7 @@ param_dict = {'lbx':lbx,'ubx':ubx,'lby':lby,'uby':uby,'m':m,'ngridx':ngridx,'ngr
 with open('{}/Datafiles/Input_log_{}.txt'.format(path,potkey),'a') as f:    
     f.write('\n'+str(param_dict))
 
-if(1): #Diagonalize the Hamiltonian
+if(0): #Diagonalize the Hamiltonian
     vals,vecs = DVR.Diagonalize(neig_total=neigs)
 
     store_arr(vecs[:,:neigs],'{}_vecs'.format(fname),'{}/Datafiles'.format(path))
@@ -132,6 +134,7 @@ L = Krylov_complexity_2D.krylov_complexity.compute_liouville_matrix(vals,liou_ma
 LO = np.zeros((neigs,neigs))
 LO = Krylov_complexity_2D.krylov_complexity.compute_hadamard_product(L,O,LO)
 
+
 T_arr = [10,20,40,100]#[10.0,20.0,40.,100.0]#np.arange(1.0,5.05,0.5)#[0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0]
 mun_arr = []
 mu0_harm_arr = []
@@ -139,7 +142,10 @@ bnarr = []
 nmoments = 40
 ncoeff = 40
 
-if(1):
+
+
+
+if(0):
     for T_au in T_arr:    
         Tkey = 'T_{}'.format(T_au)
 
@@ -175,55 +181,63 @@ if(0):
     yg = np.linspace(-R,R,501)
 
     xgr,ygr = np.meshgrid(xg,yg)
-    ax.contour(xgr,ygr,potential_xy(xgr,ygr),levels=np.arange(-1,30,1.0),colors='g' )
-  
-    #No ticks
-    ax.set_xticks([])
-    ax.set_yticks([])
-    
-    ax.set_xlabel(r'$x$',fontsize=xl_fs)
-    ax.set_ylabel(r'$y$',fontsize=yl_fs)
+    def plot_ax_3a_in(ax):
+        ax.contour(xgr,ygr,potential_xy(xgr,ygr),levels=np.arange(-1,30,1.0),colors='g' )
+        
+        #Enclose the potential inside a box of size 2(a+R) x 2R
+        xmin, xmax = ax.get_xlim()
+        ymin, ymax = ax.get_ylim()
 
-    fig.set_size_inches(5,3.5)
-    #fig.savefig('/home/vgs23/Images/potential_billiards.pdf', dpi=400, bbox_inches='tight',pad_inches=0.0)
-    plt.show()
+        # Add rectangle frame
+        rect = Rectangle((xmin, ymin), xmax-xmin, ymax-ymin,
+                         linewidth=2, edgecolor='k', facecolor='none')
+        ax.add_patch(rect)
 
+        #No ticks
+        ax.set_xticks([])
+        ax.set_yticks([])
+        
+        #ax.set_xlabel(r'$x$',fontsize=xl_fs)
+        #ax.set_ylabel(r'$y$',fontsize=yl_fs)
 
-if(1):
+    #fig.set_size_inches(5,3.5)
+    #plot_ax_3a_in(ax)
+    #fig.savefig('draft1_potential_billiards.pdf', dpi=400, bbox_inches='tight')#,pad_inches=0.0)
+    #plt.show()
+
+if(0):
     potkey_bil = 'MANU_stadium_billiards_a_{:.2f}_R_{:.2f}'.format(a,R)
     potkey_box = 'MANU_rectangular_box_a_{:.2f}_R_{:.2f}'.format(a,R)
 
-    fig, ax = plt.subplots(1,2,sharey=True)
-    plt.subplots_adjust(wspace=0.0, hspace=0.0)
-    ax0 = ax[0]
-    ax1 = ax[1]
-
-    for ax, neigs in zip(ax,[200]):
+    def plot_ax_3a(ax):
         T_arr = read_arr('T_arr_{}_neigs_{}'.format(potkey,neigs))
         bn_arr_bil = read_arr('bnarr_{}_neigs_{}'.format(potkey_bil,neigs))
         bn_arr_box = read_arr('bnarr_{}_neigs_{}'.format(potkey_box,neigs))
 
         for i in [0,1,2,3]:
-            if(ax==ax0):
-                ax.scatter(np.arange(ncoeff),bn_arr_bil[i,:],label=r'$T={}$'.format(T_arr[i]),s=10)
-                ax.plot(np.arange(ncoeff),bn_arr_box[i,:],ls='--')
-            else:
-                ax.scatter(np.arange(ncoeff),bn_arr_bil[i,:],s=10)
-                ax.plot(np.arange(ncoeff),bn_arr_box[i,:],ls='--')
+            ax.scatter(np.arange(ncoeff),bn_arr_bil[i,:],label=r'$T={}$'.format(T_arr[i]),s=10)
+            ax.plot(np.arange(ncoeff),bn_arr_box[i,:],ls='--')
 
-        ax.set_xlabel(r'$n$',fontsize=xl_fs)
-        if(ax==ax0):
-            ax.set_ylabel(r'$b_n$',fontsize=yl_fs)
-            ax.annotate(r'(a)',(0.02,0.9),xycoords='axes fraction',fontsize=xl_fs)
-        else:
-            ax.annotate(r'(b)',(0.02,0.9),xycoords='axes fraction',fontsize=xl_fs)
-        ax.tick_params(axis='both',labelsize=ti_fs)
+            #### Save into txt files
+            np.savetxt('FIG3a_bn_vs_n_Stadium_T_{}.txt'.format(T_arr[i]), np.column_stack((np.arange(ncoeff), bn_arr_bil[i,:])), header='n b_n', comments='')
+            np.savetxt('FIG3a_bn_vs_n_Rectangle_T_{}.txt'.format(T_arr[i]), np.column_stack((np.arange(ncoeff), bn_arr_box[i,:])), header='n b_n', comments='')
 
-    fig.set_size_inches(7,3.5)	
-    fig.legend(fontsize=le_fs-2,loc=(0.16,0.91),ncol=4)
+
+        #ax.set_xlabel(r'$n$',fontsize=xl_fs)
+        ax.set_ylabel(r'$b_n$',fontsize=yl_fs)
+        ax.annotate(r'(a)',(0.02,0.9),xycoords='axes fraction',fontsize=xl_fs)
+        #ax.tick_params(axis='both',labelsize=ti_fs)
+        #ax.set_xlim(ax.get_xlim()[0],ax.get_xlim()[1]*1.2)
+        ax.set_ylim(0,ax.get_ylim()[1]*1.2)
+        ax.legend(ncol=2, columnspacing=0.3, loc='upper center')
+    #fig, ax = plt.subplots(1,1)
+    #plot_ax_3a(ax)
+
     #fig.savefig('/home/vgs23/Images/bn_vs_n_billiards.pdf', dpi=400, bbox_inches='tight',pad_inches=0.0)
-    plt.show()
+    
+    #fig.savefig('FIG3.pdf', dpi=400, bbox_inches='tight',pad_inches=0.0)
+    #plt.show()
 
-    exit()
+    #exit()
 
 
