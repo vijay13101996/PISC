@@ -46,7 +46,7 @@ def find_OTOC_slope(fname,tst,tend,witherror=False,return_cov=False):
     y_trunc = OTOC_arr[ist:iend]
     p,V = np.polyfit(x_trunc,y_trunc,1,cov=True)
     slope, ic = p
-    #print('slope, ic, cov',slope,ic,V[0,0]**0.5,V[1,1]**0.5)
+    print('slope, ic, cov',slope,ic,V[0,0]**0.5,V[1,1]**0.5)
     if(witherror):
         stdarr = np.real(data[:,2])
         yerr_trunc = stdarr[ist:iend]
@@ -96,11 +96,11 @@ def estimate_OTOC_slope(kwlist,datapath,tarr,Carr,tst,tend,allseeds=True,seedcou
     stderr = np.std(slope_arr)/np.sqrt(len(slope_arr))
     print('mean, std error', mean, stderr)
 
-def seed_collector(kwlist,datapath,tarr,Carr,allseeds=True,seedcount=None,logerr=True,exclude=[]):
+def seed_collector(kwlist,datapath,tarr,Carr,allseeds=True,seedcount=None,logerr=True):
     flist = []
     print('kwlist',kwlist)
     for fname in os.listdir(datapath):
-        if all(kw in fname for kw in kwlist) and not any(ex in fname for ex in exclude):
+        if all(kw in fname for kw in kwlist):
             #print('f',fname)
             flist.append(fname)
 

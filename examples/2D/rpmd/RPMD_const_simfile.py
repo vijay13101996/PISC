@@ -13,7 +13,7 @@ from argparse import ArgumentParser
 
 dim=2
 
-def main(times,nbeads,z):
+def main(times,nbeads):
 
     # 2D Double well
     lamda = 2.0
@@ -22,6 +22,8 @@ def main(times,nbeads,z):
 
     alpha = 0.382
     D = 3*Vb
+
+    z = 1.0
      
     pes = quartic_bistable(alpha,D,lamda,g,z)
 
@@ -34,14 +36,14 @@ def main(times,nbeads,z):
     m = 0.5
     N = 1000
     dt_therm = 0.05
-    dt = 0.005
+    dt = 0.002
     time_therm = 50.0
     time_total = 5.0
 
     method = 'RPMD'
     sysname = 'Papageno'		
-    corrkey = 'fd_OTOC'
-    enskey = 'const_q'
+    corrkey = 'OTOC'
+    enskey = 'const_qp'
 
     pes_fort=True
     propa_fort=True
@@ -58,7 +60,7 @@ def main(times,nbeads,z):
 
     start_time=time.time()
     func = partial(Sim_class.run_seed)
-    seeds = range(4000)
+    seeds = range(100)
     seed_split = chunks(seeds,20)
 
     param_dict = {'Temperature':Tkey,'CType':corrkey,'Ensemble':enskey,'m':m,\
@@ -74,7 +76,6 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('-t', '--times', type=float, default=3.0, help='Temperature in units of Tc')
     parser.add_argument('-nb', '--nbeads', type=int, default=1, help='Number of beads')
-    parser.add_argument('-z', '--z', type=float, default=1.0, help='Coupling strength')
     args = parser.parse_args()
 
-    main(args.times,args.nbeads,args.z)
+    main(args.times,args.nbeads)

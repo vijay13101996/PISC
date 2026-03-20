@@ -64,8 +64,7 @@ def thermalize_rp_const_qp(
     propa = Symplectic()
     sim = RP_Simulation()
     sim.bind(ens, motion, rng, rp, pes, propa, therm, 
-             transf_fort=transf_fort, pes_fort=pes_fort, propa_fort=False)
-    # propa_fort is set to False because centmove=False is not implemented in FORTRAN for the A step
+             transf_fort=transf_fort, pes_fort=pes_fort, propa_fort=propa_fort)
     start_time = time.time()
 
     nthermsteps = int(time_therm / motion.dt)
@@ -76,18 +75,12 @@ def thermalize_rp_const_qp(
         # Thermalise ring polymer momentum if only the position is constrained
         sim.step(ndt=nthermsteps, mode="nvt", var="pq", RSP=True, pc=True)
         # Reset the position to the constraint value
-        if hasattr(Q0, '__len__'):
-            sim.rp.q[:, :, 0] = Q0[:,None]/nbeads**0.5
-        else:
-            sim.rp.q[:, :, 0] = Q0/nbeads**0.5
-        
+        sim.rp.q[:, :, 0] = Q0/nbeads**0.5 
         # The above line needs to be updated when the constraint position is not zero (or 1D)
         sim.propa.force_update()
    
     # Thermalise ring polymer position at the constrained value
-    sim.propa.centmove = False
-    sim.propa.rebind()
-    sim.step(ndt=nthermsteps, mode="nvt", var="pq", RSP=False, pc=False)
+    sim.step(ndt=nthermsteps, mode="nvt", var="pq", centmove=False, RSP=False, pc=False)
 
     # Check if the thermalization is successful
     if qp:
@@ -95,10 +88,7 @@ def thermalize_rp_const_qp(
         assert(np.allclose(sim.rp.q[:,:,0], Q0/nbeads**0.5))
         print('All momenta are equal to P0 and all positions are equal to Q0')
     else:
-        if hasattr(Q0, '__len__'):
-            assert(np.allclose(sim.rp.q[:,:,0], Q0[:,None]/nbeads**0.5))
-        else:
-            assert(np.allclose(sim.rp.q[:,:,0], Q0/nbeads**0.5))
+        assert(np.allclose(sim.rp.q[:,:,0], Q0/nbeads**0.5)) 
         print('All positions are equal to Q0') 
 
     print(

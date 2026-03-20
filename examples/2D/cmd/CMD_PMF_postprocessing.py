@@ -18,12 +18,11 @@ Vb = lamda**4/(64*g)
 alpha = 0.382
 D = 3*Vb
 
-z = 2.0
+z = 1.0
  
 potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
-potkey = 'DW_Morse_harm_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
 
-nbeads=16
+nbeads=32
 
 times = 0.9
 Tc = lamda*(0.5/np.pi)
@@ -40,13 +39,8 @@ path = os.path.dirname(os.path.abspath(__file__))
 datapath = '{}/Datafiles'.format(path)
 
 if(1):
-    timearr = np.around(np.arange(0.7,2.9,0.1),1)
-    timearr = [0.7, 0.8, 0.9, 0.95, 1.0, 1.2, 1.4, 1.8, 2.2, 2.6, 3.0]
-    print('timearr', timearr)
-    #for times in [0.7,0.71,0.725,0.75,0.8,0.85,0.9,0.95]:
-    for times in timearr:
-        print('times', times)
-        keywords = ['CMD_Hess_ORIGIN','nbeads_{}'.format(nbeads), 'T_{}Tc'.format(times), potkey]
+    for times in [0.7,0.71,0.725,0.75,0.8,0.85,0.9,0.95]:
+        keywords = ['CMD_Hess','nbeads_{}'.format(nbeads), 'T_{}Tc'.format(times), potkey]
         flist = []
 
         for fname in os.listdir(datapath):
