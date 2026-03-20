@@ -210,7 +210,6 @@ if(1):
 	plot_1D(ax,extclass, label=r'$Classical$'.format(times),color='slateblue', log=True,linewidth=lw)      
 	#ax.plot(t_trunc, slope*t_trunc+ic,linewidth=2,color='k')
 
-
 	ax.set_xlim([0.0,2.5])
 	ax.set_ylim([-1.5,4.5])
 	ax.set_xticks(np.arange(0,3.0,0.5))

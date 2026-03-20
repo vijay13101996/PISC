@@ -71,6 +71,8 @@ class RingPolymer(object):
         freqs=None,
         mode="rp",
         nmats=None,
+        qdev_eps=1e-4,
+        pdev_eps=1e-4,
     ):
         if qcart is None:
             if p is not None:
@@ -123,7 +125,24 @@ class RingPolymer(object):
         else:
             self.dq = None
             self.dp = None 
-        
+
+        """
+        Create variables qe,qme, qecart,qmecart default set to None
+        Also define initial deviation 
+        """
+        self.qdev = qdev_eps
+        self.pdev = pdev_eps
+
+        self.qe = None
+        self.qecart = None
+        self.pe = None
+        self.pecart = None
+
+        self.qme = None
+        self.qmecart = None
+        self.pme = None
+        self.pmecart = None        
+
         self.m = m
         self.mode = mode
         if Mpp is None:
@@ -173,6 +192,8 @@ class RingPolymer(object):
         self.ens = ens
         self.motion = motion
         self.rng = rng
+        self.fort = fort
+
         self.ndim = ens.ndim
         self.dt = self.motion.dt
 
@@ -198,6 +219,20 @@ class RingPolymer(object):
         elif self.dq is not None:
             self.dqcart = self.nmtrans.mats2cart(self.dq)
             self.dpcart = self.nmtrans.mats2cart(self.dp)
+
+        if self.qe is not None:
+            self.qecart = self.nmtrans.mats2cart(self.qe)
+            self.pecart = self.nmtrans.mats2cart(self.pe)
+        elif self.qecart is not None:
+            self.qe = self.nmtrans.cart2mats(self.qecart)
+            self.pe = self.nmtrans.cart2mats(self.pecart)
+
+        if self.qme is not None:
+            self.qmecart = self.nmtrans.mats2cart(self.qme)
+            self.pmecart = self.nmtrans.mats2cart(self.pme)
+        elif self.qmecart is not None:
+            self.qme = self.nmtrans.cart2mats(self.qmecart)
+            self.pme = self.nmtrans.cart2mats(self.pmecart)
 
         self.m3 = np.ones_like(self.q) * self.m
         self.sqm3 = np.sqrt(self.m3)
@@ -260,6 +295,10 @@ class RingPolymer(object):
         if fort is True:
             self._bind_fort()
 
+    def rebind(self):
+        """ Rebind the ring-polymer object to the ensemble, motion and rng objects """
+        self.bind(self.ens, self.motion, self.rng, self.fort)
+
     def _bind_fort(self):
         """ Create Fortran contiguous arrays for all variables """
         self.q_f = self.q.T
@@ -273,6 +312,20 @@ class RingPolymer(object):
         if self.dq is not None:
             self.dq_f = self.dq.T
             self.dp_f = self.dp.T
+
+        if self.qecart is not None:
+            self.qecart_f = self.qecart.T
+            self.pecart_f = self.pecart.T
+        if self.qe is not None:
+            self.qe_f = self.qe.T
+            self.pe_f = self.pe.T
+
+        if self.qmecart is not None:
+            self.qmecart_f = self.qmecart.T
+            self.pmecart_f = self.pmecart.T
+        if self.qme is not None:
+            self.qme_f = self.qme.T
+            self.pme_f = self.pme.T
 
         self.m3_f = self.m3.T
         self.sqm3_f = self.sqm3.T
@@ -415,6 +468,10 @@ class RingPolymer(object):
             if self.dq is not None:
                 self.dqcart[:] = self.nmtrans.mats2cart(self.dq)
                 self.dpcart[:] = self.nmtrans.mats2cart(self.dp)
+            if self.qe is not None:
+                self.qecart[:] = self.nmtrans.mats2cart(self.qe)
+            if self.qme is not None:
+                self.qmecart[:] = self.nmtrans.mats2cart(self.qme)
         
         # If dq,dp are not None, convert them too
 
@@ -432,6 +489,10 @@ class RingPolymer(object):
             if self.dqcart is not None:
                 self.dq[:] = self.nmtrans.cart2mats(self.dqcart,fortran=fortran)
                 self.dp[:] = self.nmtrans.cart2mats(self.dpcart,fortran=fortran)
+            if self.qe is not None:
+                self.qe[:] = self.nmtrans.cart2mats(self.qecart,fortran=fortran)
+            if self.qme is not None:
+                self.qme[:] = self.nmtrans.cart2mats(self.qmecart,fortran=fortran)
             
         # If dqcart,dpcart are not None, convert them too
 
@@ -446,45 +507,64 @@ class RingPolymer(object):
         )
         return np.sum(ret, axis=2)
 
+    def kin_func(self,p,m='phy'):
+        if m=='phy':
+            return 0.5 * (p / self.sqm3) ** 2
+        elif m=='dyn':
+            return 0.5 * (p / self.sqdynm3) ** 2
+    
     @property
     def kin(self):
         """ Get the kinetic energy """
-        return np.sum(0.5 * (self.p / self.sqm3) ** 2)
+        return self.kin_func(self.p,m='phy')
 
     @property
     def dynkin(self):
         """ Get the kinetic energy when masses are scaled """
-        return np.sum(0.5 * (self.p / self.sqdynm3) ** 2)
+        return self.kin_func(self.p,m='dyn')
+
+    def pot_func(self,q,m='phy'):
+        if m=='phy':
+            return 0.5 * self.m3 * self.freqs2 * q**2
+        elif m=='dyn':
+            return 0.5 * self.dynm3 * self.dynfreq2 * q**2
 
     @property
     def pot(self):
         """ Get the potential energy """
-        return np.sum(0.5 * self.dynm3 * self.dynfreq2 * self.q**2)
+        return self.pot_func(self.q,m='dyn')
+
+    def pot_cart_func(self,qcart,m='phy'):
+        if m=='phy':
+            return 0.5 * self.m3 * self.omegan**2 * (qcart - np.roll(qcart, 1, axis=-1)) ** 2
+        elif m=='dyn':
+            return 0.5 * self.dynm3 * self.omegan**2 * (qcart - np.roll(qcart, 1, axis=-1)) ** 2
 
     @property
     def pot_cart(self):
         """ Get the potential energy in Cartesian coordinates """
-        return np.sum(
-            0.5
-            * self.m3
-            * self.omegan**2
-            * (self.qcart - np.roll(self.qcart, 1, axis=-1)) ** 2
-        )
+        return self.pot_cart_func(self.qcart,m='dyn')
 
+    def dpot_func(self,q,m='phy'):
+        if m=='phy':
+            return self.m3 * self.freqs2 * q
+        elif m=='dyn':
+            return self.dynm3 * self.dynfreq2 * q
+    
     @property
     def dpot(self):
         """ Get the potential energy gradient in Matsubara coordinates "" """
-        return self.dynm3 * self.dynfreq2 * self.q
+        return self.dpot_func(self.q,m='dyn')
+
+    def dpot_cart_func(self,qcart,m='phy'):
+        if m=='phy':
+            return self.m3 * self.omegan**2 * (
+                2 * qcart - np.roll(qcart, 1, axis=-1) - np.roll(qcart, -1, axis=-1))
+        elif m=='dyn':
+            return self.dynm3 * self.omegan**2 * (
+                2 * qcart - np.roll(qcart, 1, axis=-1) - np.roll(qcart, -1, axis=-1))
 
     @property
     def dpot_cart(self):
         """ Get the potential energy gradient in Cartesian coordinates """
-        return (
-            self.dynm3
-            * self.omegan**2
-            * (
-                2 * self.qcart
-                - np.roll(self.qcart, 1, axis=-1)
-                - np.roll(self.qcart, -1, axis=-1)
-            )
-            )
+        return self.dpot_cart_func(self.qcart,m='dyn')

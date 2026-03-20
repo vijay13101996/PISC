@@ -43,7 +43,7 @@ class Harmonic(PES):
         def potential_xy(self,x,y):
             # Calculate the potential energy when x and y are specified
             # Most useful for generating contour plots
-            return np.array((self.omega**2/4.0)*(x**2+y**2))
+            return np.array((self.m*self.omega**2/2.0)*(x**2+y**2))
 
         # Functions to compute the potential energy, force and hessian using fortran
         def potential_f(self,qcart_f,pot_f):

@@ -1,6 +1,6 @@
 import numpy as np
 from PISC.potentials.base import PES
-from PISC.potentials.henon_heiles_f import henon_heiles as henon_heiles_f
+#from PISC.potentials.henon_heiles_f import henon_heiles as henon_heiles_f
 
 class henon_heiles(PES):
         def __init__(self,lamda,g):

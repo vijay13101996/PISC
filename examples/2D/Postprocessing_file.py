@@ -19,7 +19,7 @@ if(1): ### Double well
     alpha = 0.382
     D = 3*Vb
 
-    z = 1.0#0.5
+    z = 0.0#0.5
      
     Tc = 0.5*lamda/np.pi
     times = 3.0#0.95
@@ -76,29 +76,34 @@ Cext = '{}/classical/Datafiles/'.format(path)
 rpext = '{}/rpmd/Datafiles/'.format(path)
 
 #Simulation specifications
-corrkey = 'OTOC'#'qq_TCF'#'OTOC'#
+corrkey = 'fd_OTOC'#'qq_TCF'#'OTOC'#
 syskey = 'Papageno'
 
-if(0):#RPMD
-    nbeads=8
+if(1):#RPMD
+    nbeads=1
     beadkey = 'nbeads_{}_'.format(nbeads)
     potkey_ = potkey+'_'
     if(1):
         methodkey = 'RPMD'
-        enskey='const_q'#'thermal'
+        enskey='thermal'#'const_q'#'thermal'
 
         kwlist = [methodkey,enskey,corrkey,syskey,potkey_,Tkey,beadkey,'dt_{}'.format(dt)]
         
-        tarr,OTOCarr,stdarr = seed_collector(kwlist,rpext,tarr,OTOCarr)
+        tarr,OTOCarr,stdarr = seed_collector(kwlist,rpext,tarr,OTOCarr,seedcount=1000,allseeds=False)
 
         #print('stdarr', stdarr[2499])
 
-        if(corrkey!='OTOC'):
+        if('OTOC' not in corrkey):
             OTOCarr/=nbeads
             plt.plot(tarr,OTOCarr)
         else:
             plt.plot(tarr,np.log(abs(OTOCarr)))
         #plt.errorbar(tarr,np.log(abs(OTOCarr)),yerr=stdarr/2,ecolor='m',errorevery=100,capsize=2.0)
+        store_1D_plotdata(tarr,OTOCarr,'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,nbeads,dt),rpext,ebar=stdarr)
+
+        ext = rpext + 'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}'.format(enskey,'fd_OTOC',potkey,Tkey,nbeads,dt)
+        slope, ic, t_trunc, OTOC_trunc = find_OTOC_slope(ext,2.2,3.2)
+        plt.plot(t_trunc, slope*t_trunc+ic,linewidth=3,color='k')
         plt.show()
     
         if(0):
@@ -129,8 +134,8 @@ if(0):#RPMD
             plt.plot(freq, FFT)
             plt.xlim([-5,5])
             plt.show()
-        store_1D_plotdata(tarr,OTOCarr,'RPMD_{}_{}_{}_{}_nbeads_{}_dt_{}'.format(enskey,corrkey,potkey,Tkey,nbeads,dt),rpext,ebar=stdarr)
-
+        exit()
+        
     if(1): # Energy_histogram
         kwqlist = ['Thermalized_rp_qcart','nbeads_{}'.format(nbeads), 'beta_{}'.format(beta), potkey]
         kwplist = ['Thermalized_rp_pcart','nbeads_{}'.format(nbeads), 'beta_{}'.format(beta), potkey]

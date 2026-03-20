@@ -17,7 +17,7 @@ from PISC.engine.gen_stable_manifold import generate_stable_manifold_rp
 from PISC.engine.gen_mc_ensemble import generate_rp
 from PISC.engine.gen_const_qp_ensemble import thermalize_rp_const_qp
 from PISC.utils.time_order import reorder_time
-
+from matplotlib import pyplot as plt
 debug = False
 
 
@@ -337,7 +337,7 @@ class SimUniverse(object):
                 )
             return qcart, pcart
 
-    def run_OTOC(self, sim, single=False):
+    def run_OTOC(self, sim, single=False, fd=False, dim1 = 0, nmode1 = 0, dim2 = 0, nmode2 = 0):
         """ 
         Run simulation to compute out-of-time-order correlation function
         C(t) = < [A(t),B(0)]^2 > (Quantum)
@@ -352,19 +352,47 @@ class SimUniverse(object):
         """
         tarr = []
         Marr = [] # List to record the monodromy variables
+
+        if 'fd' in self.corrkey:
+            fd = True
+
+        if fd:
+            sim.rp.qe = sim.rp.q.copy() 
+            sim.rp.pe = sim.rp.p.copy()
+            sim.rp.qme = sim.rp.q.copy()
+            sim.rp.pme = sim.rp.p.copy()
+
+            if (self.corrkey == 'fd_OTOC' or 'qq' in self.corrkey or 'pq' in self.corrkey):
+                sim.rp.qe[:, dim2, nmode2] += sim.rp.qdev
+                sim.rp.qme[:, dim2, nmode2] -= sim.rp.qdev
+            elif ('pp' in self.corrkey or 'qp' in self.corrkey):
+                sim.rp.pe[:, dim2, nmode2] += sim.rp.pdev
+                sim.rp.pme[:, dim2, nmode2] -= sim.rp.pdev
+
+            sim.rp.rebind()
+            sim.pes._bind_fd_vars()
+
         if self.method == "CMD":
             stride = self.gamma
             dt = self.dt / self.gamma
             nsteps = int(self.time_run / dt) 
             sim.therm = PILE_L(tau0=self.tau0, pile_lambda=1.0) 
             sim.motion = Motion(dt=dt, symporder=sim.motion.order) # reinitialise motion object with new dt
-            sim.bind(sim.ens, sim.motion, sim.rng, sim.rp, sim.pes, sim.propa, sim.therm)
+            sim.rebind()
+            var = "fd_monodromy" if fd else "monodromy"
+            #!!!! It is unclear if finite difference propagation can be used when thermostat is on
             for i in range(nsteps):
-                sim.step(mode="nvt", var="monodromy", pc=False)
+                sim.step(mode="nvt", var=var, pc=False)
                 if i % stride == 0:
-                    if (self.corrkey=='OTOC_qq' or self.corrkey=='OTOC'):
-                        M = np.mean(abs(sim.rp.Mqq[:, 0, 0, 0, 0] ** 2))
+                    if ('qq' in self.corrkey or self.corrkey=='OTOC' or self.corrkey=='fd_OTOC'):
+                        if fd:
+                            M = (sim.rp.qe[:, dim1, nmode1] - sim.rp.qme[:, dim1, nmode1])/(2*sim.rp.qdev)
+                            M = np.mean(abs(M**2))
+                        else:
+                            M = np.mean(abs(sim.rp.Mqq[:, 0, 0, 0, 0] ** 2))
                     elif (self.corrkey=='OTOC_ApAp'):
+                        if fd:
+                            raise NotImplementedError
                         Mpp = sim.rp.Mpp[:, 0, 0, 0, 0]
                         Mpq = sim.rp.Mpq[:, 0, 0, 0, 0]
                         Mqp = sim.rp.Mqp[:, 0, 0, 0, 0]
@@ -377,18 +405,27 @@ class SimUniverse(object):
         else:
             dt = self.dt
             nsteps = int(self.time_run / dt)
+            var = "fd_monodromy" if fd else "monodromy"
             for i in range(nsteps):
-                sim.step(mode="nve", var="monodromy")
+                sim.step(mode="nve", var=var)
                 if single:
-                    Mqq = np.mean(
-                        sim.rp.Mqp[:, 0, 0, 0, 0]
-                    )  # Change notations when required!
+                    if fd:
+                        M = (sim.rp.qe[:, dim1, nmode1] - sim.rp.qme[:, dim2, nmode2])/(2*sim.rp.qdev)
+                        M = np.mean(Mqq)
+                    else:
+                        M = np.mean(sim.rp.Mqp[:, 0, 0, 0, 0])  # Change notations when required!
                     tarr.append(sim.t)
                     Marr.append(Mqq)
-                else: 
-                    if (self.corrkey=='OTOC_qq' or self.corrkey=='OTOC'):
-                        M = np.mean(abs(sim.rp.Mqq[:, 0, 0, 0, 0] ** 2))
+                else:
+                    if ('qq' in self.corrkey or self.corrkey=='OTOC' or self.corrkey=='fd_OTOC'): 
+                        if fd:
+                            M = (sim.rp.qe[:, dim1, nmode1] - sim.rp.qme[:, dim2, nmode2])/(2*sim.rp.qdev)
+                            M = np.mean(abs(M**2))
+                        else:
+                            M = np.mean(abs(sim.rp.Mqq[:, 0, 0, 0, 0] ** 2))
                     elif (self.corrkey=='OTOC_ApAp'):
+                        if fd:
+                            raise NotImplementedError
                         Mpp = sim.rp.Mpp[:, 0, 0, 0, 0]
                         Mpq = sim.rp.Mpq[:, 0, 0, 0, 0]
                         Mqp = sim.rp.Mqp[:, 0, 0, 0, 0]
@@ -405,7 +442,7 @@ class SimUniverse(object):
         return tarr, Marr
 
     def run_R2(self, sim, A="p", B="p", C="q", seed_number=None):
-        r"""Run simulation to compute second order (sym and asym) response functions
+        """Run simulation to compute second order (sym and asym) response functions
         symR2  <C(t2)B(t1)A(t0)>
         asymR2 <C(t2)Mqq(t1,t0)>
         with Mqq(t1,t0)= \partial q(t1)/\partial q(t0)
@@ -564,7 +601,6 @@ class SimUniverse(object):
 
         # Compute correlation function
         tar, R2eq = gen_R2_tcf(dt, tarr, Aarr, Marr, self.beta)
-
         return tar, R2eq
 
     def run_R3_eq(self, sim, seed_number=None):
@@ -670,6 +706,8 @@ class SimUniverse(object):
         tarr = []
         qarr = []
         parr = []
+        q0 = sim.rp.q[0,0,0]
+        p0 = sim.rp.p[0,0,0]
         if self.method == "CMD":
             stride = self.gamma
             dt = self.dt / self.gamma # Smaller time steps required because higher normal modes move faster
@@ -713,7 +751,34 @@ class SimUniverse(object):
             tarr, tcf = gen_tcf(parr, qarr, tarr, corraxis=0)
         return tarr, tcf
 
-    def run_seed(self, rngSeed, op=None):
+    def run_ImTCF(self, sim):
+        """Run simulation to compute the imaginary time correlation function"""
+        tarr = np.arange(0,sim.rp.nbeads)*sim.ens.beta/sim.rp.nbeads
+        q = sim.rp.qcart
+        p = sim.rp.pcart
+        Im_TCF_arr = np.zeros_like(tarr)
+
+        if self.corrkey == "Im_qq_TCF":
+            B = q[:,0,:]
+            A = q[:,0,:]
+        if self.corrkey == "Im_pp_TCF":
+            B = np.sum(p[:,0,:],axis=1)
+            A = p[:,0,:]
+        if self.corrkey == "Im_qp_TCF":
+            B = np.sum(q[:,0,:],axis=1)
+            A = p[:,0,:]
+        if self.corrkey == "Im_pq_TCF":
+            B = np.sum(p[:,0,:],axis=1)
+            A = q[:,0,:]
+
+        for i in range(len(tarr)): # A more efficient way to do this needs to be implemented
+            Im_TCF_arr[i] = np.mean(A[:,i]*B[:,0])
+            
+        print('total', np.sum(Im_TCF_arr)/sim.rp.nbeads)
+        
+        return tarr, Im_TCF_arr
+
+    def run_seed(self, rngSeed, op=None, nmoments=0):
         """Runs one seed. Note that this is n_traj (~1000) parallel trajectories"""
         print(
             "Start simulation.      Seed: {}  T {}, nbeads {}".format(
@@ -747,8 +812,97 @@ class SimUniverse(object):
 
         if "OTOC" in self.corrkey:
             tarr, Carr = self.run_OTOC(sim)
+        elif self.corrkey == "ImTCF_moments":
+            """Run simulation to compute moments of the imaginary time correlation function at tau=beta/2""" 
+
+            # Analytical calculation of the moments of the Matsubara distribution
+            omega = 1.0
+            mu0 = 1/(2*omega*np.sinh(sim.rp.ens.beta*omega/2))
+            mu2 = omega**2*mu0
+            #print('mu0 harm, mu2 harm',mu0,mu2)
+
+
+            #wk = sim.rp.get_rp_freqs()[2::2]
+            #wmats = np.arange(1,len(wk)+1)*2*np.pi/sim.rp.ens.beta
+            qmats = sim.rp.q/sim.rp.nbeads**0.5
+            #xp = qmats[:,0,2::2] # Matsubara modes with positive index
+            #xm = qmats[:,0,1::2] # Matsubara modes with negative index
+            #xc = qmats[:,0,0] # Centroid
+            #m1 = (-1)**(np.arange(len(wk))) # Array with alternating signs
+
+
+            #print('w1',wk[0],2*np.pi/sim.rp.ens.beta)
+
+            qmats2 = np.mean(qmats**2,axis=0)
+            #xp2 = xp**2
+            #xp_avg = np.mean(xp**2,axis=0)
+            #mats_mode = np.arange(1,len(wk)+1)
+            #mats_avg = 1/(sim.rp.m*sim.rp.ens.beta*(wk**2+omega**2))
+            #print('xp_avg',xp_avg)
+            #print('mats avg',mats_avg)# 1/(sim.rp.m*sim.rp.ens.beta*(wk**2+omega**2)))#,1/(sim.rp.m*sim.rp.ens.beta*(wmats**2+1)))
+            
+            self.store_vector(qmats2, rngSeed, suffix='qmats2')
+            return 
+            
+            #plt.scatter(mats_mode,xp_avg,color='r')
+            #plt.scatter(mats_mode,1/(sim.rp.m*sim.rp.ens.beta*(wk**2)),color='b')
+            #plt.scatter(mats_mode,xp_avg[0]/mats_mode**2,color='g')
+            #plt.scatter(mats_mode,wk**2,color='b')
+            #plt.plot(mats_mode,wk**4)
+            #plt.show()
+
+
+            #exit()
+            #print('xp cross avg', np.mean(xp[:,1]*xp[:,3]))
+            #print('xp avg', np.mean(xm**2,axis=0),1/(sim.rp.m*sim.rp.ens.beta*(wk**2+1)),1/(sim.rp.m*sim.rp.ens.beta*(wmats**2+1)))
+            #exit()
+        
+            xc2 = np.mean(xc**2)
+            xm_odd = np.mean( np.sum(xm[:,0::2]**2,axis=1) )
+            xm_even = np.mean( np.sum(xm[:,1::2]**2,axis=1) )
+           
+            n = 4
+            #print('wmats,wk', wmats[:5], wk[:5])
+            #print('wmats', wmats/(2*np.pi/sim.rp.ens.beta))
+            xmwn_odd  = np.mean(np.sum(xm[:,0::2]**2*wk[0::2]**n,axis=1) )
+            xmwn_even = np.mean(np.sum(xm[:,1::2]**2*wk[1::2]**n,axis=1) )
+            
+            xmwn_odd = np.mean(np.sum(mats_avg[0::2],axis=0))
+            xmwn_even = np.mean(np.sum(mats_avg[1::2],axis=0))
+
+            #mu2 = 2*(np.mean(xm[:,0]**2)*wmats[0]**2 - np.mean(xm[:,1]**2)*wmats[1]**2)
+ 
+            print('mu0 num', xc2 - 2*(xm_odd - xm_even))
+            #print('mu2 num', -2*(xmwn_odd - xmwn_even) + 1/(sim.rp.m*sim.rp.ens.beta) - 2*(np.sum(wk[1::2]**2 - wk[0::2]**2))/(sim.rp.m*sim.rp.ens.beta))
+            #- 1/(sim.rp.m*sim.rp.ens.beta) + 2*(np.sum(wmats[1::2]**2 - wmats[0::2]**2))/(sim.rp.m*sim.rp.ens.beta))
+                        
+            mu_arr = np.zeros(nmoments)
+            
+            # Bead position at tau=0
+            x0 = xc + np.sqrt(2)*np.sum(xm,axis=1)
+            wkn = wk**n
+            xb2 = np.sqrt(2)*np.sum(xm*wkn*m1,axis=1)
+            #print('xb2*x0', (x0*xb2).mean())
+            exit()
+            for n in range(nmoments):
+                wkn = wk**n
+                if ((n+1)%2 == 0): # Odd moments
+                    pref = np.sqrt(2)*(-1)**((n+1)//2 + 1)
+                    xb2_n = pref*(xp*wkn*m1).sum(axis=1)
+                else: # Even moments
+                    pref = np.sqrt(2)*(-1)**(n//2 + 1)
+                    xb2_n = pref*(xm*wkn*m1).sum(axis=1)
+                
+                mu = (x0*xb2_n).mean()
+                mu_arr[n] = mu
+                #print('n,mu',n,mu)
+
+            return mu_arr
         elif "TCF" in self.corrkey:
-            tarr, Carr = self.run_TCF(sim)
+            if 'Im' in self.corrkey:
+                tarr, Carr = self.run_ImTCF(sim)
+            else:
+                tarr, Carr = self.run_TCF(sim)
         elif self.corrkey == "stat_avg":
             if op is 'Hess':
                 pes_ddpot_cart = sim.pes.compute_hessian()
@@ -761,7 +915,12 @@ class SimUniverse(object):
                 Hess_norm = Hess_norm[:,:,0,:,0]
                 vals_cent = np.sort( np.linalg.eigvalsh(Hess_norm), axis=1)[:,0]
                 self.store_scalar(np.mean(vals_cent), rngSeed, suffix='centroid_Hessian')
-                print('Hessian computed',np.sqrt(-vals.mean()/sim.rp.m),np.sqrt(-vals_cent.mean()/sim.rp.m))
+               
+                Hess_mats = pes_ddpot_cart.reshape(-1,self.dim*sim.rp.nbeads, self.dim*sim.rp.nbeads)
+                vals_mats = np.sort( np.linalg.eigvalsh(Hess_mats), axis=1)[:,0]
+                self.store_scalar(np.mean(vals_mats), rngSeed, suffix='mats_Hessian')
+                print('Hessian computed',np.sqrt(-vals.mean()/sim.rp.m),
+                      np.sqrt(-vals_cent.mean()/sim.rp.m),np.sqrt(-vals_mats.mean()/sim.rp.m))
                 return
             else:
                 # The assumption here is that 'op' is scalar-valued function (i.e. returns a scalar for every bead)
@@ -772,7 +931,6 @@ class SimUniverse(object):
             tarr, Carr = self.run_OTOC(sim, single=True)
         elif self.corrkey == "R2":
             assert self.extparam is not None
-
             tarr, Csym, Casym = self.run_R2(
                 sim,
                 self.extparam[0],
@@ -790,7 +948,6 @@ class SimUniverse(object):
             )
             self.store_time_series_2D(tarr, R2, rngSeed, "R2", mode=2)
             return
-
         elif self.corrkey == "R3eq":
             tarr, R3_eq = self.run_R3_eq(
                 sim,
@@ -827,7 +984,7 @@ class SimUniverse(object):
                 "{} method is not implemented, sorry".format(self.method)
             )
 
-        if self.corrkey != "stat_avg":
+        if self.corrkey != "stat_avg" and self.corrkey != "ImTCF_moments": # Better code design needed
             seedext = "seed_{}".format(rngSeed)
         else:
             seedext = ""
@@ -880,8 +1037,17 @@ class SimUniverse(object):
     def store_scalar(self, scalar, rngSeed, suffix=None):
         # Scalar values are stored in the same filename
         fname = self.assign_fname(rngSeed, suffix)
+        print('fname',fname)
         f = open("{}/{}/{}.txt".format(self.pathname, self.folder_name, fname), "a")
         f.write(str(rngSeed) + "  " + str(scalar) + "\n")
+        f.close()
+
+    def store_vector(self, vec, rngSeed, suffix=None):
+        # Vector values are stored in the same filename
+        fname = self.assign_fname(rngSeed, suffix)
+        f = open("{}/{}/{}.txt".format(self.pathname, self.folder_name, fname), "a")
+        # Store data as float where first column is the seed number, the rest are the values of the vector
+        np.savetxt(f, np.column_stack((rngSeed, vec)), fmt='%i' + ' %1.8e' * vec.shape[1])
         f.close()
 
 
