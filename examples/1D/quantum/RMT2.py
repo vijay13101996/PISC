@@ -68,7 +68,7 @@ def f_O2(vals,n,m):
     a = 0.1
     #print('rho', E, rho(E))
     b = 10
-    return np.exp(-a*abs(w))#/(1+b*abs(w)))
+    return 1.0 #np.exp(-a*abs(w))#/(1+b*abs(w)))
 
 #f_O2 = np.vectorize(f_O2)
 
@@ -79,7 +79,7 @@ C_arr = np.zeros_like(t_arr) + 0j
 n_arr = np.arange(ncoeff)
 b_arr = np.zeros(ncoeff)
 
-beta = 1
+beta = 0.25
 diffs = []
 
 for f_O in [f_O2]:
@@ -95,18 +95,25 @@ for f_O in [f_O2]:
         a = 0.1
         for n in range(neigs):
             for m in range(n,neigs):
-                #O[n, m] = np.random.normal(0,1)
+                O[n, m] = np.random.normal(0,1)
                 #O[n,m] = np.exp(-a*abs(vals[n]-vals[m])**2)
-                O[n,m] = f_O(vals,n,m)
+                #O[n,m] = f_O(vals,n,m)*np.random.normal(0,1)
                 O[m,n] = O[n,m]
 
         
         C_arr += TCF_O(vals, beta, neigs, O, t_arr)
 
         b_arr= Krylov_O(vals, beta, neigs, O, ncoeff)
+        OH =  O + 5*np.diag(vals)
+        b_arr2 = Krylov_O(vals, beta, neigs, OH, ncoeff)
 
     #plt.scatter(n_arr[1:], b_arr[1:].real/nmat, label=f'O={f_O.__name__}')
 
+
+if(0):
+    plt.plot(np.arange(len(vals)), vals, label='Eigenvalues')
+    plt.show()
+    exit()
 
 if(0):
     plt.xlabel('Coefficient index')
@@ -119,6 +126,7 @@ if(0):
 if(1):
     b_arr /= nmat
     plt.scatter(n_arr[1:], b_arr[1:].real, label='Krylov coefficients')
+    plt.scatter(n_arr[1:], b_arr2[1:].real, label='Krylov coefficients with O perturbation')
     #plt.plot(n_arr[:10], np.pi*n_arr[:10]/beta)
     plt.xlabel('Coefficient index')
     plt.ylabel('Coefficient value')

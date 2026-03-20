@@ -4,15 +4,15 @@ import quspin
 from quspin.operators import hamiltonian # Hamiltonians and operators 
 from quspin.basis import spin_basis_1d # Hilbert space spin basis  
 from PISC.engine import Krylov_complexity
-from Krylov_XXZ_tools import construct_B, construct_Jz, construct_JE, construct_JE_comm
+from Krylov_XXZ_tools import construct_A, construct_B, construct_Jz, construct_JE, construct_JE_comm
 import pickle
 import matplotlib
 
 plt.rcParams.update({'font.size': 10, 'font.family': 'serif','font.style':'italic','font.serif':'Garamond'})
 matplotlib.rcParams['axes.unicode_minus'] = False
 
-xl_fs = 16 
-yl_fs = 16
+xl_fs = 10 
+yl_fs = 10
 tp_fs = 12
 
 le_fs = 13#9.5
@@ -34,91 +34,18 @@ def K_complexity(O,vals,beta,ncoeff=50):
     
     return barr
 
-
-L = 20  # Length of the chain
-J = 1.0  # Coupling constant
-Delta = 0.55  # Anisotropy parameter
-
-g = 0.0  # Magnetic field
-
-#Next-nearest neighbor (NNN) coupling parameters
-lamda = 1.0
-J2 = lamda*J  # NNN coupling constant
-Delta2 = 0.5  # NNN anisotropy parameter
-
-#Power-law parameter
-alpha = 5.0
-
-k = 1 # x 2pi/L momentum sector
-
-basis = spin_basis_1d(L,pauli=False,Nup=L//2,kblock=k,zblock=1)#,pblock=1) # and positive parity sector
-print('L = {}, J = {}, Delta = {}, g = {}, J2 = {}, Delta2 = {}, k = {}'.format(L,J,Delta,g,J2,Delta2,k))
-
-dynamic = []
-beta = 0.25
-ncoeff = 100
-coeff_arr = np.arange(ncoeff)
-
-if(0):# NN XXZ model
-    try:
-        raise FileNotFoundError
-        vals_NN = pickle.load(open('eigenvalues_NN_L_{}.pkl'.format(L), 'rb'))
-        vecs_NN = pickle.load(open('eigenvectors_NN_L_{}.pkl'.format(L), 'rb'))
-        H_mat_NN = pickle.load(open('H_mat_NN_L_{}.pkl'.format(L), 'rb'))
-        print('NN eigenvalues and eigenvectors loaded from disk')
-        print('shape', vals_NN.shape, vecs_NN.shape, H_mat_NN.shape)
-    except FileNotFoundError:
-        H_zz_NN = [[J*Delta,i,(i+1)%L] for i in range(L)] # periodic boundary conditions
-        H_xy_NN = [[0.5*J,i,(i+1)%L] for i in range(L)] # periodic boundary conditions
-        static_NN = [["zz",H_zz_NN],["+-",H_xy_NN],["-+",H_xy_NN]]
-        H_XXZ_NN = hamiltonian(static_NN,dynamic,basis=basis,dtype=np.complex128)
-        H_mat_NN = H_XXZ_NN.toarray()
-        print('NN Hamiltonian constructed', H_mat_NN.shape)
-        E_NN = H_XXZ_NN.eigvalsh()
-        vals_NN, vecs_NN = H_XXZ_NN.eigh()
-        #vals_NN = np.sort(vals_NN)
-        pickle.dump(vals_NN, open('eigenvalues_NN_L_{}.pkl'.format(L), 'wb'))
-        pickle.dump(vecs_NN, open('eigenvectors_NN_L_{}.pkl'.format(L), 'wb'))
-        pickle.dump(H_mat_NN, open('H_mat_NN_L_{}.pkl'.format(L), 'wb'))
-
-    B_eigenbasis = construct_B(vecs_NN, vals_NN, H_mat_NN, basis, L)
-    b_arr = np.zeros(ncoeff)
-    b_arr = K_complexity(B_eigenbasis,vals_NN,beta=beta,ncoeff=ncoeff)
-    pickle.dump((coeff_arr, b_arr), open('krylov_coeffs_B_NN_L_{}.pkl'.format(L), 'wb'))
-    #plt.scatter(coeff_arr, b_arr, label='NN XXZ')
-
-if(0):# NNN XXZ model
-    try:
-        raise FileNotFoundError
-        vals_NNN = pickle.load(open('eigenvalues_NNN.pkl', 'rb'))
-        vecs_NNN = pickle.load(open('eigenvectors_NNN.pkl', 'rb'))
-        H_mat_NNN = pickle.load(open('H_mat_NNN.pkl', 'rb'))
-        print('NNN eigenvalues and eigenvectors loaded from disk')
-    except FileNotFoundError:
-        H_zz_NNN = [[J2*Delta2,i,(i+2)%L] for i in range(L)] # periodic boundary conditions
-        H_xy_NNN = [[0.5*J2,i,(i+2)%L] for i in range(L)] # periodic boundary conditions
-        static_NNN = [["zz",H_zz_NN],["zz",H_zz_NNN],["+-",H_xy_NN],["-+",H_xy_NN],["+-",H_xy_NNN],["-+",H_xy_NNN]]
-        H_XXZ_NNN = hamiltonian(static_NNN,dynamic,basis=basis,dtype=np.complex128)
-        H_mat_NNN = H_XXZ_NNN.toarray()
-        print('NNN Hamiltonian constructed', H_mat_NNN.shape)
-        E_NNN = H_XXZ_NNN.eigvalsh()
-        vals_NNN, vecs_NNN = H_XXZ_NNN.eigh()
-        #vals_NNN = np.sort(vals_NNN)
-        pickle.dump(vals_NNN, open('eigenvalues_NNN.pkl', 'wb'))
-        pickle.dump(vecs_NNN, open('eigenvectors_NNN.pkl', 'wb'))
-        pickle.dump(H_mat_NNN, open('H_mat_NNN.pkl', 'wb'))
-
-    B_eigenbasis = construct_B(vecs_NNN, vals_NNN, H_mat_NNN, basis, L)
-
-    b_arr = np.zeros(ncoeff)
-    b_arr = K_complexity(B_eigenbasis,vals_NNN,beta=beta,ncoeff=ncoeff)
-    pickle.dump((coeff_arr, b_arr), open('krylov_coeffs_B_NNN.pkl', 'wb'))
-
-if(1):# Power-law XXZ model
+def define_lattice(L, J, Delta, alpha, basis, suffix):
     ind_list = [(i,j) for i in range(L) for j in range(i+1,L)]
     #print('Pairs of interactions in power-law model:', (ind_list))
-
-    for alpha in [0.5, 1.0, 5.0]:
+    
+    try:
+        #raise FileNotFoundError
+        vals_PL = pickle.load(open('eigenvalues_{}.pkl'.format(suffix), 'rb'))
+        vecs_PL = pickle.load(open('eigenvectors_{}.pkl'.format(suffix), 'rb'))
+        H_mat_PL = pickle.load(open('H_mat_{}.pkl'.format(suffix), 'rb'))
+        print('Eigenvalues and eigenvectors loaded from disk')
+        print('shape', vals_PL.shape, vecs_PL.shape, H_mat_PL.shape)
+    except FileNotFoundError:
         H_zz_PL =[]
         H_xy_PL = []
         for (i,j) in ind_list:
@@ -132,80 +59,140 @@ if(1):# Power-law XXZ model
         print('PL Hamiltonian constructed', H_mat_PL.shape)
         E_PL = H_XXZ_PL.eigvalsh()
         vals_PL, vecs_PL = H_XXZ_PL.eigh()  
-        #vals_PL = np.sort(vals_PL)
-   
-        if(0): # Verify power-law interactions by plotting log-log of strength vs distance
-            distances = [bond[1] for bond in H_zz_PL] # This assumes dist was stored or re-calculated
-            strengths = [bond[0] for bond in H_zz_PL]
 
-            dist_list = []
-            strength_list = []
-            for bond in H_zz_PL:
-                strength = bond[0]
-                dist = min(abs(bond[1]-bond[2]), L-abs(bond[1]-bond[2]))  # periodic boundary conditions
-                dist_list.append(dist)
-                strength_list.append(strength)
-            
-            plt.plot(np.log(dist_list), np.log(strength_list), 'o-', label='Power-law interactions (alpha=%.1f)'%alpha)
-            plt.title(f"Alpha = {alpha} Verification")
-            plt.show()
-            exit()
+        pickle.dump(vals_PL, open('eigenvalues_{}.pkl'.format(suffix), 'wb'))
+        pickle.dump(vecs_PL, open('eigenvectors_{}.pkl'.format(suffix), 'wb'))
+        pickle.dump(H_mat_PL, open('H_mat_{}.pkl'.format(suffix), 'wb'))
+    return vals_PL, vecs_PL, H_mat_PL
 
-        B_eigenbasis = construct_B(vecs_PL, vals_PL, H_mat_PL, basis, L)
-        b_arr = np.zeros(ncoeff)
-        b_arr = K_complexity(B_eigenbasis,vals_PL,beta=beta,ncoeff=ncoeff)
-        pickle.dump((coeff_arr, b_arr), open('krylov_coeffs_power_law_alpha_{}_beta_{}.pkl'.format(alpha,beta), 'wb'))
+def generate_O(Okey, L, J, Delta, alpha, basis, suffix):
+    # Generate the operator O in the computational basis
+    try:
+        #raise FileNotFoundError
+        vals = pickle.load(open('eigenvalues_{}.pkl'.format(suffix), 'rb'))
+        vecs = pickle.load(open('eigenvectors_{}.pkl'.format(suffix), 'rb'))
+        H_mat = pickle.load(open('H_mat_{}.pkl'.format(suffix), 'rb'))
+        print('Eigenvalues and eigenvectors loaded from disk')
+        print('shape', vals.shape, vecs.shape, H_mat.shape) 
+    except FileNotFoundError:
+        vals, vecs, H_mat = define_lattice(L, J, Delta, alpha, basis, suffix)
+       
+    try:
+        #raise FileNotFoundError
+        O = pickle.load(open('{}_{}.pkl'.format(Okey, suffix), 'rb'))
+        print('Operator {} loaded from disk'.format(Okey))
+    except FileNotFoundError:
+        if Okey == 'B':
+            O = construct_B(vecs, vals, H_mat, basis, L)
+        elif Okey == 'A':   
+            O = construct_A(vecs, vals, H_mat, basis, L)
+        pickle.dump(O, open('{}_{}.pkl'.format(Okey, suffix), 'wb'))
+    return O
+
+L = 20  # Length of the chain
+J = 1.0  # Coupling constant
+Delta = 0.55  # Anisotropy parameter
+
+g = 0.0  # Magnetic field
+
+#Power-law parameter
+alpha = 0.5
+
+k = 1 # x 2pi/L momentum sector
+
+basis = spin_basis_1d(L,pauli=False,Nup=L//2,kblock=k,zblock=1)#,pblock=1) # and positive parity sector
+print('L = {}, J = {}, Delta = {}, alpha = {}, k = {}'.format(L,J,Delta,alpha,k))
+
+dynamic = []
+beta = 1.0
+ncoeff = 100
+coeff_arr = np.arange(ncoeff)
+
+store = False
+suffix = 'PL_alpha_{}_L_{}_zblock1'.format(alpha,L)
+vals, vecs, H_mat = define_lattice(L, J, Delta, alpha, basis, suffix)
+
+Okey = 'B'
+B_PL = generate_O(Okey, L, J, Delta, alpha, basis, suffix)
+
+#np.fill_diagonal(B_PL, 0)  # Set diagonal elements to zero for better visualization
 
 if(1):
-    alpha_list = [0.5, 1.0, 5.0]
-    beta_list = [0.25]
+    fig, ax = plt.subplots(1,2, figsize=(6,3),sharey=True)
+    plt.subplots_adjust(wspace=0.0,bottom=0.15)
+    #Compute bn at different alpha
+    for alpha in [0.5,5.0]:
+        suffix = 'PL_alpha_{}_L_{}_zblock1'.format(alpha,L)
+        Okey = 'A'
+        A_PL = generate_O(Okey, L, J, Delta, alpha, basis, suffix)
+        try:
+            #raise FileNotFoundError
+            barr = pickle.load(open('bn_A_PL_alpha_{}.pkl'.format(alpha), 'rb'))
+            print('Lanczos coefficients for A_PL loaded from disk for alpha={}'.format(alpha))
+        except FileNotFoundError:
+            barr = K_complexity(A_PL,vals,beta,ncoeff)
+            pickle.dump(barr, open('bn_A_PL_alpha_{}.pkl'.format(alpha), 'wb'))
+        ax[0].plot(coeff_arr, barr, label=r'$\alpha={}$'.format(alpha), marker='o',markersize=2)
+        ax[0].annotate(r'$\hat{A}$', xy=(0.5, 0.9), xycoords='axes fraction', fontsize=tp_fs, ha='center')
+        ax[0].set_ylim([0, 8])
 
-    fig,axs = plt.subplots((1,2), len(beta_list), figsize=(6,3))
-    plt.subplots_adjust(wspace=0.0, hspace=0.0, bottom=0.25)
+        Okey = 'B'
+        B_PL = generate_O(Okey, L, J, Delta, alpha, basis, suffix)
+        try:
+            #raise FileNotFoundError
+            barr = pickle.load(open('bn_B_PL_alpha_{}.pkl'.format(alpha), 'rb'))
+            print('Lanczos coefficients for B_PL loaded from disk for alpha={}'.format(alpha))
+        except FileNotFoundError:
+            barr = K_complexity(B_PL,vals,beta,ncoeff)
+            pickle.dump(barr, open('bn_B_PL_alpha_{}.pkl'.format(alpha), 'wb'))
+        ax[1].plot(coeff_arr, barr, marker='o',markersize=2)
+        ax[1].annotate(r'$\hat{B}$', xy=(0.5, 0.9), xycoords='axes fraction', fontsize=tp_fs, ha='center')
+        ax[1].set_ylim([0, 8])
 
-    for i, beta in enumerate(beta_list):
-        for j, alpha in enumerate(alpha_list):
-            coeff_arr, b_arr = pickle.load(open('krylov_coeffs_power_law_alpha_{}_beta_{}.pkl'.format(alpha,beta), 'rb'))
-            if(i==0):
-                axs[i].scatter(coeff_arr, b_arr, label=r'$\alpha=%.1f$'%alpha, s=5)
-            else:
-                axs[i].scatter(coeff_arr, b_arr, s=5)
-                axs[i].set_yticks([])  # Hide y-axis ticks for the second plot
-
-            axs[i].set_title(r'$\beta={}$'.format(beta), fontsize=tp_fs)
-            axs[i].set_xlabel(r'$n$', fontsize=xl_fs)
-            if i==0:
-                axs[i].set_ylabel(r'$b_n$', fontsize=yl_fs)
-   
-        axs[i].annotate(r'$\hat{B}$', xy=(0.5, 0.9), xytext=(0.5, 0.9), textcoords='axes fraction', fontsize=ti_fs, ha='center')
-        axs[i].set_ylim([-0.5,9.5])
-        axs[i].set_xlim([-5, 70])
-        
-    fig.legend(loc=(0.15,-0.012), ncol=3, fontsize=le_fs)
-
-    #plt.savefig('krylov_coefficients_comparison_3.pdf', bbox_inches='tight')
-    #coeff_arr, b_arr = pickle.load(open('krylov_coeffs_NN.pkl', 'rb'))
-    #plt.scatter(coeff_arr, b_arr, label='NN XXZ')
-    #coeff_arr, b_arr = pickle.load(open('krylov_coeffs_NNN.pkl', 'rb'))
-    #plt.scatter(coeff_arr, b_arr, label='NNN XXZ')
-
-    #plt.show()
-
+    ax[0].set_xlabel(r'$n$', fontsize=xl_fs)
+    ax[0].set_ylabel(r'$b_n$', fontsize=yl_fs)
+    ax[1].set_xlabel(r'$n$', fontsize=xl_fs)
+    fig.legend(loc=(0.35,0.02), fontsize=10, ncol=3)
+    plt.tight_layout()
+    plt.savefig('Fig4_SI_reply.pdf', dpi=300, bbox_inches='tight')
+    plt.show()
+    exit()
 
 if(0):
-    diff_NN =np.diff(vals_NN)
-    diff_NN/= np.mean(diff_NN)
-    diff_NNN =np.diff(vals_NNN)
-    diff_NNN/= np.mean(diff_NNN)
-    diff_PL =np.diff(vals_PL)
-    diff_PL/= np.mean(diff_PL)
+    B_PL =B_PL[:500,:500]
+    plt.imshow(np.log10(np.abs(B_PL)), aspect='auto', cmap='viridis')
+    plt.colorbar(label=r'$\log_{10}(|B_{ij}|)$')
+    plt.title(r'$\hat{{B}}$ in computational basis, $\alpha={}$'.format(alpha))
+    plt.xlabel(r'$i$')
+    plt.ylabel(r'$j$')
+    plt.show()
 
-    #plt.hist(diff_NN, bins=50, alpha=0.5, label='NN XXZ',range=(0,5), density=True)
-    #plt.hist(diff_NNN, bins=50, alpha=0.5, label='NNN XXZ',range=(0,5), density=True)
-    plt.hist(diff_PL, bins=50, alpha=0.5, label='Power-law XXZ',range=(0,2), density=True)
-    plt.xlabel('Energy')
-    plt.ylabel('Density of States')
-    plt.title('Energy Spectrum Comparison')
+if(0):
+    diag = np.diag(B_PL)
+    plt.plot(diag, label=r'$\alpha={}$'.format(alpha))
+    #plt.yscale('log')
+    plt.xlabel(r'Index $i$')
+    plt.ylabel(r'$\log_{10}(|B_{ii}|)$')
+    plt.title(r'Diagonal elements of $\hat{{B}}$ in computational basis')
     plt.legend()
     plt.show()
+
+if(0):
+    plt.imshow(np.log10(np.abs(B_PL)), aspect='auto', cmap='viridis')
+    plt.colorbar(label=r'$\log_{10}(|B_{ij}|)$')
+    plt.title(r'$\hat{{B}}$ in computational basis, $\alpha={}$'.format(alpha))
+    plt.xlabel(r'$i$')
+    plt.ylabel(r'$j$')
+    plt.show()
+
+if(0):
+    for beta in [0.5,1.0,2.0]:
+        barr = K_complexity(B_PL,vals,beta,ncoeff)
+        plt.plot(coeff_arr, barr, label=r'$\beta={}$'.format(beta), marker='o')
+    plt.xlabel(r'Lanczos index $n$')
+    plt.ylabel(r'$b_n$')
+    plt.title(r'Lanczos coefficients for $\hat{{B}}$ in power-law XXZ model')
+    plt.legend()
+    plt.show()
+
 

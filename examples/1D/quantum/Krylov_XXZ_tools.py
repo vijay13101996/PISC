@@ -29,6 +29,7 @@ would be represented as [(i, 'x'), (i+1, 'x'), 'J'] where 'J' is the coefficient
 
 """
 
+
 def construct_A(vecs, vals, H_mat, basis, L, trunc_perc=0.96):
     """
     Construct the nearest neighbour z-interaction operator A in the eigenbasis of H,
