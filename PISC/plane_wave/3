@@ -1,0 +1,161 @@
+import numpy as np
+from scipy.linalg import svd
+import matplotlib.pyplot as plt
+"""
+This code computes the eigenstates of a stadium billiard by quantising the boundary, 
+i.e. by using plane-wave expansions of the wavefunction and enforcing the boundary conditions 
+at a finite number of points on the boundary. In this module, we solve for a quarter billiard
+and then use symmetry to construct the full eigenstates. The code is based on the method described in
+"Quantum Chaos: An Introduction" by Hans-Jürgen Stöckmann, specifically in Chapter 3, Section 3.2.2.
+"""
+
+class StadiumBilliard:
+    def __init__(self, a, r, num_points):
+        self.a = a  # Length of the straight sections
+        self.r = r  # Radius of the semicircular sections
+        self.num_points = num_points  # Number of points to discretize the boundary
+
+    def boundary_points(self,M=None):
+        """Generate points on the boundary of the quarter stadium billiard."""
+        points = []
+        if M is not None:
+            self.num_points = M
+        else:
+            M = self.num_points
+        Mrect = M // 2  # Number of points for the straight section
+        # Straight section along x-axis
+        for i in range(1,Mrect+1):
+            x = self.a * i / Mrect
+            points.append((x, self.r))
+        
+        Mcurv = M - Mrect  # Remaining points for the semicircular section
+        # Semicircular section
+        for i in range(1,Mcurv+1):
+            theta = np.pi * (1 - i/(Mcurv+1))/2
+            x = self.a + self.r * np.cos(theta)
+            y = self.r * np.sin(theta)
+            points.append((x, y))
+        
+        #Plot the boundary points
+        if(0):
+            points_array = np.array(points)
+            plt.plot(points_array[:,0], points_array[:,1], 'o')
+            plt.title('Boundary Points of the Quarter Stadium Billiard')
+            plt.xlabel('x')
+            plt.ylabel('y')
+            plt.axis('equal')
+            plt.show()
+        return np.array(points)
+
+    def boundary_points_box(self,M=None):
+        """Generate points on the boundary of a rectangular box of size a x r."""
+        points = []
+        if M is not None:
+            self.num_points = M
+        else:
+            M = self.num_points
+        Mx = M // 2  # Number of points for the x-direction
+        My = M - Mx  # Remaining points for the y-direction
+        # Straight section along x-axis
+        for i in range(1,Mx+1):
+            x = self.a * i / Mx
+            points.append((x, self.r))
+        # Straight section along y-axis
+        for i in range(1,My+1):
+            y = self.r * i / My
+            points.append((self.a, y))
+
+        #Plot the boundary points
+        if(0):
+            points_array = np.array(points)
+            plt.plot(points_array[:,0], points_array[:,1], 'o')
+            plt.title('Boundary Points of the Rectangular Box')
+            plt.xlabel('x')
+            plt.ylabel('y')
+            plt.axis('equal')
+            plt.show()
+        return np.array(points) 
+
+    def DD_wf(self, x, y, j, k, N):
+        """Dirichlet wavefunction for the j-th mode."""
+        theta_j = np.pi * (j+0.5) / (2 * N)
+        return np.sin(k*x*np.cos(theta_j)) * np.sin(k*y*np.sin(theta_j))
+
+    def DN_wf(self, x, y, j, k, N):
+        """Mixed Dirichlet-Neumann wavefunction for the j-th mode."""
+        theta_j = np.pi * j / (2 * N)
+        return np.sin(k*x*np.cos(theta_j)) * np.cos(k*y*np.sin(theta_j))
+
+    def ND_wf(self, x, y, j, k, N):
+        """Mixed Neumann-Dirichlet wavefunction for the j-th mode."""
+        theta_j = np.pi * j / (2 * N)
+        return np.cos(k*x*np.cos(theta_j)) * np.sin(k*y*np.sin(theta_j))
+
+    def NN_wf(self, x, y, j, k, N):
+        """Neumann wavefunction for the j-th mode."""
+        theta_j = np.pi * j / (2 * N)
+        return np.cos(k*x*np.cos(theta_j)) * np.cos(k*y*np.sin(theta_j))
+
+    def plane_wave_expansion(self, k, bdtype='DD'):
+        """Construct the plane wave expansion for a given wave number k."""
+        #M = self.num_points
+        L = self.a + np.pi * self.r/2 # Perimeter of the quarter stadium
+        N = 8#max(10,int(1.2*k*L/2))  # M//2  # Number of plane waves (can be adjusted)
+        M = 4*N  # Number of boundary points (can be adjusted)
+        points = self.boundary_points_box(M)  # Get boundary points (using box for simplicity)
+        
+        B = np.zeros((M, N))#, dtype=complex)
+        
+        for i in range(M):
+            for j in range(N):
+                # Plane wave components
+                if bdtype == 'DD':
+                    B[i, j] = self.DD_wf(points[i][0], points[i][1], j, k, N)
+                elif bdtype == 'DN':
+                    B[i, j] = self.DN_wf(points[i][0], points[i][1], j, k, N)
+                elif bdtype == 'ND':
+                    B[i, j] = self.ND_wf(points[i][0], points[i][1], j, k, N)
+                elif bdtype == 'NN':
+                    B[i, j] = self.NN_wf(points[i][0], points[i][1], j, k, N)
+        return B, M
+
+    def solve_eigenstates(self, k_values, bdtype='DD'):
+        """Solve for the eigenstates at given wave numbers."""
+        eigenstates = []
+
+        for k in k_values:
+            Bk, Mk = self.plane_wave_expansion(k, bdtype)
+            if(0):
+                plt.imshow(np.log10(np.abs(Bk)), aspect='auto', extent=[0, Bk.shape[1], 0, Bk.shape[0]])
+                plt.colorbar(label='log10(|B|)')
+                plt.title(f'Plane Wave Expansion Matrix B for k={k:.2f}')
+                plt.xlabel('Plane wave index')
+                plt.ylabel('Boundary point index')
+                plt.show()
+            # Solve the homogeneous system Bk * c = 0 for non-trivial solutions
+            S = svd(Bk, compute_uv=False)
+            eigenstates.append(np.min(S)/Mk**0.5)
+
+            #eigenstates.append(np.min(S))  # Store the minimum singular value as a measure of how close we are to an eigenstate
+        return eigenstates
+
+a = 1.0  # Length of straight sections
+r = 1.0  # Radius of semicircular sections
+num_points = 20  # Number of boundary points
+stadium = StadiumBilliard(a, r, num_points)
+k_values = np.linspace(6, 11, 500)  # Range of wave numbers to search for eigenstates
+k_values = np.linspace(0,5,500)
+eigenstates = stadium.solve_eigenstates(k_values, bdtype='DD')
+
+#compute minima of eigenstates to find approximate eigenvalues
+min_indices = (np.diff(np.sign(np.diff(eigenstates))) > 0).nonzero()[0] + 1  # Indices of local minima
+eigenvalues = k_values[min_indices]**2  # Approximate eigenvalues corresponding to minima
+print("Approximate eigenvalues (k^2) corresponding to minima of the eigenstate search:")
+print(eigenvalues, np.pi**2/(2*a**2))
+
+plt.plot(k_values**2, eigenstates)
+plt.plot(k_values[min_indices]**2, np.array(eigenstates)[min_indices], 'ro', label='Minima (approx. eigenvalues)')
+plt.xlabel('Wave number k')
+plt.ylabel('Minimum singular value')
+plt.title('Eigenstate Search for Stadium Billiard (DD boundary conditions)')
+plt.show()
