@@ -4,6 +4,7 @@ from scipy.optimize import fsolve, least_squares
 from PISC.dvr.dvr import DVR1D
 import matplotlib
 from FK_variational import opt_FK 
+import os
 
 plt.rcParams.update({'font.size': 10, 'font.family': 'serif','font.style':'italic','font.serif':'Garamond'})
 matplotlib.rcParams['axes.unicode_minus'] = False
@@ -18,7 +19,7 @@ L = 10.0
 xarr = np.linspace(-L, L, 1000)
 dx = xarr[1] - xarr[0]
 w = 1.0
-g = 0.0
+g = 1.0
 b = g/4
 
 #Colors
@@ -176,6 +177,12 @@ def P_LH_renorm(x, beta):
     return P
 
 
+def store_PDF_data(x,y,z, suffix):
+    filename = 'quartic_PDF_{}.txt'.format(suffix)
+    #File to be stored in the directory where this module is located
+    file_path = os.path.dirname(__file__) + '/manu_data/FIG2_SI/' + filename
+    data = np.column_stack((x, y, z))
+    np.savetxt(file_path, data, header='x P(x)', comments='')
 
 fig,ax = plt.subplots(3,2, figsize=(7,9))
 plt.subplots_adjust(wspace=0.3, hspace=0.13)
@@ -253,6 +260,12 @@ for ax, beta in zip([axe1, axe2, axe3], beta_arr):
     ax[1].plot(xarr, PLH_magic, label=r'$P_{LH}(x)$', color=LHc, linestyle='-')
     ax[1].plot(xq_arr, PQM, label=r'$P_{QM}(x)$', color=Qc, linestyle='-')
 
+    store_PDF_data(xarr, Vcl, Pcl, 'CL_w{}_g{}_beta{}'.format(w, g, beta))
+    store_PDF_data(xarr, VLH_tilde, PLH_tilde, 'LH_tilde_w{}_g{}_beta{}'.format(w, g, beta))
+    store_PDF_data(xarr, VLH_renorm, PLH_renorm, 'LH_renorm_w{}_g{}_beta{}'.format(w, g, beta))
+    store_PDF_data(xarr, VLH_magic, PLH_magic, 'LH_w{}_g{}_beta{}'.format(w, g, beta))
+    store_PDF_data(xq_arr, VQM, PQM, 'QM_w{}_g{}_beta{}'.format(w, g, beta))
+
     if(beta==beta_arr[2]):
         ax[1].set_xlabel(r'$x$', fontsize=xl_fs)
     ax[1].set_ylabel(r'$P(x)$', fontsize=yl_fs)
@@ -270,6 +283,9 @@ for ax, beta in zip([axe1, axe2, axe3], beta_arr):
         ax[1].plot(xarr, PLH_renorm1/np.sum(PLH_renorm1*dx), label=r'$P_{LH}^{(r)}(x)$ (uncorrected)', color=LHc, linestyle=':', alpha=0.5)
         #ax[1].plot(xarr, PLH_magic1/np.sum(PLH_magic1*dx), label=r'$P_{LH}(x)$ (uncorrected)', color=LHc, linestyle='-', alpha=0.5)
         #ax[1].plot(xq_arr, PQM1/np.sum(PQM1*dx), label=r'$P_{QM}(x)$ (uncorrected)', color=Qc, linestyle='-', alpha=0.5)
+
+plt.show()
+exit()
 
 if(w==1.0 and g==1.0):
     fig.suptitle(r'$V(x) = x^2/2 +  x^4/4$')

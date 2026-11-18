@@ -55,7 +55,7 @@ vecs = fix_vecs(vecs)
 x_arr = DVR.grid[1:ngrid]
 dx = x_arr[1]-x_arr[0]
 
-if(0): #Use Eigenstates
+if(1): #Use Eigenstates
     n_wf = 10
     wf = vecs[:,n_wf]  # ground state wavefunction
     
@@ -102,7 +102,7 @@ O = pos_mat_analytical
 liou_mat = np.zeros((neigs,neigs))
 L = Krylov_complexity.krylov_complexity.compute_liouville_matrix(vals,liou_mat)
 
-if(1):  # TEST!!
+if(0):  # TEST!!
     tarr = np.arange(0.0,10.01,0.1)
     Ot = np.zeros((neigs,neigs), dtype=complex)
 

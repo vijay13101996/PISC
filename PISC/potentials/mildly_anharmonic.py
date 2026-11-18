@@ -18,7 +18,6 @@ class mildly_anharmonic(PES):
         return 0.5*self.m*self.w**2*q**2 + self.a*q**3 + self.b*q**self.n 
     
     def dpotential(self,q):
-        #return self.m*q + 3*self.a*q**2 + 4*self.b*q**3
         return self.m*self.w**2*q + 3*self.a*q**2 + self.n*self.b*q**(self.n-1)
 
     def ddpotential(self,q):

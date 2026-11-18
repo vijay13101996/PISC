@@ -421,7 +421,7 @@ def main():
         ax.set_ylabel(r'$f_{{O}}(0,\omega)$', fontsize=yl_fs)
         ax.legend(fontsize=le_fs-2,loc='upper right')
         ax.set_ylim(ax.get_ylim()[0], ax.get_ylim()[1]*1e10)
-        ax.annotate(r'$(b)$', xy=(0.05, 0.9), xycoords='axes fraction', fontsize=tp_fs+2)
+        #ax.annotate(r'$(b)$', xy=(0.05, 0.9), xycoords='axes fraction', fontsize=tp_fs+2)
 
     #plot_ax_3a(ax[0])
     #plot_ax_3b_in(ax[1])

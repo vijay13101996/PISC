@@ -225,7 +225,7 @@ if(0):
 
         #ax.set_xlabel(r'$n$',fontsize=xl_fs)
         ax.set_ylabel(r'$b_n$',fontsize=yl_fs)
-        ax.annotate(r'(a)',(0.02,0.9),xycoords='axes fraction',fontsize=xl_fs)
+        #ax.annotate(r'(a)',(0.02,0.9),xycoords='axes fraction',fontsize=xl_fs)
         #ax.tick_params(axis='both',labelsize=ti_fs)
         #ax.set_xlim(ax.get_xlim()[0],ax.get_xlim()[1]*1.2)
         ax.set_ylim(0,ax.get_ylim()[1]*1.2)

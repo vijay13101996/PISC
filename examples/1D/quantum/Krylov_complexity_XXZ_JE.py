@@ -110,7 +110,7 @@ if(1):# NNN XXZ model
         plt.xlabel('i')
         plt.ylabel('j')
         #plt.show()
-        plt.savefig('JE_eigenbasis_NNN.png')
+        #plt.savefig('JE_eigenbasis_NNN.png')
         exit()
 
     b_arr = np.zeros(ncoeff)

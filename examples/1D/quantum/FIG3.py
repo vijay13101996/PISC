@@ -28,8 +28,9 @@ print('plotted fig3b')
 axin3b = ax[1].inset_axes([0.5, 0.65, 0.45, 0.33]) # x0, y0, width, height
 fig_3b.plot_ax_3b_in(axin3b)
 
+#Remove all annoations from axes
 
-#plt.savefig('FIG3.pdf',dpi=300,bbox_inches='tight')
+plt.savefig('FIG3_poster.pdf',dpi=300,bbox_inches='tight')
 plt.show()
 
 

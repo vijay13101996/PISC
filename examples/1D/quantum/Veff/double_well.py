@@ -4,6 +4,7 @@ from scipy.optimize import fsolve, least_squares
 from PISC.dvr.dvr import DVR1D
 import matplotlib
 from FK_variational import opt_FK, V_smear
+import os
 
 plt.rcParams.update({'font.size': 10, 'font.family': 'serif','font.style':'italic','font.serif':'Garamond'})
 matplotlib.rcParams['axes.unicode_minus'] = False
@@ -112,10 +113,28 @@ def Pq(x, w, b, beta):
     neigs = 100
     vals,vecs = DVR.Diagonalize(neig_total=neigs)
 
+    print('w', w, 'b', b, 'beta', beta)
+    print('Eigenvalues:', vals[:2])
+    print('beta*E0=', beta*vals[0], 'beta*E1=', beta*vals[1])
+    print('Vb', V(0, w, b), 'E0', vals[0], 'E1', vals[1])
+
     Zq = np.sum( np.exp(-beta*vals) )
     Pq = np.sum( vecs**2 * np.exp(-beta*vals), axis=1 ) / Zq
-    xarr = DVR.grid[1:ngrid] 
+    xarr = DVR.grid[:ngrid-1] 
     return xarr,Pq
+
+def Pq_0(x, w, b):
+    ngrid = 500
+    lb = -L
+    ub = L
+    Vq = lambda x: V(x, w, b)
+    DVR = DVR1D(ngrid,lb,ub,m,Vq)
+    neigs = 100
+    vals,vecs = DVR.Diagonalize(neig_total=neigs)
+
+    Pq_0 = vecs[:,0]**2
+    xarr = DVR.grid[:ngrid-1] 
+    return xarr,Pq_0
 
 def P_LH_magic(x, w, b, beta):
     pref = np.sqrt( m/(2*np.pi*beta*hbar**2) )
@@ -132,6 +151,21 @@ def P_LH_magic(x, w, b, beta):
     P /= np.sum(P)*dx
     return P
 
+def P_LH_magic_0(x, w, b):
+    pref = np.sqrt( m/(2*np.pi*hbar**2) )
+    Vc = V(x, w, b)
+    w2 = d2V_dx2(x, w, b)/m
+    
+    w2[w2<1e-12] = 1e-12  # Prevent division by zero or negative values
+
+    eta = hbar*np.sqrt(w2)/2
+    Xi = 1/eta
+    #np.tanh(eta)/eta
+
+    P = pref * np.exp(-Vc*Xi) * np.sqrt(Xi)
+    dx = x[1] - x[0]
+    P /= np.sum(P)*dx
+    return P
 
 def plot_PDF(ax, w, b, legend=False):
 
@@ -148,14 +182,20 @@ def plot_PDF(ax, w, b, legend=False):
         Vcl = V(xarr, w, b)
         Pcl = P(Vcl, beta, xarr)
 
+        store_PDF_data(xarr, Pcl, 'CL_w_{}_b_{}_beta_{}'.format(w, b*4, beta))
+
         VLH = np.zeros_like(xarr)
         for i, x in enumerate(xarr):
             VLH[i] = V_LH(x, w, b, beta)
         PLH = P(VLH, beta, xarr)
         PLH_magic = P_LH_magic(xarr, w, b, beta)
 
+        store_PDF_data(xarr, PLH_magic, 'LH_w_{}_b_{}_beta_{}'.format(w, b*4, beta))
 
         xqarr, Pq_arr = Pq(xarr, w, b, beta)
+
+        store_PDF_data(xqarr, Pq_arr, 'QM_w_{}_b_{}_beta_{}'.format(w, b*4, beta))
+
         if(beta==0.1 and legend==True): 
             print('Plotting legend')
             ax.plot(xarr, Pcl, label=r'$P_{cl}$', color=Cc)
@@ -167,6 +207,8 @@ def plot_PDF(ax, w, b, legend=False):
             #ax.plot(xarr, PLH, linestyle='--', color=LHc)
             ax.plot(xarr, PLH_magic, color=LHc)
             ax.plot(xqarr, Pq_arr, color=Qc)
+            #if(beta==10.0):
+            #    ax.scatter(xqarr[::10], Pq_arr[::10], color=Qc, s=9, marker='x')
             
         #Find point where Pq_arr is less than tol
         tol = 1e-4
@@ -181,6 +223,41 @@ def plot_PDF(ax, w, b, legend=False):
         ax.tick_params(axis='both', which='major', labelsize=ti_fs-3)
 
         ax.annotate(r'$\beta={}$'.format(beta), xy=(0.3, 1.05), xycoords='axes fraction', fontsize=ti_fs-1.5)
+
+def store_PDF_data(x,y, suffix):
+    filename = 'double_well_PDF_{}.txt'.format(suffix)
+    #File to be stored in the directory where this module is located
+    file_path = os.path.dirname(__file__) + '/manu_data/FIG7_SI/' + filename
+    data = np.column_stack((x, y,z))
+    np.savetxt(file_path, data, header='x P(x)', comments='')
+
+fig, ax = plt.subplots(1,2, figsize=(6,3.))
+for axe, w, b in zip(ax, [1.0, 1.0], [0.1/4, 0.5/4]):
+    P_LH_magic_0_arr = P_LH_magic_0(xarr, w, b)
+    xq_arr_0, Pq_0_arr = Pq_0(xarr, w, b)
+    
+    store_PDF_data(xarr, P_LH_magic_0_arr, 'LH_T0_w_{}_g_{}'.format(w, b*4))
+    store_PDF_data(xq_arr_0, Pq_0_arr, 'QM_T0_w_{}_g_{}'.format(w, b*4))
+
+    if(b==0.1/4):
+        axe.plot(xarr, P_LH_magic_0_arr, label=r'$P_{LH}$', color=LHc)
+        axe.plot(xq_arr_0, Pq_0_arr, label=r'$P_{QM}$', color=Qc)
+    else:
+        axe.plot(xarr, P_LH_magic_0_arr, color=LHc)
+        axe.plot(xq_arr_0, Pq_0_arr, color=Qc)
+    axe.set_title(r'$\omega={}$, $g={}$'.format(w, b*4), fontsize=title_fs-1.5)
+    axe.set_xlabel(r'$x$', fontsize=xl_fs)
+    axe.set_xlim([-6,6])
+    if axe == ax[0]:
+        axe.set_ylabel(r'$P(x)$', fontsize=yl_fs)
+        axe.yaxis.set_label_coords(-0.2,0.5)
+    axe.tick_params(axis='both', which='major', labelsize=ti_fs-2)
+fig.legend(ncol=2, fontsize=le_fs+1., loc=(0.36,-0.0))
+fig.suptitle(r'Double-well Potential, $T=0$ K', fontsize=title_fs, y=1.04)
+#fig.savefig('DW_PDFs_revised_T0.pdf', dpi=300, bbox_inches='tight', pad_inches=0.15)
+plt.show()
+
+
 if(1):
     fig, ax = plt.subplots(4,2, figsize=(4,8))
     fig.subplots_adjust(hspace=0.4, wspace=0.25)
@@ -208,7 +285,7 @@ if(1):
     ax[0,0].yaxis.set_label_coords(-0.28,0.5)
     fig.legend(ncol=3, fontsize=le_fs+1., loc=(0.183,0.005))
 
-    plt.savefig('DW_PDFs.pdf', dpi=300, bbox_inches='tight', pad_inches=0.0)
+    #plt.savefig('DW_PDFs_revised.pdf', dpi=300, bbox_inches='tight', pad_inches=0.0)
     plt.show()
 
 
@@ -228,6 +305,8 @@ if(0):
     for ax, beta in zip(axarr, beta_arr):
         Vcl = V(xarr, w, b)
         Pcl = P(Vcl, beta, xarr)
+
+        store_PDF_data(xarr, Pcl, 'CL_beta{}'.format(beta_arr[np.where(np.array(beta_arr)==beta)[0][0]]))
 
         VFK = np.zeros_like(xarr)
         #for i, x in enumerate(xarr):

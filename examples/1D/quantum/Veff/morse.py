@@ -4,6 +4,7 @@ from scipy.optimize import fsolve, least_squares
 from PISC.dvr.dvr import DVR1D
 import matplotlib
 from FK_variational import opt_FK, V_smear
+import os
 
 plt.rcParams.update({'font.size': 10, 'font.family': 'serif','font.style':'italic','font.serif':'Garamond'})
 matplotlib.rcParams['axes.unicode_minus'] = False
@@ -135,14 +136,28 @@ def Pq(x, D, alpha, x0, beta):
     neigs = 100
     vals,vecs = DVR.Diagonalize(neig_total=neigs)
 
+    print('beta*E0=', beta*vals[0], 'beta*E1=', beta*vals[1])
     Zq = np.sum( np.exp(-beta*vals) )
     Pq = np.sum( vecs**2 * np.exp(-beta*vals), axis=1 ) / Zq
-    xarr = DVR.grid[1:ngrid] 
+    xarr = DVR.grid[:ngrid-1] 
     
     if Zq<1e-12:
         print("Warning: Partition function is very small, results may be inaccurate.")
         Pq = abs(vecs[:,0])**2
     return xarr,Pq
+
+def Pq_0(x, D, alpha, x0):
+    ngrid = 500
+    lb = 0
+    ub = L
+    Vq = lambda x: V(x, D, alpha, x0)
+    DVR = DVR1D(ngrid,lb,ub,m,Vq)
+    neigs = 100
+    vals,vecs = DVR.Diagonalize(neig_total=neigs)
+
+    Pq_0 = vecs[:,0]**2
+    xarr = DVR.grid[:ngrid-1] 
+    return xarr,Pq_0
 
 def P_LH_magic(x, D, alpha, x0, beta):
     pref = np.sqrt( m/(2*np.pi*beta*hbar**2) )
@@ -158,7 +173,52 @@ def P_LH_magic(x, D, alpha, x0, beta):
     dx = x[1] - x[0]
     P /= np.sum(P)*dx
     return P
+
+def P_LH_magic_0(x, D, alpha, x0):
+    pref = np.sqrt( m/(2*np.pi*hbar**2) )
+    Vc = V(x, D, alpha, x0)
+    w2 = d2V_dx2(x, D, alpha, x0)/m
     
+    w2[w2<1e-12] = 1e-12  # Prevent division by zero or negative values
+
+    eta = hbar*np.sqrt(w2)/2
+    Xi = 1/eta
+    #np.tanh(eta)/eta
+
+    P = pref * np.exp(-Vc*Xi) * np.sqrt(Xi)
+    dx = x[1] - x[0]
+    P /= np.sum(P)*dx
+    return P
+
+def store_PDF_data(x,y, suffix):
+    filename = 'morse_PDF_{}.txt'.format(suffix)
+    #File to be stored in the directory where this module is located
+    file_path = os.path.dirname(__file__) + '/manu_data/FIG6_SI/' + filename
+    data = np.column_stack((x, y))
+    np.savetxt(file_path, data, header='x P(x)', comments='')
+
+fig, ax = plt.subplots(figsize=(4,4))
+
+xqarr_0, Pq_0_arr = Pq_0(xarr, D, alpha, x0)
+P_LH_magic_0_arr = P_LH_magic_0(xarr, D, alpha, x0)
+
+store_PDF_data(xqarr_0, Pq_0_arr, 'QM_T0')
+store_PDF_data(xarr, P_LH_magic_0_arr, 'LH_T0')
+
+ax.plot(xqarr_0, Pq_0_arr, label=r'$P_{QM}$', color=Qc)
+ax.plot(xarr, P_LH_magic_0_arr, label=r'$P_{LH}$', color=LHc)
+
+ax.set_xlim([0.5, 2.8])
+ax.set_ylim([0, 1.5*max(Pq_0_arr)])
+ax.set_xlabel(r'$x$', fontsize=xl_fs)
+ax.set_ylabel(r'$P(x)$', fontsize=yl_fs)
+ax.tick_params(axis='both', which='major', labelsize=ti_fs-1.5)
+ax.legend(fontsize=le_fs+1., loc='upper right')
+ax.set_title(r'Morse Potential, $T=0$ K', fontsize=title_fs)
+#plt.savefig('Veff_morseTRPMD_revised_T0.pdf', dpi=300, bbox_inches='tight',pad_inches=0.02)
+plt.show()
+
+
 # Plot Position distributions for potentials with negative curvature
 if(1):
     fig, ax = plt.subplots(2,2, figsize=(4,4.5))
@@ -183,6 +243,7 @@ if(1):
         Vcl = V(xarr, D, alpha, x0)
         Pcl = P(Vcl, beta, xarr)
 
+        store_PDF_data(xarr, Pcl, 'CL_T{}'.format(Tlist[np.where(np.array(beta_arr)==beta)[0][0]]))
         #ax.plot(xarr, Vcl, color='black')
         
         #VFK = np.zeros_like(xarr)
@@ -203,7 +264,12 @@ if(1):
 
         PLH_magic = P_LH_magic(xarr, D, alpha, x0, beta)
 
+        store_PDF_data(xarr, PLH_magic, 'LH_T{}'.format(Tlist[np.where(np.array(beta_arr)==beta)[0][0]]))
+
         xqarr, Pq_arr = Pq(xarr, D, alpha, x0, beta)
+
+        store_PDF_data(xqarr, Pq_arr, 'QM_T{}'.format(Tlist[np.where(np.array(beta_arr)==beta)[0][0]]))
+        #xqarr_0, Pq_0_arr = Pq_0(xarr, D, alpha, x0, beta)
         if (ax == ax2):
             ax.plot(xarr, Pcl, label=r'$P_{cl}$', color=Cc)
             #ax.plot(xarr, PFH, label=r'$FH$', color=FKc, linestyle='--')
@@ -218,6 +284,8 @@ if(1):
             #ax.plot(xarr, PLH, linestyle='--', color=LHc)
             ax.plot(xarr, PLH_magic, color=LHc)
             ax.plot(xqarr, Pq_arr, color=Qc)
+            #if (ax==ax4):
+            #    ax.scatter(xqarr_0[::2], Pq_0_arr[::2], color=Qc, s=9, marker='x')
 
         ax.set_xlim([0.5, 2.8])
         ax.margins(y=0.5)
@@ -241,6 +309,6 @@ if(1):
     
     #fig.tight_layout()
 
-    plt.savefig('Veff_morseTRPMD.pdf', dpi=300, bbox_inches='tight',pad_inches=0.02)
+    #plt.savefig('Veff_morseTRPMD_revised.pdf', dpi=300, bbox_inches='tight',pad_inches=0.02)
     plt.show()
 

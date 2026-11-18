@@ -10,7 +10,7 @@ for file in file_lst:
     data = np.loadtxt(file)
     n = data[1:, 0]
     b_n = data[1:, 1]
-    plt.plot(n, b_n, label=file.split('/')[-1])
+    plt.scatter(n, b_n, label=file.split('/')[-1])
 
 
 

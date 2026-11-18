@@ -90,7 +90,7 @@ param_dict = {'lbx':lbx,'ubx':ubx,'lby':lby,'uby':uby,'m':m,'ngridx':ngridx,'ngr
 with open('{}/Datafiles/Input_log_{}.txt'.format(path,potkey),'a') as f:    
     f.write('\n'+str(param_dict))
 
-if(1): #Diagonalize the Hamiltonian
+if(0): #Diagonalize the Hamiltonian
     vals,vecs = DVR.Diagonalize(neig_total=neigs)
 
     store_arr(vecs[:,:neigs],'{}_vecs'.format(fname),'{}/Datafiles'.format(path))
@@ -189,7 +189,7 @@ if(0):
     plt.show()
 
 
-if(1):
+if(0):
     potkey_bil = 'MANU_stadium_billiards_a_{:.2f}_R_{:.2f}'.format(a,R)
     potkey_box = 'MANU_rectangular_box_a_{:.2f}_R_{:.2f}'.format(a,R)
 
@@ -225,5 +225,44 @@ if(1):
     plt.show()
 
     exit()
+
+if(1):
+    potkey_bil = 'MANU_stadium_billiards_a_{:.2f}_R_{:.2f}'.format(a,R)
+    potkey_box = 'MANU_rectangular_box_a_{:.2f}_R_{:.2f}'.format(a,R)
+
+    fig, ax = plt.subplots()#1,2,sharey=True)
+    #plt.subplots_adjust(wspace=0.0, hspace=0.0)
+    #ax0 = ax[0]
+    #ax1 = ax[1]
+
+    #for ax, neigs in zip(ax,[200]):
+    if(1):
+        T_arr = read_arr('T_arr_{}_neigs_{}'.format(potkey,neigs))
+        bn_arr_bil = read_arr('bnarr_{}_neigs_{}'.format(potkey_bil,neigs))
+        bn_arr_box = read_arr('bnarr_{}_neigs_{}'.format(potkey_box,neigs))
+
+        for i in [0,1,2,3]:
+            if(1):#ax==ax0):
+                ax.scatter(np.arange(ncoeff),bn_arr_bil[i,:],label=r'$T={}$'.format(T_arr[i]),s=10)
+                ax.plot(np.arange(ncoeff),bn_arr_box[i,:],ls='--')
+            else:
+                ax.scatter(np.arange(ncoeff),bn_arr_bil[i,:],s=10)
+                ax.plot(np.arange(ncoeff),bn_arr_box[i,:],ls='--')
+
+        ax.set_xlabel(r'$n$',fontsize=xl_fs)
+        if(1):#ax==ax0):
+            ax.set_ylabel(r'$b_n$',fontsize=yl_fs)
+            #ax.annotate(r'(a)',(0.02,0.9),xycoords='axes fraction',fontsize=xl_fs)
+        #else:
+            #ax.annotate(r'(b)',(0.02,0.9),xycoords='axes fraction',fontsize=xl_fs)
+        ax.tick_params(axis='both',labelsize=ti_fs)
+
+    fig.set_size_inches(5,5)	
+    fig.legend(fontsize=le_fs-2,loc=(0.01,0.93),ncol=4)
+    fig.savefig('/home/vgs23/Images/bn_vs_n_billiards_box.png', dpi=400, bbox_inches='tight',pad_inches=0.0)
+    plt.show()
+
+    exit()
+
 
 

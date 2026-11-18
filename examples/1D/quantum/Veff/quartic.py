@@ -4,6 +4,7 @@ from scipy.optimize import fsolve, least_squares
 from PISC.dvr.dvr import DVR1D
 import matplotlib
 from FK_variational import opt_FK 
+import os
 
 plt.rcParams.update({'font.size': 10, 'font.family': 'serif','font.style':'italic','font.serif':'Garamond'})
 matplotlib.rcParams['axes.unicode_minus'] = False
@@ -153,8 +154,24 @@ def Pq(x, w, b, beta):
 
     Zq = np.sum( np.exp(-beta*vals) )
     Pq = np.sum( vecs**2 * np.exp(-beta*vals), axis=1 ) / Zq
-    xarr = DVR.grid[1:ngrid] 
+    xarr = DVR.grid[:ngrid-1] 
     return xarr,Pq
+
+def Pq_0(x, w, b):
+    ngrid = 500
+    lb = -L
+    ub = L
+    Vq = lambda x: V(x, w, b)
+    DVR = DVR1D(ngrid,lb,ub,m,Vq)
+    neigs = 100
+    vals,vecs = DVR.Diagonalize(neig_total=neigs)
+
+    Pq_0 = vecs[:,0]**2
+    xarr = DVR.grid[:ngrid-1]
+
+    print('grid', xarr.shape, 'xqarr_0', vecs[:,0].shape)
+    return xarr,Pq_0
+
 
 def P_LH_magic(x, w, b, beta):
     pref = np.sqrt( m/(2*np.pi*beta*hbar**2) )
@@ -168,6 +185,63 @@ def P_LH_magic(x, w, b, beta):
     P /= np.sum(P)*dx
     return P
 
+def P_LH_magic_0(x, w, b):
+    pref = np.sqrt( m/(2*np.pi*hbar**2) )
+    Vc = V(x, w, b)
+    w2 = d2V_dx2(x, w, b)/m
+    
+    w2[w2<1e-12] = 1e-12  # Prevent division by zero or negative values
+
+    eta = hbar*np.sqrt(w2)/2
+    Xi = 1/eta
+    #np.tanh(eta)/eta
+
+    P = pref * np.exp(-Vc*Xi) * np.sqrt(Xi)
+    dx = x[1] - x[0]
+    P /= np.sum(P)*dx
+    return P
+    
+def store_PDF_data(x,y, suffix):
+    filename = 'quartic_PDF_{}.txt'.format(suffix)
+    #File to be stored in the directory where this module is located
+    file_path = os.path.dirname(__file__) + '/manu_data/FIG5_SI/' + filename
+    data = np.column_stack((x, y))
+    np.savetxt(file_path, data, header='x P(x)', comments='')
+
+
+fig, ax = plt.subplots(1,4, figsize=(8,2.5))
+warr = [1.0, 1.0, 1.0, 0.0]
+barr = [0.0, 0.1/4, 1.0/4, 1.0/4]
+for axe, w, b in zip(ax, warr, barr):
+    xarr = np.linspace(-L, L, 1000)
+    P_LH_magic_0_arr = P_LH_magic_0(xarr, w, b)
+    xqarr_0, Pq_arr_0 = Pq_0(xarr, w, b)
+    dx = xqarr_0[1] - xqarr_0[0]
+   
+    store_PDF_data(xarr, P_LH_magic_0_arr, 'LH_T0_w_{}_b_{}'.format(w, b))
+    store_PDF_data(xqarr_0, Pq_arr_0, 'QM_T0_w_{}_b_{}'.format(w, b))
+    if(w==1.0 and b==0.0):
+        axe.plot(xarr, P_LH_magic_0_arr, label=r'$P_{LH}$', color=LHc)
+        axe.plot(xqarr_0, Pq_arr_0, label=r'$P_{QM}$', color=Qc)
+    else:   
+        axe.plot(xarr, P_LH_magic_0_arr, color=LHc)
+        axe.plot(xqarr_0, Pq_arr_0, color=Qc)
+    axe.set_title(r'$\omega={}$, $g={}$'.format(w, b*4), fontsize=ti_fs-1.5)
+    axe.set_xlim([-3,3])
+    axe.set_ylim([0, 1.25*max(P_LH_magic_0_arr)])
+    axe.tick_params(axis='both', which='major', labelsize=ti_fs-2)
+    axe.set_xlabel(r'$x$', fontsize=xl_fs)
+    if axe==ax[0]:
+        axe.set_ylabel(r'$P(x)$', fontsize=yl_fs)
+
+fig.legend(ncol=2, fontsize=le_fs, loc=(0.43,0.0))
+fig.suptitle('Quartic Potentials, $T=0$K', fontsize=title_fs)
+plt.tight_layout()
+#plt.savefig('Quartic_PDFs_revised_T0.pdf', dpi=300, bbox_inches='tight', pad_inches=0.0)
+plt.show()
+exit()
+
+
 if(1): #Test if integrating the Gaussian integral and using the equations above give the same result
     beta = 1.0
     x = 1.0
@@ -180,7 +254,6 @@ if(1): #Test if integrating the Gaussian integral and using the equations above 
     omega_opt, a2_opt = opt_FK(omega_init, beta, m, x, d2V)
     print('a2 from LS:', a2, 'a2 from integral:', a2_opt)
     print('omega from LS:', omega, 'omega from integral:', omega_opt)
-    
 
 def plot_PDF(ax, w, b, legend=False):
     axV = ax[0]
@@ -198,14 +271,20 @@ def plot_PDF(ax, w, b, legend=False):
     for ax, beta in zip(axarr, beta_arr):
         Vcl = V(xarr, w, b)
         Pcl = P(Vcl, beta, xarr)
+    
+        store_PDF_data(xarr, Pcl, 'CL_w_{}_b_{}_beta_{}'.format(w, b, beta))
 
         VFH = V_FH(xarr, w, b, beta)
         PFH = P(VFH, beta, xarr)
+
+        store_PDF_data(xarr, PFH, 'FH_w_{}_b_{}_beta_{}'.format(w, b, beta))
 
         VFK = np.zeros_like(xarr)
         for i, x in enumerate(xarr):
             VFK[i] = V_FK_var(x, w, b, beta)
         PFK=P(VFK, beta, xarr)
+
+        store_PDF_data(xarr, PFK, 'FK_w_{}_b_{}_beta_{}'.format(w, b, beta))
 
         VLH=V_LH(xarr, w, b, beta)
         PLH=P(VLH, beta, xarr)
@@ -216,23 +295,30 @@ def plot_PDF(ax, w, b, legend=False):
         #PLH_magic=P(VLH_magic, beta, xarr)
         PLH_magic = P_LH_magic(xarr, w, b, beta)
 
+        store_PDF_data(xarr, PLH_magic, 'LH_w_{}_b_{}_beta_{}'.format(w, b, beta))
 
         xqarr, Pq_arr = Pq(xarr, w, b, beta)
+
+        store_PDF_data(xqarr, Pq_arr, 'QM_w_{}_b_{}_beta_{}'.format(w, b, beta))
+
+        xqarr_0, Pq_arr_0 = Pq_0(xarr, w, b)
         if(beta==0.1 and legend==True): 
             print('Plotting legend')
             ax.plot(xarr, Pcl, label=r'$P_{cl}$', color=Cc)
-            ax.plot(xarr, PFH, label=r'$P_{FH}$', color=FHc)
-            ax.plot(xarr, PFK, label=r'$P_{FK}$', color=FKc)
+            #ax.plot(xarr, PFH, label=r'$P_{FH}$', color=FHc)
+            #ax.plot(xarr, PFK, label=r'$P_{FK}$', color=FKc)
             #ax.plot(xarr, PLH, linestyle='--', color=LHc)
             ax.plot(xarr, PLH_magic, label=r'$P_{LH}$', color=LHc)
             ax.plot(xqarr, Pq_arr, label=r'$P_{QM}$', color=Qc)
         else:
             ax.plot(xarr, Pcl, color=Cc)
-            ax.plot(xarr, PFH, color=FHc)
-            ax.plot(xarr, PFK, color=FKc)
+            #ax.plot(xarr, PFH, color=FHc)
+            #ax.plot(xarr, PFK, color=FKc)
             #ax.plot(xarr, PLH, linestyle='--', color=LHc)
             ax.plot(xarr, PLH_magic, color=LHc)
             ax.plot(xqarr, Pq_arr, color=Qc)
+            #if (beta==10.0):
+            #    ax.scatter(xqarr_0[::5], Pq_arr_0[::5], color=Qc, marker='x',s=9)
             
             
         #Find point where Pq_arr is less than tol
@@ -273,9 +359,10 @@ if(1):
 
     ax[0,0].set_ylabel(r'$V(x)$', fontsize=yl_fs)
     ax[0,0].yaxis.set_label_coords(-0.35,0.5)
-    fig.legend(ncol=6, fontsize=le_fs+1., loc=(0.2,0.005))
-
-    plt.savefig('Quartic_PDFs.pdf', dpi=300, bbox_inches='tight', pad_inches=0.0)
+    #fig.legend(ncol=6, fontsize=le_fs+1., loc=(0.2,0.005))
+    fig.legend(ncol=6, fontsize=le_fs+1., loc=(0.34,0.005))
+    
+    #plt.savefig('Quartic_PDFs_revised.pdf', dpi=300, bbox_inches='tight', pad_inches=0.0)
     plt.show()
     
 

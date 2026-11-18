@@ -4,6 +4,7 @@ from scipy.optimize import fsolve, least_squares
 from PISC.dvr.dvr import DVR1D
 import matplotlib
 from FK_variational import opt_FK 
+import os
 
 plt.rcParams.update({'font.size': 10, 'font.family': 'serif','font.style':'italic','font.serif':'Garamond'})
 matplotlib.rcParams['axes.unicode_minus'] = False
@@ -206,6 +207,13 @@ axe1 = ax[0,:]
 axe2 = ax[1,:]
 axe3 = ax[2,:]
 
+def store_PDF_data(x,y,z, suffix):
+    filename = 'morse_PDF_{}.txt'.format(suffix)
+    #File to be stored in the directory where this module is located
+    file_path = os.path.dirname(__file__) + '/manu_data/FIG3_SI/' + filename
+    data = np.column_stack((x, y, z))
+    np.savetxt(file_path, data, header='x P(x)', comments='')
+
 for ax, beta in zip([axe1, axe2, axe3], beta_arr):
     print('Beta = ', beta)
     Vcl = np.zeros_like(xarr)
@@ -274,6 +282,12 @@ for ax, beta in zip([axe1, axe2, axe3], beta_arr):
     ax[1].plot(xarr, PLH_magic, label=r'$P_{LH}(x)$', color=LHc, linestyle='-')
     ax[1].plot(xq_arr, PQM, label=r'$P_{QM}(x)$', color=Qc, linestyle='-')
 
+    store_PDF_data(xarr, Vcl, Pcl, 'CL_T{}'.format(T))
+    store_PDF_data(xarr, VLH_tilde, PLH_tilde, 'LH_tilde_T{}'.format(T))
+    store_PDF_data(xarr, VLH_renorm, PLH_renorm, 'LH_renorm_T{}'.format(T))
+    store_PDF_data(xarr, VLH_magic, PLH_magic, 'LH_T{}'.format(T))
+    store_PDF_data(xq_arr, VQM, PQM, 'QM_T{}'.format(T))
+
     if(beta==beta_arr[2]):
         ax[1].set_xlabel(r'$x$', fontsize=xl_fs)
     ax[1].set_ylabel(r'$P(x)$', fontsize=yl_fs)
@@ -294,5 +308,5 @@ for ax, beta in zip([axe1, axe2, axe3], beta_arr):
 
 fig.suptitle(r'$V(x) = D(1-e^{-\alpha(x-x_0)})^2$')
 
-plt.savefig('compare_morse_Veff.pdf', dpi=300, bbox_inches='tight', pad_inches=0.0)
+#plt.savefig('compare_morse_Veff.pdf', dpi=300, bbox_inches='tight', pad_inches=0.0)
 plt.show()

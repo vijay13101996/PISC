@@ -62,9 +62,11 @@ module krylov_complexity
         public :: compute_hadamard_product
         public :: compute_lanczos_coeffs
         public :: compute_lanczos_coeffs_WF
+        public :: compute_lanczos_coeffs_eigen
         public :: compute_bilanczos_coeffs
         public :: compute_On_matrix
         public :: compute_moments
+        public :: compute_moments_eigen
 
         contains
                 subroutine pos_matrix_elts(vecs,len1vecs,len2vecs,x_arr,lenx,dx,dy,n,k,pos_mat_elt)
@@ -376,6 +378,54 @@ module krylov_complexity
  
                 end subroutine compute_lanczos_coeffs
 
+                subroutine compute_lanczos_coeffs_eigen(O, L, lenO, barr, ncoeffs, n_eigen)
+                        ! Compute Lanczos coefficients of the operator O with respect to 
+                        ! the inner product defined as:
+                        !       <A|B> = 1/2* (<\psi| A^{\dagger} B + B^{\dagger} A |\psi>
+                        ! where |\psi> is an eigenstate of the Hamiltonian. It is be noted 
+                        ! that the inner product will not lead to a self-adjoint Liouvillian
+                        ! for any choice other than eigenstates.
+
+                        integer, intent(in) :: lenO, ncoeffs, n_eigen
+                        complex(kind=8), dimension(lenO,lenO), intent(in) :: O
+                        complex(kind=8), dimension(lenO,lenO), intent(in) :: L
+                        !f2py real(kind=8), dimension(ncoeffs), intent(in,out,copy) :: barr
+                        real(kind=8), dimension(ncoeffs), intent(inout) :: barr
+                        
+                        complex(kind=8), dimension(lenO) :: coeff_WF
+                        integer :: n
+                        complex(kind=8), dimension(lenO,lenO) :: On1, On2, Otemp, An
+                        complex(kind=8) :: tempvar
+                        
+                        coeff_WF = cmplx(0.0d0,0.0d0)
+                        coeff_WF(n_eigen) = 1.0d0
+
+                        call compute_ip_WF(O,O,lenO,coeff_WF,tempvar)
+                        barr(1) = sqrt(tempvar)
+                        On2 = O/barr(1)
+                        
+                        call compute_hadamard_product(L,On2,lenO,An)
+
+                        call compute_ip_WF(An,An,lenO,coeff_WF,tempvar)
+                        barr(2) = sqrt(tempvar)
+                        On1 = An/barr(2)
+
+                        do n=3,ncoeffs
+                                if (barr(n-1) < 1.0d-10) then
+                                        print *, 'barr(n) = 0.0d0'
+                                        exit
+                                end if
+
+                                call compute_hadamard_product(L,On1,lenO,Otemp)
+                                An = Otemp - barr(n-1)*On2
+                                
+                                call compute_ip_WF(An,An,lenO,coeff_WF,tempvar)
+                                barr(n) = sqrt(tempvar)
+                                On2 = On1
+                                On1 = An/barr(n)
+                        end do
+                end subroutine compute_lanczos_coeffs_eigen     
+
                 subroutine compute_lanczos_coeffs_WF(O, L, lenO, barr, ncoeffs, beta, vals, lamda, ipkey, Omegaarr, coeff_WF)
                 
                         !Compute the coefficients of the Lanczos expansion of the operator O
@@ -405,16 +455,16 @@ module krylov_complexity
                         barr(1) = sqrt(tempvar)
                         On2 = O/barr(1)
                         call compute_wf_exp(On2,lenO,coeff_WF,Omegaarr(1))
-
+                        
                         call compute_hadamard_product(L,On2,lenO,An)
-
+                        
                         call compute_ip(An,An,lenO,beta,vals,lamda,tempvar,ipkey)
                         barr(2) = sqrt(tempvar)
                         On1 = An/barr(2)
                         call compute_wf_exp(On1,lenO,coeff_WF,Omegaarr(2))
 
                         do n=3,ncoeffs
-                                if (barr(n-1) < 1.0d-10) then
+                                if (barr(n-1) < 1.0d-7) then
                                         print *, 'barr(n) = 0.0d0'
                                         exit
                                 end if
@@ -562,7 +612,7 @@ module krylov_complexity
                         complex(kind=8), dimension(lenO,lenO), intent(inout) :: On
                         
                         integer :: n
-                        complex(kind=8), dimension(lenO,lenO) :: On1, On2, Otemp, An
+                complex(kind=8), dimension(lenO,lenO) :: On1, On2, Otemp, An
                         real(kind=8) :: tempvar
 
                         call compute_ip(O,O,lenO,beta,vals,lamda,tempvar,ipkey)
@@ -669,6 +719,25 @@ module krylov_complexity
 
                 end subroutine compute_moments 
 
+        subroutine compute_moments_eigen(O, lenO, vals, moments, nmoments, n_eigen)
+                ! Compute the moments with respect to the inner product compute_ip_wf
+                integer, intent(in) :: lenO, nmoments, n_eigen
+                complex(kind=8), dimension(lenO,lenO), intent(in) :: O
+                real(kind=8), dimension(lenO), intent(in) :: vals
+                !f2py real(kind=8), dimension(nmoments), intent(in,out,copy) :: moments
+                real(kind=8), dimension(nmoments), intent(inout) :: moments
+                
+                integer :: n,k
+
+                moments = 0.0d0
+                do n=1,nmoments
+                        do k=1,lenO
+                        if (modulo(n,2) .eq. 1) then
+                                moments(n) = moments(n) + (vals(n_eigen) - vals(k))**(n-1)*conjg(O(n_eigen,k))*O(n_eigen,k)
+                        end if
+                        end do
+                end do
+        end subroutine compute_moments_eigen
 
 end module krylov_complexity
 
