@@ -67,6 +67,7 @@ class DVR1D(object):
 		norm = 1/(np.sum(vecs[:,0]**2*self.dx))**0.5
 		vecs*=norm
 
+		self.H = H
 		self.vecs = vecs
 		self.vals = vals
 	
@@ -316,4 +317,3 @@ class DVR2D_CPY(DVR1D):
 			j = temp[p][1]
 			wf[i,j] = vector[p]
 		return wf.T 
-

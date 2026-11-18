@@ -14,6 +14,15 @@ class StadiumBilliard:
         self.r = r  # Radius of the semicircular sections
         self.num_points = num_points  # Number of points to discretize the boundary
 
+    def potential(self, x, y):
+        """Potential for a quarter stadium billiard: 0 inside the billiard, infinity outside."""
+        if (0 <= x <= self.a and 0 <= y <= self.r):
+            return 0 # Inside the rectangular part
+        elif((x - self.a)**2 + (y)**2 <= self.r**2 and x-self.a>=0 and y>=0):
+            return 0 # Inside the semicircular part
+        else:
+            return 1e6  # A large number to represent infinity
+
     def boundary_points(self,M=None):
         """Generate points on the boundary of the quarter stadium billiard."""
         points = []
@@ -137,4 +146,48 @@ class StadiumBilliard:
             eigenvectors.append(Vh[argmin])
         return eigenstates, eigenvectors
 
+    def compute_wf(self, c, k, bdtype='DD',N=None):
+        """
+        Compute the wavefunction from the plane wave expansion coefficients.
+            k: Wave number corresponding to the eigenstate we want to compute 
+            c: Coefficients from the plane wave expansion (from the SVD)
+            bdtype: Boundary condition type (DD, DN, ND, NN)
+            N: Number of plane wave modes
+        """
+        if N is None:
+            N = len(c)
 
+        x = np.linspace(0, self.a + self.r, 500)
+        y = np.linspace(0, self.r, 1000)
+        X, Y = np.meshgrid(x, y)
+        Psi = np.zeros_like(X)
+        for j in range(N):
+            if bdtype == 'DD':
+                wave_j = self.DD_wf(X, Y, j, k, N)
+            elif bdtype == 'DN':
+                wave_j = self.DN_wf(X, Y, j, k, N)
+            elif bdtype == 'ND':
+                wave_j = self.ND_wf(X, Y, j, k, N)
+            elif bdtype == 'NN':
+                wave_j = self.NN_wf(X, Y, j, k, N)
+                
+            Psi += c[j] * wave_j
+
+        #Set the wavefunction to zero outside the quarter stadium region
+        for i in range(Psi.shape[0]):
+            for j in range(Psi.shape[1]):
+                if self.potential(X[i,j], Y[i,j]) > 1e5:
+                    Psi[i,j] = 0.0
+
+        return Psi
+
+    def full_stadium_wf(self, Psi):
+        """Construct the full stadium wavefunction from the quarter stadium wavefunction using symmetry."""
+        psi_full = np.zeros((2*Psi.shape[0], 2*Psi.shape[1]))  
+        psi_full[Psi.shape[0]:, Psi.shape[1]:] = Psi
+        psi_full[Psi.shape[0]:, :Psi.shape[1]] = Psi[:, ::-1]
+        psi_full[:Psi.shape[0], Psi.shape[1]:] = Psi[::-1, :]
+        psi_full[:Psi.shape[0], :Psi.shape[1]] = Psi[::-1, ::-1]
+        
+
+        return psi_full
