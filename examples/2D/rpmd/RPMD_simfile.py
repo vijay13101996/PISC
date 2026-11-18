@@ -20,23 +20,23 @@ if(1): ### 2D Double well
     alpha = 0.382
     D = 3*Vb
 
-    z = 2.0
+    z = 1.0
      
     pes = quartic_bistable(alpha,D,lamda,g,z)
 
     Tc = 0.5*lamda/np.pi
-    times = 3.0
+    times = 2.0
     T = times*Tc
 
     m = 0.5
     N = 1000
     dt_therm = 0.05
-    dt = 0.002
-    time_therm = 50.0
-    time_total = 5.0
-    nbeads = 1
+    dt = 0.02
+    time_therm = 1.0
+    time_total = 1.0# dt
+    nbeads = 32
 
-    potkey = 'double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
+    potkey = 'testpy_double_well_2D_alpha_{}_D_{}_lamda_{}_g_{}_z_{}'.format(alpha,D,lamda,g,z)
     Tkey = 'T_{}Tc'.format(times)
 
 if(0): ### Oblique harmonic oscillator
@@ -96,9 +96,10 @@ if(0):
 path = os.path.dirname(os.path.abspath(__file__))
 #path = '/scratch/vgs23/PISC/examples/2D/rpmd'
 
+
 method = 'RPMD'
-sysname = 'Papageno'      
-corrkey = 'fd_OTOC'#'qq_TCF'#'pq_TCF'#'OTOC'
+sysname = 'Selene'      
+corrkey = 'OTOC'#'qq_TCF'#'pq_TCF'#'OTOC'
 enskey = 'thermal'
 ### -----------------------------------------------------------------------------
 E = T
@@ -124,9 +125,9 @@ qlist = np.array(qlist)
     
 ### ------------------------------------------------------------------------------
 
-pes_fort=False#True
+pes_fort=True
 propa_fort=True
-transf_fort=False#True
+transf_fort=True
 
 Sim_class = SimUniverse(method,path,sysname,potkey,corrkey,enskey,Tkey)
 Sim_class.set_sysparams(pes,T,m,dim)
@@ -144,8 +145,8 @@ if(pes_fort):
 
 start_time=time.time()
 func = partial(Sim_class.run_seed)
-seeds = range(1000,2000)
-seed_split = chunks(seeds,20)
+seeds = range(10)
+seed_split = chunks(seeds,10)
 
 param_dict = {'Temperature':Tkey,'CType':corrkey,'m':m,\
     'therm_time':time_therm,'time_total':time_total,'nbeads':nbeads,'dt':dt,'dt_therm':dt_therm}

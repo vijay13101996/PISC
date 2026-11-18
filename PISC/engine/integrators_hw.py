@@ -62,7 +62,6 @@ class Integrator_HW:
         In practice, we will do this with python's built-in root-finding algorithm!
         """
         # Check if we are already outside the boundary
-        print('func(x)', self.func(x))
         if self.func(x) > self.tol:
             print("Current position:", x)
             raise ValueError("Particle is outside the boundary!")
@@ -143,7 +142,6 @@ class Integrator_HW:
             return x_current, v_current, traj
         else:
             return x_current, v_current
-
 
 if(0):
     # Testing for a simple 1D box potential, where the boundary is defined by f(x) = x - L/2 and f(x) = -x - L/2

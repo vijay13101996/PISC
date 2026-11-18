@@ -5,7 +5,7 @@ import pickle
 import multiprocessing as mp
 from functools import partial
 from PISC.utils.mptools import chunks, batching
-from PISC.potentials import double_well,quartic,morse, asym_double_well, harmonic1D
+from PISC.potentials import double_well,quartic,morse, asym_double_well
 from PISC.engine.PI_sim_core import SimUniverse
 import time
 import os 
@@ -105,7 +105,7 @@ def main(times=0.95,nbeads=16): #Double well potential
 
     method = 'RPMD'
     sysname = 'Papageno'        
-    corrkey = 'fd_OTOC'
+    corrkey = 'OTOC'
     enskey = 'thermal'
 
     path = os.path.dirname(os.path.abspath(__file__))
@@ -114,7 +114,7 @@ def main(times=0.95,nbeads=16): #Double well potential
     propa_fort = True
     transf_fort = True
 
-    Sim_class = SimUniverse(method,path,sysname,potkey,corrkey,enskey,Tkey,ext_kwlist=['FORTRAN'])
+    Sim_class = SimUniverse(method,path,sysname,potkey,corrkey,enskey,Tkey)
     Sim_class.set_sysparams(pes,T,m,dim)
     Sim_class.set_simparams(N,dt_therm,dt,pes_fort=pes_fort,propa_fort=propa_fort,transf_fort=transf_fort)
     Sim_class.set_methodparams(nbeads=nbeads)
@@ -123,7 +123,7 @@ def main(times=0.95,nbeads=16): #Double well potential
 
     start_time=time.time()
     func = partial(Sim_class.run_seed)
-    seeds = range(3000)
+    seeds = range(1000)
     seed_split = chunks(seeds,20)
 
     param_dict = {'Temperature':Tkey,'CType':corrkey,'Ensemble':enskey,'m':m,\
@@ -132,7 +132,7 @@ def main(times=0.95,nbeads=16): #Double well potential
     with open('{}/Datafiles/RPMD_input_log_{}.txt'.format(path,potkey),'a') as f:   
         f.write('\n'+str(param_dict))
 
-    print('T',times, 'Tc', Tc, 'dt', dt)
+    print('T',times, 'Tc', Tc)
     print('nbeads',nbeads)
     batching(func,seed_split,max_time=1e6)
     print('time', time.time()-start_time)

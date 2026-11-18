@@ -21,9 +21,7 @@ class mildly_anharmonic(PES):
         return self.m*self.w**2*q + 3*self.a*q**2 + self.n*self.b*q**(self.n-1)
 
     def ddpotential(self,q):
-        #return self.m + 6*self.a*q + 12*self.b*q**2
-        #!!!! CHECK THIS AND FIX!!!!
-        return self.m*self.w**2 + 6*self.a*q + self.n*(self.n-1) + self.b*q**(self.n-2)
+        return self.m*self.w**2 + 6*self.a*q + self.n*(self.n-1)*self.b*q**(self.n-2)
 
     def potential_func(self,q):
         #return 0.5*self.m*q**2 + self.a*q**3 + self.b*q**4
